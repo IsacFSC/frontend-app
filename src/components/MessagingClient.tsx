@@ -85,12 +85,19 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       const msg = e?.detail;
         if (msg && selectedConversation && msg.conversationId === selectedConversation.id) {
         // refresh messages for the open conversation
-        handleSelectConversation(selectedConversation, true);
+        handleSelectConversation(selectedConversation, true); // isRefresh = true
       } else {
-        // otherwise refresh conversations list (to update last message / unread)
-          // mark the conversation locally as having unread messages
-          setConversations(prev => prev.map(c => c.id === msg.conversationId ? { ...c, hasUnreadMessages: true } : c))
-          fetchConversations();
+        // Move conversation with new message to the top and mark as unread
+        setConversations(prev => {
+          const convo = prev.find(c => c.id === msg.conversationId);
+          if (!convo) {
+            fetchConversations(); // Fetch if conversation is new to this user
+            return prev;
+          }
+          const updatedConvo = { ...convo, hasUnreadMessages: true };
+          const otherConvos = prev.filter(c => c.id !== msg.conversationId);
+          return [updatedConvo, ...otherConvos];
+        });
       }
     };
 
@@ -101,15 +108,6 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       window.removeEventListener('messaging:messageCreated', onMsgCreated as EventListener);
     };
   }, [fetchConversations, selectedConversation]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (selectedConversation) {
-        handleSelectConversation(selectedConversation, true);
-      }
-    }, 30000); // Aumentado para 30 segundos
-    return () => clearInterval(interval);
-  }, [selectedConversation]);
 
   const handleSelectConversation = async (conversation: Conversation, isRefresh = false) => {
     if (!isRefresh) {
@@ -122,6 +120,8 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       // mark messages as read on the server for this conversation
       try {
         await fetch(`/api/messaging/conversations/${conversation.id}/read`, { method: 'POST' })
+        // Notify other parts of the app that messages have been read
+        window.dispatchEvent(new CustomEvent('messaging:messagesRead'));
       } catch (e) {
         // ignore
       }
@@ -224,9 +224,10 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                   <li
                     key={convo.id}
                     onClick={() => handleSelectConversation(convo)}
-                    className={`cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 ${
-                      convo.hasUnreadMessages ? 'font-bold rounded-md bg-emerald-100 dark:bg-emerald-800 dark:text-white' : ''
-                    }`}>
+                    className={`cursor-pointer p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors ${
+                      convo.hasUnreadMessages ? 'font-bold bg-emerald-500 text-white' : 'dark:text-gray-200'
+                    }`}
+                  >
                     {convo.subject} - {convo.participants.map(p => p.name).find(name => name !== user?.name) || 'Sem Participantes'}
                     {selectedConversation?.id === convo.id && <span className="text-blue-500 ml-2 font-bold">●</span>}
                     {convo.messages && convo.messages.length > 0 && (

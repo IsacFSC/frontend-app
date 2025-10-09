@@ -2,11 +2,14 @@
 
 import MessagingClient from "@/components/MessagingClient";
 import PrivateRoute from "@/components/PrivateRoute";
+import { MessagingProvider } from "@/contexts/MessagingContext";
 
 export default function MessagingPage() {
   return (
     <PrivateRoute>
-      <MessagingClient userRole="ADMIN" />
+      <MessagingProvider>
+        <MessagingClient userRole="ADMIN" />
+      </MessagingProvider>
     </PrivateRoute>
   );
 }

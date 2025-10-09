@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { FaEnvelope } from 'react-icons/fa';
 import { getUnreadMessagesCount } from '../services/messagingService';
 import { useAuth } from '../hooks/useAuth';
@@ -12,23 +12,28 @@ export default function MessageIcon() {
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      const fetchUnreadCount = async () => {
-        try {
-          const count = await getUnreadMessagesCount();
-          setUnreadCount(count);
-        } catch (error) {
-          console.error('Failed to fetch unread messages count:', error);
-        }
-      };
-
-      fetchUnreadCount();
-      const interval = setInterval(fetchUnreadCount, 5000); // Check every 5 seconds
-
-      return () => clearInterval(interval);
+  const fetchUnreadCount = useCallback(async () => {
+    if (!user) return;
+    try {
+      const count = await getUnreadMessagesCount();
+      setUnreadCount(count);
+    } catch (error) {
+      console.error('Failed to fetch unread messages count:', error);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+
+      window.addEventListener('messaging:messageCreated', fetchUnreadCount);
+      window.addEventListener('messaging:messagesRead', fetchUnreadCount);
+      return () => {
+        window.removeEventListener('messaging:messageCreated', fetchUnreadCount);
+        window.removeEventListener('messaging:messagesRead', fetchUnreadCount);
+      };
+    }
+  }, [user, fetchUnreadCount]);
 
   const handleClick = () => {
     if (user?.role === 'ADMIN') {

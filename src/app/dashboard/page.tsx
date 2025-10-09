@@ -119,27 +119,27 @@ export default function DashboardPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user && !schedulesLoading) { // Executa após o carregamento das escalas
-      const fetchUnreadMessages = async () => {
-        try {
-          const count = await getUnreadMessagesCount();
-          setUnreadMessagesCount(count);
-        } catch (error) {
-          console.error("Failed to fetch unread messages count", error);
-        }
-      };
-      
-      fetchUnreadMessages();
-    }
-  }, [user, schedulesLoading]); // Adiciona schedulesLoading como dependência
-
-  useEffect(() => {
-    const onMsgCreated = () => {
-      getUnreadMessagesCount().then(count => setUnreadMessagesCount(count)).catch(() => {});
+    const fetchUnreadMessages = async () => {
+      if (!user) return;
+      try {
+        const count = await getUnreadMessagesCount();
+        setUnreadMessagesCount(count);
+      } catch (error) {
+        console.error("Failed to fetch unread messages count", error);
+      }
     };
-    window.addEventListener('messaging:messageCreated', onMsgCreated as EventListener);
-    return () => window.removeEventListener('messaging:messageCreated', onMsgCreated as EventListener);
-  }, []);
+
+    if (user) {
+      fetchUnreadMessages();
+      window.addEventListener('messaging:messageCreated', fetchUnreadMessages);
+      window.addEventListener('messaging:messagesRead', fetchUnreadMessages);
+
+      return () => {
+        window.removeEventListener('messaging:messageCreated', fetchUnreadMessages);
+        window.removeEventListener('messaging:messagesRead', fetchUnreadMessages);
+      };
+    }
+  }, [user]);
 
   useEffect(() => {
     const filtered = schedules.filter(schedule => {
