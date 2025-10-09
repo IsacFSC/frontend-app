@@ -5,9 +5,10 @@ import { getScheduleFiles, uploadScheduleFile, downloadScheduleFile } from '../s
 
 interface ScheduleFileManagementProps {
   scheduleId: number;
+  onFileUpload?: (file: File) => void;
 }
 
-const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ scheduleId }) => {
+const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ scheduleId, onFileUpload }) => {
   const { user } = useAuth();
   const [files, setFiles] = useState<any[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -36,9 +37,14 @@ const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ schedul
   const handleUpload = async () => {
     if (selectedFile && scheduleId) {
       try {
-        await uploadScheduleFile(scheduleId, selectedFile);
+        const result: any = await uploadScheduleFile(scheduleId, selectedFile);
         setSelectedFile(null); // Clear selected file after upload
         fetchFiles();
+        if (onFileUpload) onFileUpload(selectedFile);
+        const convoId = result?.conversationId;
+        if (convoId) {
+          window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: { id: convoId } }));
+        }
       } catch (error) {
         console.error('Error uploading file:', error);
       }
@@ -47,14 +53,15 @@ const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ schedul
 
   const handleDownload = async (fileId: number, filename: string) => {
     try {
-      const blob = await downloadScheduleFile(fileId);
-      const url = window.URL.createObjectURL(new Blob([blob]));
+      const response = await downloadScheduleFile(fileId);
+      const blobData = response instanceof Blob ? response : (response?.data || response);
+      const url = window.URL.createObjectURL(new Blob([blobData] as BlobPart[]));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
-      link.parentNode.removeChild(link);
+      if (link.parentNode) link.parentNode.removeChild(link);
     } catch (error) {
       console.error('Error downloading file:', error);
     }

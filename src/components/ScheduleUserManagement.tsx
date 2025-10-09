@@ -37,7 +37,7 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
   const assignedUserSkills = useMemo(() => {
     const skillMap = new Map<number, Skill>();
     schedule.users.forEach(u => {
-      skillMap.set(u.userId, u.skill);
+      skillMap.set(u.userId, u.skill as Skill);
     });
     return skillMap;
   }, [schedule.users]);

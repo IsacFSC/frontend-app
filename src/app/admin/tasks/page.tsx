@@ -87,10 +87,10 @@ export default function TaskManagementPage() {
     name: '',
   });
 
-  const fetchTasks = useCallback(async () => {
+  const fetchTasks = useCallback(async (pageParam: number = currentPage) => {
     try {
       setLoading(true);
-      const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+      const offset = (pageParam - 1) * ITEMS_PER_PAGE;
 
       const activeFilters: { [key: string]: any } = {};
       Object.entries(filters).forEach(([key, value]) => {
@@ -107,6 +107,7 @@ export default function TaskManagementPage() {
       setTasks(response.data);
       setTotalPages(Math.ceil(response.total / ITEMS_PER_PAGE));
       setError(null);
+      setCurrentPage(pageParam);
     } catch (err) {
       setError('Falha ao buscar tarefas.');
       console.error(err);
@@ -140,17 +141,18 @@ export default function TaskManagementPage() {
 
   const handleApplyFilters = () => {
     setCurrentPage(1);
-    fetchTasks();
+    fetchTasks(1);
   };
 
   const handleClearFilters = () => {
     setFilters({ userId: '', status: '', startDate: '', endDate: '', name: '' });
     setCurrentPage(1);
+    fetchTasks(1);
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
-      setCurrentPage(newPage);
+      fetchTasks(newPage);
     }
   };
 
@@ -173,7 +175,9 @@ export default function TaskManagementPage() {
         await createTask(data);
         setSuccessMessage('Tarefa criada com sucesso!');
       }
+      // Reset filters and fetch first page so new task appears
       handleClearFilters();
+      await fetchTasks(1);
       handleCloseModal();
     } catch (error) {
       console.error('Falha ao salvar tarefa: ', error);

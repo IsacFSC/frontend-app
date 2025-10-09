@@ -41,7 +41,8 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     try {
       setLoading(true);
       const fetchedConversations = await getConversations();
-      setConversations(fetchedConversations);
+      // normalize hasUnreadMessages default
+      setConversations(fetchedConversations.map((c: any) => ({ ...c, hasUnreadMessages: !!c.hasUnreadMessages })));
       setError(null);
     } catch (err) {
       setError('Falha ao buscar conversas.');
@@ -72,6 +73,36 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
   }, [fetchConversations, fetchUsers, isAuthenticated]);
 
   useEffect(() => {
+    const onConvCreated = (e: any) => {
+      fetchConversations();
+      const conv = e?.detail;
+      if (conv && conv.id) {
+        // auto-open the new conversation
+        handleSelectConversation(conv);
+      }
+    };
+    const onMsgCreated = (e: any) => {
+      const msg = e?.detail;
+        if (msg && selectedConversation && msg.conversationId === selectedConversation.id) {
+        // refresh messages for the open conversation
+        handleSelectConversation(selectedConversation, true);
+      } else {
+        // otherwise refresh conversations list (to update last message / unread)
+          // mark the conversation locally as having unread messages
+          setConversations(prev => prev.map(c => c.id === msg.conversationId ? { ...c, hasUnreadMessages: true } : c))
+          fetchConversations();
+      }
+    };
+
+    window.addEventListener('messaging:conversationCreated', onConvCreated as EventListener);
+    window.addEventListener('messaging:messageCreated', onMsgCreated as EventListener);
+    return () => {
+      window.removeEventListener('messaging:conversationCreated', onConvCreated as EventListener);
+      window.removeEventListener('messaging:messageCreated', onMsgCreated as EventListener);
+    };
+  }, [fetchConversations, selectedConversation]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       if (selectedConversation) {
         handleSelectConversation(selectedConversation, true);
@@ -88,6 +119,14 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     try {
       const fetchedMessages = await getMessages(conversation.id);
       setMessages(fetchedMessages);
+      // mark messages as read on the server for this conversation
+      try {
+        await fetch(`/api/messaging/conversations/${conversation.id}/read`, { method: 'POST' })
+      } catch (e) {
+        // ignore
+      }
+      // clear local unread flag for this conversation
+      setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, hasUnreadMessages: false } : c))
     } catch (error) {
       setError('Falha ao buscar mensagens.');
     }
@@ -186,11 +225,11 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                     key={convo.id}
                     onClick={() => handleSelectConversation(convo)}
                     className={`cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 ${
-                      convo.hasUnreadMessages ? 'font-bold border-b-sky-700 bg-emerald-900 border-1 rounded-md' : ''
+                      convo.hasUnreadMessages ? 'font-bold rounded-md bg-emerald-100 dark:bg-emerald-800 dark:text-white' : ''
                     }`}>
                     {convo.subject} - {convo.participants.map(p => p.name).find(name => name !== user?.name) || 'Sem Participantes'}
                     {selectedConversation?.id === convo.id && <span className="text-blue-500 ml-2 font-bold">●</span>}
-                    {convo.messages && (
+                    {convo.messages && convo.messages.length > 0 && (
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         Última mensagem: {new Date(convo.messages[convo.messages.length - 1].createdAt).toLocaleString()}
                       </div>
@@ -222,9 +261,10 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                       <p className="font-bold">{msg.author?.name || 'Participante'}</p>
                       {msg.file ? (
                         msg.fileMimeType && msg.fileMimeType.startsWith('image/') ? (
-                          <img src={`${process.env.NEXT_PUBLIC_API_URL}/messaging/download/${msg.file}`} alt={msg.content || 'imagem'} className="max-w-xs rounded-lg" />
+                          // Use relative API route; backend download accepts id or filename
+                          <img src={`/api/messaging/download/${msg.file}`} alt={msg.content || 'imagem'} className="max-w-xs rounded-lg" />
                         ) : (
-                          <button onClick={() => handleDownload(msg.file!)} className="text-blue-200 hover:underline flex items-center">
+                          <button onClick={() => handleDownload(String(msg.file))} className="text-blue-200 hover:underline flex items-center">
                             <FaDownload className="mr-2" />
                             {msg.content || 'Baixar Arquivo'}
                           </button>
@@ -249,7 +289,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                  <input
                   type="file"
                   onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
-                  className="text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-2"
+                  className="sr-only"
                   id="file-upload"
                 />
                 <label htmlFor="file-upload" className="bg-transparent hover:bg-gray-500 text-white font-bold py-3 px-3 border-gray-600 border-2 rounded ml-2 cursor-pointer">
@@ -258,6 +298,12 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                   </svg>
                   <span className="not-sr-only"></span>
                 </label>
+                {/* Show filename only when a file is selected; otherwise keep only the icon */}
+                {selectedFile && (
+                  <div className="ml-3 px-2 py-1 rounded text-sm flex items-center bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                    {selectedFile.name}
+                  </div>
+                )}
                 <button onClick={handleSendMessage} className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded ml-2">
                   <svg className="icone-enviar" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -278,7 +324,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
         users={users}
         onSend={handleSendNewConversation}
         title="Nova Conversa"
-        userRole={userRole === 'ADMIN' ? 'Leader' : 'Admin'}
+        userRole={userRole}
       />
     </div>
   );

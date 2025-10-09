@@ -76,6 +76,7 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [schedulesLoading, setSchedulesLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   const fetchData = async () => {
@@ -133,6 +134,14 @@ export default function DashboardPage() {
   }, [user, schedulesLoading]); // Adiciona schedulesLoading como dependência
 
   useEffect(() => {
+    const onMsgCreated = () => {
+      getUnreadMessagesCount().then(count => setUnreadMessagesCount(count)).catch(() => {});
+    };
+    window.addEventListener('messaging:messageCreated', onMsgCreated as EventListener);
+    return () => window.removeEventListener('messaging:messageCreated', onMsgCreated as EventListener);
+  }, []);
+
+  useEffect(() => {
     const filtered = schedules.filter(schedule => {
       const matchesSearchTerm = schedule.name.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -174,8 +183,13 @@ function showToast(message: string, type: 'success' | 'error') {
   }, 3000);
 }
 
-  const handleRefresh = () => {
-    fetchData();
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchData();
+    } finally {
+      setIsRefreshing(false);
+    }
   }
 
   if (!user || user.role !== Role.USER) {
@@ -212,7 +226,8 @@ function showToast(message: string, type: 'success' | 'error') {
             </Link>
             <button
               onClick={handleRefresh}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center ${isRefreshing ? 'opacity-60 cursor-not-allowed' : ''}`}
+              disabled={isRefreshing}
             >
               <FaSync className="mr-2" /> Atualizar
             </button>
@@ -226,6 +241,17 @@ function showToast(message: string, type: 'success' | 'error') {
         </div>
         <p className="mt-2 text-gray-200">Bem-vindo, {user.name}!</p>
         <p className="mt-2 text-gray-200">Você está logado como: {user.role}</p>
+
+        {isRefreshing && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="bg-transparent p-4 rounded">
+              <svg className="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            </div>
+          </div>
+        )}
 
         <div className="mt-8 flex flex-col md:flex-row gap-4">
           <div className="flex-1">

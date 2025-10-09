@@ -23,7 +23,7 @@ export default function NewConversationModal({ isOpen, onClose, users, onSend, t
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser || !subject.trim() || !message.trim()) {
-      setError(`${userRole}, subject, and message are required.`);
+      setError('Destinatário, assunto e mensagem são obrigatórios.');
       return;
     }
 

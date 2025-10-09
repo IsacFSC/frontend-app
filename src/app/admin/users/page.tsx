@@ -25,6 +25,7 @@ export default function UserManagementPage() {
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
+  const [loadingUserIds, setLoadingUserIds] = useState<number[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -119,6 +120,8 @@ export default function UserManagementPage() {
 
   const handleToggleActiveStatus = async (id: number, currentStatus: boolean) => {
     try {
+      // mark this user as loading
+      setLoadingUserIds((prev) => [...prev, id]);
       await updateUserByAdmin(id, { active: !currentStatus });
       setSuccessMessage('Status do usuário atualizado com sucesso!');
       await fetchUsers(); // Refresh list
@@ -126,6 +129,8 @@ export default function UserManagementPage() {
       console.error('Falha ao atualizar status do usuário:', error);
       setError('Não foi possível atualizar o status do usuário.');
     } finally {
+      // remove loading mark
+      setLoadingUserIds((prev) => prev.filter((uid) => uid !== id));
       setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
@@ -249,12 +254,20 @@ export default function UserManagementPage() {
                     <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
                       
                       <button
-                        onClick={() => handleToggleActiveStatus(user.id, !user.active)}
+                        onClick={() => handleToggleActiveStatus(user.id, user.active)}
                         className={`px-2 py-1 text-md font-semibold rounded-full flex items-center ${
                           user.active ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                        }`}
+                        } ${loadingUserIds.includes(user.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        disabled={loadingUserIds.includes(user.id)}
                       >
-                        {user.active ? <FaToggleOff className="mr-1" /> : <FaToggleOn className="mr-1" />} {user.active ? 'Inativo' : 'Ativo'}
+                        {loadingUserIds.includes(user.id) ? (
+                          <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                          </svg>
+                        ) : (
+                          user.active ? <FaToggleOff className="mr-1" /> : <FaToggleOn className="mr-1" />
+                        )} {user.active ? 'Desativar' : 'Ativar'}
                       </button>
                     </td>
                     <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">

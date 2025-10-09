@@ -53,7 +53,7 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
         </div>
       )}
       <div className="mb-4">
-        <label htmlFor="name" className="block text-gray-200 text-sm font-bold mb-2">Name</label>
+        <label htmlFor="name" className="block text-gray-200 text-sm font-bold mb-2">Nome</label>
         <input
           type="text"
           id="name"
@@ -64,7 +64,7 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="email" className="block text-gray-200 text-sm font-bold mb-2">Email</label>
+        <label htmlFor="email" className="block text-gray-200 text-sm font-bold mb-2">E-mail</label>
         <input
           type="email"
           id="email"
@@ -78,7 +78,7 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
       <div className="mb-4">
         <label htmlFor="password"
                className="block text-gray-200 text-sm font-bold mb-2">
-          Password {isEditing ? '(leave blank to keep current password)' : ''}
+          Senha {isEditing ? '(deixe em branco para manter a senha atual)' : ''}
         </label>
         <input
           type="password"
@@ -90,16 +90,16 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
         />
       </div>
       <div className="mb-6">
-        <label htmlFor="role" className="block text-gray-200 text-sm font-bold mb-2">Role</label>
+        <label htmlFor="role" className="block text-gray-200 text-sm font-bold mb-2">Perfil</label>
         <select
           id="role"
           value={role}
           onChange={(e) => setRole(e.target.value as Role)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-950 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
         >
-          <option value={Role.USER}>User</option>
-          <option value={Role.LEADER}>Leader</option>
-          <option value={Role.ADMIN}>Admin</option>
+          <option value={Role.USER}>Usuário</option>
+          <option value={Role.LEADER}>Líder</option>
+          <option value={Role.ADMIN}>Administrador</option>
         </select>
       </div>
       <div className="flex items-center justify-end space-x-4">
@@ -108,13 +108,13 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
           onClick={onCancel}
           className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
-          Cancel
+          Cancelar
         </button>
         <button
           type="submit"
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
-          {isEditing ? 'Update User' : 'Create User'}
+          {isEditing ? 'Atualizar Usuário' : 'Criar Usuário'}
         </button>
       </div>
     </form>

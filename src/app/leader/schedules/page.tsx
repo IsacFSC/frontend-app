@@ -78,6 +78,7 @@ export default function LeaderScheduleManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [schedulesLoading, setSchedulesLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -124,6 +125,17 @@ export default function LeaderScheduleManagementPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
+    const onMsgCreated = (e: any) => {
+      // refresh unread count when a message is created elsewhere
+      getUnreadMessagesCount().then(count => {
+        // we don't keep unread count here in state beyond initial fetch, so no-op
+      }).catch(() => {});
+    };
+    window.addEventListener('messaging:messageCreated', onMsgCreated as EventListener);
+    return () => window.removeEventListener('messaging:messageCreated', onMsgCreated as EventListener);
+  }, []);
+
+  useEffect(() => {
     const filtered = schedules.filter(schedule => {
       const matchesSearchTerm = schedule.name.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -164,8 +176,13 @@ export default function LeaderScheduleManagementPage() {
     }, 3000);
   }
 
-  const handleRefresh = () => {
-    fetchData();
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchData();
+    } finally {
+      setIsRefreshing(false);
+    }
   }
 
   const handleAttachFileClick = (schedule: Schedule) => {
@@ -177,13 +194,24 @@ export default function LeaderScheduleManagementPage() {
     if (!selectedSchedule) return;
     try {
       setSchedulesLoading(true);
-      await uploadScheduleFile(selectedSchedule.id, file);
+      const result: any = await uploadScheduleFile(selectedSchedule.id, file);
+      // new API returns { schedule, conversationId }
+      const convoId = result?.conversationId;
       await fetchData(); 
       setSuccessMessage('Arquivo enviado com sucesso!');
       showToast('Arquivo enviado com sucesso!', 'success');
+
+      if (convoId) {
+        // navigate to messaging page and notify MessagingClient to open the conversation
+        router.push('/leader/messaging');
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: { id: convoId } }));
+        }, 300);
+      }
     } catch (error) {
-      const axiosError = error as AxiosError;
-      const errorMessage = typeof axiosError.response?.data?.message === 'string' ? axiosError.response.data.message : 'Falha ao enviar arquivo.';
+  const axiosError = error as AxiosError;
+  const data = axiosError.response?.data as any
+  const errorMessage = data && typeof data.message === 'string' ? data.message : 'Falha ao enviar arquivo.';
       setError(errorMessage);
       showToast(errorMessage, 'error');
     } finally {
@@ -231,8 +259,9 @@ export default function LeaderScheduleManagementPage() {
           <h1 className="text-2xl md:text-3xl font-bold text-white">Gerenciamento de Suas Escalas</h1>
           <div className="flex flex-col sm:flex-row gap-2">
             <button
-              onClick={handleRefresh}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+                onClick={handleRefresh}
+                className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center ${isRefreshing ? 'opacity-60 cursor-not-allowed' : ''}`}
+                disabled={isRefreshing}
             >
               <FaSync className="mr-2" /> Atualizar
             </button>
@@ -269,6 +298,16 @@ export default function LeaderScheduleManagementPage() {
             />
           </div>
         </div>
+        {isRefreshing && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="bg-transparent p-4 rounded">
+              <svg className="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            </div>
+          </div>
+        )}
 
         {dateFilter && (
           <button

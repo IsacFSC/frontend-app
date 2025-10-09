@@ -38,11 +38,25 @@ export const getMessages = async (conversationId: number): Promise<Message[]> =>
 
 export const createConversation = async (subject: string, message: string, recipientId: number): Promise<Conversation> => {
   const { data } = await api.post('/messaging/conversations', { subject, message, recipientId });
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: data }));
+    }
+  } catch (e) {
+    // ignore
+  }
   return data;
 };
 
 export const createMessage = async (conversationId: number, content: string): Promise<Message> => {
   const { data } = await api.post(`/messaging/conversations/${conversationId}/messages`, { content });
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('messaging:messageCreated', { detail: data }));
+    }
+  } catch (e) {
+    // ignore
+  }
   return data;
 };
 
@@ -55,6 +69,11 @@ export const uploadFile = async (conversationId: number, file: File): Promise<Me
       'Content-Type': 'multipart/form-data',
     },
   });
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('messaging:messageCreated', { detail: data }));
+    }
+  } catch (e) {}
   return data;
 };
 

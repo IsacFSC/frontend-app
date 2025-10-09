@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+model Conversation {
+  id           Int       @id @default(autoincrement())
+  subject      String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  participants User[]    @relation("ConversationParticipants")
+  messages     Message[]
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  content        String
+  createdAt      DateTime     @default(now())
+  authorId       Int
+  author         User         @relation(fields: [authorId], references: [id])
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  fileId         Int?
+  file           File?        @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  readBy         MessageRead[]
+}
+
+model MessageRead {
+  id        Int      @id @default(autoincrement())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  readAt    DateTime @default(now())
+
+  @@unique([messageId, userId])
+}
+
+model Task {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  completed   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  userId      Int?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      TaskStatus @default(PENDING)
+  scheduleId  Int?
+  schedule    Schedule?  @relation(fields: [scheduleId], references: [id])
+}
+
+model Schedule {
+  id           Int                @id @default(autoincrement())
+  name         String
+  description  String?
+  startTime    DateTime
+  endTime      DateTime
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  fileId       Int?
+  file         File?              @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  users        UsersOnSchedules[]
+  tasks        Task[]
+}
+
+model UsersOnSchedules {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  scheduleId Int
+  assignedAt DateTime @default(now())
+  skill      Skill    @default(OUTROS)
+
+  @@id([userId, scheduleId])
+}
+
+model User {
+  id            Int                @id @default(autoincrement())
+  name          String
+  passwordHash  String
+  email         String             @unique
+  active        Boolean            @default(true)
+  avatarFileId  Int?
+  avatar        File?              @relation(fields: [avatarFileId], references: [id], onDelete: Cascade)
+  createdAt     DateTime?          @default(now())
+  conversations Conversation[]     @relation("ConversationParticipants")
+  messages      Message[]
+  readMessages  MessageRead[]
+  Tasks         Task[]
+  schedules     UsersOnSchedules[]
+  role          Role               @default(USER)
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  fileName  String
+  mimeType  String
+  data      Bytes
+  size      Int
+  createdAt DateTime @default(now())
+
+  // back-relations
+  messages  Message[]
+  schedules Schedule[]
+  users     User[]
+}
+
+enum Skill {
+  VOCAL_LEAD
+  BACKING_VOCAL
+  VIOLAO
+  SAX
+  GUITARRA
+  TECLADO
+  CONTRA_BAIXO
+  BATERIA
+  OUTROS
+}
+
+enum Role {
+  ADMIN
+  LEADER
+  USER
+}
+
+enum TaskStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

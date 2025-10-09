@@ -98,10 +98,8 @@ export const downloadAttachedFile = async (scheduleId: number): Promise<void> =>
 
 
 export const createSchedule = async (scheduleData: {
-  title: string;
+  name: string;
   description?: string;
-  startDate: string;
-  endDate: string;
   startTime: string;
   endTime: string;
 }): Promise<Schedule> => {

@@ -8,7 +8,7 @@ interface TaskFormProps {
   taskToEdit?: Task | null;
   onSubmit: (data: { name: string; description: string }) => void;
   onCancel: () => void;
-  successMessage?: string;
+  successMessage?: string | null;
 }
 
 export default function TaskForm({ taskToEdit, onSubmit, onCancel, successMessage }: TaskFormProps) {
