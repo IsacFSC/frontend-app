@@ -93,7 +93,8 @@ export default function TaskManagementPage() {
       const offset = (pageParam - 1) * ITEMS_PER_PAGE;
 
       const activeFilters: { [key: string]: any } = {};
-      Object.entries(filters).forEach(([key, value]) => {
+      (Object.keys(filters) as Array<keyof typeof filters>).forEach((key) => {
+        const value = filters[key];
         if (value) {
           activeFilters[key] = value;
         }
@@ -357,7 +358,7 @@ export default function TaskManagementPage() {
                       <td className="px-5 py-24 border-b border-gray-500 bg-gray-700 text-sm flex flex-wrap gap-2">
                         <div className="relative inline-block text-left w-full">
                           <Menu>
-                            {({ open }) => (
+                            {() => (
                               <>
                                 <Menu.Button className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                   <span className="mr-2"><FaEdit /></span>

@@ -9,7 +9,7 @@ import { FaSignInAlt } from 'react-icons/fa';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn, error, clearError } = useAuth();
+  const { signIn, error } = useAuth();
   const searchParams = useSearchParams();
   const redirectMessage = searchParams ? searchParams.get('message') : null;
 

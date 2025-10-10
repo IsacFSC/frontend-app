@@ -1,5 +1,10 @@
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next'
 import { verifyToken } from './auth'
+import { JwtPayload } from 'jsonwebtoken';
+
+export interface AuthenticatedRequest extends NextApiRequest {
+  user?: JwtPayload | string;
+}
 
 export default function withAuth(handler: NextApiHandler) {
   return async function (req: NextApiRequest, res: NextApiResponse) {
@@ -14,7 +19,7 @@ export default function withAuth(handler: NextApiHandler) {
     if (!payload) return res.status(401).json({ error: 'Invalid token' })
 
     // attach user info to request
-    ;(req as any).user = payload
+    ;(req as AuthenticatedRequest).user = payload
     return handler(req, res)
   }
 }

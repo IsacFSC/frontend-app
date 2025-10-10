@@ -1,16 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { getMySchedules, downloadScheduleFile, Schedule, updateSchedule, uploadScheduleFile } from '../../../services/scheduleService';
-import { getUnreadMessagesCount } from '../../../services/messagingService';
+import { getMySchedules, downloadScheduleFile, Schedule, uploadScheduleFile } from '../../../services/scheduleService';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaEnvelope, FaSync, FaSignOutAlt, FaDownload, FaFileUpload, FaArrowLeft } from 'react-icons/fa';
-import { Menu } from '@headlessui/react';
-import Modal from '../../../components/Modal';
-import ScheduleForm from '../../../components/ScheduleForm';
+import { FaSync, FaDownload, FaFileUpload, FaArrowLeft } from 'react-icons/fa';
 import { AxiosError } from 'axios';
 
 // Função para transformar links em <a> (igual admin)
@@ -70,7 +65,7 @@ const groupSchedulesByDate = (schedules: Schedule[]) => {
 };
 
 export default function LeaderScheduleManagementPage() {
-  const { user, isAuthenticated, signOut, loading } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const router = useRouter();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -82,11 +77,10 @@ export default function LeaderScheduleManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (user) {
       try {
         setSchedulesLoading(true);
@@ -108,7 +102,7 @@ export default function LeaderScheduleManagementPage() {
         setSchedulesLoading(false);
       }
     }
-  };
+  }, [user, signOut]);
 
   useEffect(() => {
     if (loading) return; // Aguarda autenticação
@@ -122,18 +116,7 @@ export default function LeaderScheduleManagementPage() {
       return;
     }
     fetchData();
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    const onMsgCreated = (e: any) => {
-      // refresh unread count when a message is created elsewhere
-      getUnreadMessagesCount().then(count => {
-        // we don't keep unread count here in state beyond initial fetch, so no-op
-      }).catch(() => {});
-    };
-    window.addEventListener('messaging:messageCreated', onMsgCreated as EventListener);
-    return () => window.removeEventListener('messaging:messageCreated', onMsgCreated as EventListener);
-  }, []);
+  }, [user, loading, router, fetchData]);
 
   useEffect(() => {
     const filtered = schedules.filter(schedule => {

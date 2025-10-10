@@ -1,23 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import formidable from 'formidable'
+import formidable, { File, Fields } from 'formidable'
 import fs from 'fs/promises'
 import withCors from '#lib/withCors'
-import withAuth from '#lib/withAuth'
+import withAuth, { AuthenticatedRequest } from '#lib/withAuth'
 import prisma from '#lib/prisma'
 import { signToken } from '#lib/auth'
 
 export const config = { api: { bodyParser: false } }
 
-export default withCors(withAuth(async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default withCors(withAuth(async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
   const form = new formidable.IncomingForm()
-  form.parse(req as any, async (err: any, fields: any, files: any) => {
+  form.parse(req, async (err: Error, _fields: Fields, files: { [key: string]: File | File[] }) => {
     if (err) return res.status(400).json({ error: 'Upload error' })
-  const file = files.file as any
+  const file = Array.isArray(files.file) ? files.file[0] : files.file;
   const filePath = file.filepath || file.filePath || file.path
   if (!filePath) return res.status(400).json({ error: 'Uploaded file not found on server' })
   const buffer = await fs.readFile(filePath)
-    const userId = Number((req as any).user?.id)
+    const userId = Number(req.user?.id)
 
     const fileExt = (file.originalFilename || 'bin').split('.').pop() || 'bin'
     const fileName = `${userId}.${fileExt}`

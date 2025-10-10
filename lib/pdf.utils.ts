@@ -1,6 +1,24 @@
 import PDFDocument from 'pdfkit'
 
-export function generateSchedulePDF(schedule: any): Promise<Buffer> {
+interface PdfTask {
+  name: string;
+  description?: string;
+}
+
+interface PdfUserOnSchedule {
+  user: { name: string };
+  skill: string;
+}
+
+interface PdfSchedule {
+  name: string;
+  startTime: string | Date;
+  endTime: string | Date;
+  tasks: PdfTask[];
+  users: PdfUserOnSchedule[];
+}
+
+export function generateSchedulePDF(schedule: PdfSchedule): Promise<Buffer> {
   return new Promise((resolve) => {
     const doc = new PDFDocument({ margin: 50 });
     const buffers: Buffer[] = [];
@@ -25,7 +43,7 @@ export function generateSchedulePDF(schedule: any): Promise<Buffer> {
     if (schedule.tasks && schedule.tasks.length > 0) {
       doc.fontSize(16).font('Helvetica-Bold').text('Músicas', { underline: true });
       doc.moveDown();
-      schedule.tasks.forEach((task: any) => {
+      schedule.tasks.forEach((task: PdfTask) => {
         doc.fontSize(12).font('Helvetica-Bold').text(`- ${task.name}`);
         if (task.description) {
           doc.font('Helvetica').text(task.description, { indent: 20 });
@@ -37,7 +55,7 @@ export function generateSchedulePDF(schedule: any): Promise<Buffer> {
 
     doc.fontSize(16).font('Helvetica-Bold').text('Ministros', { underline: true });
     doc.moveDown();
-    schedule.users.forEach((userOnSchedule: any) => {
+    schedule.users.forEach((userOnSchedule: PdfUserOnSchedule) => {
       doc.fontSize(12).font('Helvetica').text(`- ${userOnSchedule.user.name} (${userOnSchedule.skill})`);
     });
 

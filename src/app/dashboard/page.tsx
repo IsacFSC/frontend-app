@@ -1,16 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, downloadScheduleFile, Schedule } from '../../services/scheduleService';
 import { getUnreadMessagesCount } from '../../services/messagingService';
-import { getUsers, User } from '../../services/userService';
 import PrivateRoute from '@/components/PrivateRoute';
-import ScheduleFileManagement from '@/components/ScheduleFileManagement';
 import { FaEnvelope, FaSync, FaSignOutAlt, FaDownload } from 'react-icons/fa';
-import { Menu } from '@headlessui/react';
 // Função para transformar links em <a> (igual admin)
 const linkify = (text: string) => {
   if (!text) return null;
@@ -68,7 +65,7 @@ const groupSchedulesByDate = (schedules: Schedule[]) => {
 };
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, signOut, loading } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const router = useRouter();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -79,16 +76,18 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (user) {
       try {
         setSchedulesLoading(true);
-        const mySchedules = await getMySchedules();
+        const [mySchedules, unreadCount] = await Promise.all([
+          getMySchedules(),
+          getUnreadMessagesCount(),
+        ]);
         // Ordena as escalas pela data mais recente
         const sortedSchedules = mySchedules.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         setSchedules(sortedSchedules);
-        setFilteredSchedules(mySchedules);
-        console.log("Fetched schedules:", mySchedules);
+        setUnreadMessagesCount(unreadCount);
       } catch (error) {
         const axiosError = error as import('axios').AxiosError;
         if (axiosError?.response?.status === 403) {
@@ -102,7 +101,7 @@ export default function DashboardPage() {
         setSchedulesLoading(false);
       }
     }
-  };
+  }, [user, signOut]);
 
   useEffect(() => {
     if (loading) return; // Aguarda autenticação
@@ -116,27 +115,22 @@ export default function DashboardPage() {
       return;
     }
     fetchData();
-  }, [user, loading, router]);
+  }, [user, loading, router, fetchData]);
 
+  // Efeito para lidar com atualizações em tempo real do contador de mensagens
   useEffect(() => {
-    const fetchUnreadMessages = async () => {
-      if (!user) return;
-      try {
-        const count = await getUnreadMessagesCount();
-        setUnreadMessagesCount(count);
-      } catch (error) {
-        console.error("Failed to fetch unread messages count", error);
-      }
-    };
-
     if (user) {
-      fetchUnreadMessages();
-      window.addEventListener('messaging:messageCreated', fetchUnreadMessages);
-      window.addEventListener('messaging:messagesRead', fetchUnreadMessages);
+      // Quando uma nova mensagem é criada ou lida, busca novamente a contagem
+      const refetchCount = () => {
+        getUnreadMessagesCount().then(setUnreadMessagesCount).catch(console.error);
+      };
+
+      window.addEventListener('messaging:messageCreated', refetchCount);
+      window.addEventListener('messaging:messagesRead', refetchCount);
 
       return () => {
-        window.removeEventListener('messaging:messageCreated', fetchUnreadMessages);
-        window.removeEventListener('messaging:messagesRead', fetchUnreadMessages);
+        window.removeEventListener('messaging:messageCreated', refetchCount);
+        window.removeEventListener('messaging:messagesRead', refetchCount);
       };
     }
   }, [user]);

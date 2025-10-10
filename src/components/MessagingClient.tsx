@@ -41,8 +41,8 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     try {
       setLoading(true);
       const fetchedConversations = await getConversations();
-      // normalize hasUnreadMessages default
-      setConversations(fetchedConversations.map((c: any) => ({ ...c, hasUnreadMessages: !!c.hasUnreadMessages })));
+      // normalize hasUnreadMessages default and sort
+      setConversations(fetchedConversations.map(c => ({ ...c, hasUnreadMessages: !!c.hasUnreadMessages })));
       setError(null);
     } catch (err) {
       setError('Falha ao buscar conversas.');
@@ -73,16 +73,16 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
   }, [fetchConversations, fetchUsers, isAuthenticated]);
 
   useEffect(() => {
-    const onConvCreated = (e: any) => {
+    const onConvCreated = (e: Event) => {
       fetchConversations();
-      const conv = e?.detail;
+      const conv = (e as CustomEvent).detail;
       if (conv && conv.id) {
         // auto-open the new conversation
         handleSelectConversation(conv);
       }
     };
-    const onMsgCreated = (e: any) => {
-      const msg = e?.detail;
+    const onMsgCreated = (e: Event) => {
+      const msg = (e as CustomEvent).detail;
         if (msg && selectedConversation && msg.conversationId === selectedConversation.id) {
         // refresh messages for the open conversation
         handleSelectConversation(selectedConversation, true); // isRefresh = true

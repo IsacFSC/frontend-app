@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Schedule } from '../services/scheduleService';
-import { Task, TaskStatus } from '../services/taskService';
+import { Task } from '../services/taskService';
 import { useAuth } from '../hooks/useAuth';
 import ScheduleFileManagement from './ScheduleFileManagement';
 
@@ -15,7 +15,7 @@ interface ScheduleTaskManagementProps {
 }
 
 export default function ScheduleTaskManagement({ schedule, allTasks, onAssignTask, onUnassignTask, onFileUpload }: ScheduleTaskManagementProps) {
-  const { user } = useAuth();
+  useAuth();
 
   const { assignedTasks, availableTasks } = useMemo(() => {
     const assigned = allTasks.filter(t => t.scheduleId === schedule.id);
@@ -23,8 +23,6 @@ export default function ScheduleTaskManagement({ schedule, allTasks, onAssignTas
     const available = allTasks.filter(t => !t.scheduleId && !t.completed);
     return { assignedTasks: assigned, availableTasks: available };
   }, [schedule, allTasks]);
-
-  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <div className="grid grid-cols-2 gap-6">

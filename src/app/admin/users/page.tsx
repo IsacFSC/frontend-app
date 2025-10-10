@@ -84,7 +84,7 @@ export default function UserManagementPage() {
     setIsModalOpen(false);
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: Partial<User>) => {
     try {
       if (editingUser) {
         await updateUserByAdmin(editingUser.id, data);
@@ -273,7 +273,7 @@ export default function UserManagementPage() {
                     <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
                       <div className="relative inline-block text-left w-full">
                         <Menu>
-                          {({ open }) => (
+                          {() => (
                             <>
                               <Menu.Button className="w-fit flex justify-center items-center bg-blue-500 hover:bg-blue-700 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <span className="mr-2"><FaEdit /></span>

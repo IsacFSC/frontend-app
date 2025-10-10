@@ -12,7 +12,7 @@ enum Role {
 
 interface UserFormProps {
   userToEdit?: User | null;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: Partial<User>) => void;
   onCancel: () => void;
   successMessage?: string;
 }
@@ -37,7 +37,7 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const formData: any = { name, email, role };
+    const formData: Partial<User> & { password?: string } = { name, email, role };
     // Only include the password if it was entered
     if (password) {
       formData.password = password;

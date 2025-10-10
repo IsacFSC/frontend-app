@@ -2,6 +2,17 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '#lib/prisma'
 import withCors from '#lib/withCors'
 import withAuth from '#lib/withAuth'
+import { Prisma } from '@prisma/client'
+
+type TaskQuery = {
+  limit?: string;
+  offset?: string;
+  userId?: string;
+  status?: string;
+  name?: string;
+  startDate?: string;
+  endDate?: string;
+};
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).end()
@@ -14,12 +25,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     name,
     startDate,
     endDate,
-  } = req.query as any;
+  } = req.query as TaskQuery;
 
   const take = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
   const skip = Math.max(0, parseInt(offset, 10) || 0);
 
-  const where: any = {};
+  const where: Prisma.TaskWhereInput = {};
   if (typeof userId !== 'undefined' && userId !== '') {
     where.userId = Number(userId);
   }
@@ -30,7 +41,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     where.name = { contains: String(name), mode: 'insensitive' };
   }
   if (startDate || endDate) {
-    where.createdAt = {} as any;
+    where.createdAt = {};
     if (startDate) {
       const sd = new Date(String(startDate));
       if (!isNaN(sd.getTime())) where.createdAt.gte = sd;
@@ -57,7 +68,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const page = Math.floor(skip / take) + 1;
     return res.json({ data: tasks, total, page, limit: take });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Failed to fetch tasks', err);
     return res.status(500).json({ error: 'Internal error', details: err?.message || String(err) });
   }

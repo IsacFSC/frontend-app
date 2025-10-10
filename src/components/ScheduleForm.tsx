@@ -1,12 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Schedule } from '../services/scheduleService';
+import type { Schedule } from '../services/scheduleService';
 import { FaUpload, FaTimes, FaSave } from 'react-icons/fa';
+
+interface ScheduleFormData {
+  name: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+}
 
 interface ScheduleFormProps {
   scheduleToEdit?: Schedule | null;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ScheduleFormData) => void;
   onCancel: () => void;
   successMessage?: string;
   // New prop for file upload

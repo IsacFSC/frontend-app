@@ -1,11 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '#lib/prisma'
 import withCors from '#lib/withCors'
-import withAuth from '#lib/withAuth'
+import withAuth, { AuthenticatedRequest } from '#lib/withAuth'
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+interface MessagingRequest extends AuthenticatedRequest {
+  body: {
+    subject?: string;
+    participantIds?: number[];
+    message?: string;
+    recipientId?: number;
+  };
+}
+
+async function handler(req: MessagingRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
-    const userId = Number((req as any).user?.id)
+    const userId = Number(req.user?.id)
     if (!userId) return res.status(401).json({ error: 'Unauthorized' })
     // Only return conversations where the current user is a participant
     const convs = await prisma.conversation.findMany({
@@ -22,7 +31,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // If recipientId provided, create a conversation between caller and recipient and create initial message
     if (recipientId) {
-      const authorId = Number((req as any).user?.id)
+      const authorId = Number(req.user?.id)
       if (!authorId) return res.status(401).json({ error: 'Unauthorized' })
       // create conversation and connect both participants
       const conv = await prisma.conversation.create({

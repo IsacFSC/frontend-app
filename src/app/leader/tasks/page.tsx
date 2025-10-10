@@ -1,24 +1,21 @@
 'use client';
 import { Menu } from '@headlessui/react';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, ChangeEvent } from 'react';
 import {
   getTasks,
   createTask,
   updateTask,
   deleteTask,
-  approveTask,
-  rejectTask,
   Task,
   TaskStatus,
 } from '../../../services/taskService';
-import { getUsers, User } from '../../../services/userService';
 import Modal from '../../../components/Modal';
 import TaskForm from '../../../components/TaskForm';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaCheck, FaBan, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -90,7 +87,8 @@ export default function TaskManagementPage() {
       const offset = (pageParam - 1) * ITEMS_PER_PAGE;
 
       const activeFilters: { [key: string]: any } = {};
-      Object.entries(filters).forEach(([key, value]) => {
+      (Object.keys(filters) as Array<keyof typeof filters>).forEach((key) => {
+        const value = filters[key];
         if (value) {
           activeFilters[key] = value;
         }
@@ -113,7 +111,7 @@ export default function TaskManagementPage() {
     }
   }, [currentPage, filters]);
 
-  useEffect(() => {
+  useEffect(() => { // eslint-disable-line
     if (isAuthenticated && (user?.role === 'ADMIN' || user?.role === 'LEADER')) {
       fetchTasks();
     }
@@ -126,12 +124,14 @@ export default function TaskManagementPage() {
 
   const handleApplyFilters = () => {
     setCurrentPage(1);
-    fetchTasks();
+    fetchTasks(1);
   };
 
   const handleClearFilters = () => {
     setFilters({ status: '', startDate: '', endDate: '', name: '' });
     setCurrentPage(1);
+    // We need to trigger a re-fetch after clearing filters
+    fetchTasks(1);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -184,32 +184,6 @@ export default function TaskManagementPage() {
       } finally {
         setTimeout(() => setSuccessMessage(null), 3000);
       }
-    }
-  };
-
-  const handleApprove = async (id: number) => {
-    try {
-      await approveTask(id);
-      setSuccessMessage('Tarefa aprovada com sucesso!');
-      await fetchTasks();
-    } catch (error) {
-      console.error('Falha ao aprovar a tarefa: ', error);
-      setError('Não foi possível aprovar a tarefa.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
-    }
-  };
-
-  const handleReject = async (id: number) => {
-    try {
-      await rejectTask(id);
-      setSuccessMessage('Tarefa rejeitada com sucesso!');
-      await fetchTasks();
-    } catch (error) {
-      console.error('Falha ao rejeitar a tarefa: ', error);
-      setError('Não foi possível rejeitar a tarefa.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
 
@@ -331,7 +305,7 @@ export default function TaskManagementPage() {
                       <td className="px-5 py-24 border-b border-gray-500 bg-gray-700 text-sm flex flex-wrap gap-2">
                         <div className="relative inline-block text-left w-full">
                           <Menu>
-                            {({ open }) => (
+                            {() => (
                               <>
                                 <Menu.Button className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                   <span className="mr-2"><FaEdit /></span>

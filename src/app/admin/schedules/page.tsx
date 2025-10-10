@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { api } from '../../../services/api';
 import {
   getSchedules,
   createSchedule,
@@ -21,9 +20,8 @@ import ScheduleTaskManagement from '../../../components/ScheduleTaskManagement';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import { AxiosError } from 'axios';
-import PrivateRoute from '@/components/PrivateRoute'; 
+import PrivateRoute from '@/components/PrivateRoute';
 import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaDownload, FaEdit, FaTrash } from 'react-icons/fa';
-import ScheduleFileManagement from '@/components/ScheduleFileManagement';
 
 // Função para transformar links em <a> (igual admin)
 const linkify = (text: string) => {
@@ -173,7 +171,7 @@ export default function ScheduleManagementPage() {
       await fetchAllData();
       handleCloseFormModal();
     } catch (error: any) {
-      console.error('[ESCALA ERROR]', error);
+      console.error('[ESCALA ERROR]', error as Error);
       setError('Falha ao salvar a escala.');
     } finally {
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -250,7 +248,7 @@ export default function ScheduleManagementPage() {
       await assignTaskToSchedule(taskId, selectedSchedule.id);
       setSuccessMessage('Tarefa atribuída com sucesso!');
       await fetchAllData();
-    } catch (error) {
+    } catch (error: unknown) {
       const axiosError = error as AxiosError;
       const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
       setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao atribuir tarefa.');
@@ -265,7 +263,7 @@ export default function ScheduleManagementPage() {
       await unassignTaskFromSchedule(taskId);
       setSuccessMessage('Tarefa desatribuída com sucesso!');
       await fetchAllData();
-    } catch (error) {
+    } catch (error: unknown) {
       const axiosError = error as AxiosError;
       const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
       setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao desatribuir tarefa.');

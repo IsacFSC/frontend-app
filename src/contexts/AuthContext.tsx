@@ -61,7 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     let restoredUser = null;
     if (token) {
       try {
-        const decodedToken: any = jwtDecode(token);
+        const decodedToken = jwtDecode<{ sub: number; name: string; email: string; role: Role; avatar?: string }>(token);
         restoredUser = {
           id: decodedToken.sub,
           name: decodedToken.name,
@@ -70,8 +70,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           avatar: decodedToken.avatar,
         };
         setUser(restoredUser);
-        localStorage.setItem('user.data', JSON.stringify(restoredUser));
-      } catch (e) {
+      } catch (_e) {
         destroyCookie(undefined, 'nextauth.token');
         localStorage.removeItem('user.data');
         setUser(null);
@@ -81,8 +80,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (userDataStr) {
         try {
           restoredUser = JSON.parse(userDataStr);
-          setUser(restoredUser);
-        } catch (e) {
+          setUser(restoredUser as User);
+        } catch (_e) {
           localStorage.removeItem('user.data');
           setUser(null);
         }

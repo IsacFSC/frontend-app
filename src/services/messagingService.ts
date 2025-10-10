@@ -1,12 +1,13 @@
 import { api } from './api';
+import { User } from './userService';
 
 export interface Conversation {
   id: number;
   subject: string;
   createdAt: string;
   updatedAt: string;
-  participants: any[];
-  messages: any[];
+  participants: User[];
+  messages: Message[];
   hasUnreadMessages?: boolean;
 }
 
@@ -14,8 +15,8 @@ export interface Message {
   id: number;
   content: string;
   createdAt: string;
-  authorId: number;
-  author: any;
+  authorId: number; 
+  author?: User;
   conversationId: number;
   file?: string;
   fileMimeType?: string;
@@ -42,7 +43,7 @@ export const createConversation = async (subject: string, message: string, recip
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: data }));
     }
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
   return data;
@@ -54,7 +55,7 @@ export const createMessage = async (conversationId: number, content: string): Pr
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('messaging:messageCreated', { detail: data }));
     }
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
   return data;
@@ -73,7 +74,7 @@ export const uploadFile = async (conversationId: number, file: File): Promise<Me
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('messaging:messageCreated', { detail: data }));
     }
-  } catch (e) {}
+  } catch (_e) {}
   return data;
 };
 

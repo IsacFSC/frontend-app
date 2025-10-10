@@ -1,7 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getScheduleFiles, uploadScheduleFile, downloadScheduleFile } from '../services/scheduleFileService';
+
+interface ScheduleFile {
+  id: number;
+  filename: string;
+}
 
 interface ScheduleFileManagementProps {
   scheduleId: number;
@@ -10,23 +15,23 @@ interface ScheduleFileManagementProps {
 
 const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ scheduleId, onFileUpload }) => {
   const { user } = useAuth();
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<ScheduleFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    if (user && scheduleId) {
-      fetchFiles();
-    }
-  }, [user, scheduleId]);
-
-  const fetchFiles = async () => {
+  const fetchFiles = useCallback(async () => {
     try {
       const fetchedFiles = await getScheduleFiles(scheduleId);
       setFiles(fetchedFiles);
     } catch (error) {
       console.error('Error fetching files:', error);
     }
-  };
+  }, [scheduleId]);
+
+  useEffect(() => {
+    if (user && scheduleId) {
+      fetchFiles();
+    }
+  }, [user, scheduleId, fetchFiles]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {

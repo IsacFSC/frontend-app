@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../../lib/prisma'
-import { hashPassword } from '../../../lib/auth'
+import { hashPassword, verifyToken } from '../../../lib/auth'
 import withCors from '../../../lib/withCors'
 import withAuth from '../../../lib/withAuth'
 import { hasAnyRole } from '../../../lib/roles'
@@ -20,18 +20,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const passwordHash = await hashPassword(password)
 
     // If the request is authenticated and the caller is ADMIN, allow setting role
-    let roleToSet: any = 'USER'
+    let roleToSet = 'USER'
     try {
       const authHeader = req.headers.authorization || ''
       const parts = authHeader.split(' ')
       if (parts.length === 2 && parts[0] === 'Bearer') {
         const token = parts[1]
-        const payload = require('../../../lib/auth').verifyToken(token)
+        const payload = verifyToken(token)
         if (payload && payload.role === 'ADMIN' && role) {
           roleToSet = role
         }
       }
-    } catch (err) {
+    } catch (_err) {
       // ignore and default to USER
       roleToSet = 'USER'
     }

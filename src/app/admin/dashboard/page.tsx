@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
-import { useRouter } from 'next/navigation';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaSignOutAlt, FaUsers, FaCalendarAlt, FaEnvelope, FaTasks } from 'react-icons/fa';
 import MessageIcon from '@/components/MessageIcon';
 
 export default function AdminDashboardPage() {
   const { user, signOut } = useAuth();
-  const router = useRouter();
 
   return (
     <PrivateRoute>

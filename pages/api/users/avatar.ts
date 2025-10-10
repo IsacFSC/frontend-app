@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import withCors from '../../../lib/withCors'
-import withAuth from '../../../lib/withAuth'
+import withAuth, { AuthenticatedRequest } from '../../../lib/withAuth'
 import prisma from '../../../lib/prisma'
 import { signToken } from '../../../lib/auth'
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   if (req.method !== 'DELETE') return res.status(405).end()
-  const userId = Number((req as any).user?.id)
+  const userId = Number(req.user?.id)
   if (!userId) return res.status(401).json({ error: 'Unauthorized' })
 
   const userRecord = await prisma.user.findUnique({ where: { id: userId } })
@@ -14,7 +14,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     await prisma.file.delete({ where: { id: userRecord.avatarFileId } })
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
 

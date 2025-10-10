@@ -19,7 +19,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const token = signToken({ id: user.id, email: user.email, role: user.role })
     return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('SignIn error:', err?.message || err)
     return res.status(500).json({ error: 'Internal server error', details: err?.message || String(err) })
   }

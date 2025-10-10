@@ -12,7 +12,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const users = await prisma.user.findMany({ select: { id: true, name: true, email: true, passwordHash: true } })
     return res.json(users)
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Debug users error:', err)
     return res.status(500).json({ error: 'Internal error', details: err?.message || String(err) })
   }

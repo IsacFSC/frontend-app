@@ -7,7 +7,7 @@ import { FaSignOutAlt, FaCalendarAlt, FaTasks, FaEnvelope } from 'react-icons/fa
 import MessageIcon from '@/components/MessageIcon';
 
 export default function LeaderDashboardPage() {
-  const { user, signOut, isAuthenticated, loading } = useAuth();
+  const { user, signOut, loading } = useAuth();
 
   if (loading) {
     return (

@@ -10,10 +10,9 @@ interface NewConversationModalProps {
   users: User[];
   onSend: (recipientId: number, subject: string, message: string) => Promise<void>;
   title: string;
-  userRole: string;
 }
 
-export default function NewConversationModal({ isOpen, onClose, users, onSend, title, userRole }: NewConversationModalProps) {
+export default function NewConversationModal({ isOpen, onClose, users, onSend, title }: NewConversationModalProps) {
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
