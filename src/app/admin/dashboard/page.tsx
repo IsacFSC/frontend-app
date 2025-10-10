@@ -7,7 +7,15 @@ import { FaSignOutAlt, FaUsers, FaCalendarAlt, FaEnvelope, FaTasks } from 'react
 import MessageIcon from '@/components/MessageIcon';
 
 export default function AdminDashboardPage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <PrivateRoute>

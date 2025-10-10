@@ -18,12 +18,14 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   const totalUnread = await prisma.$queryRaw`
     SELECT COUNT(m.id)
     FROM "Message" m
-    JOIN "_ConversationToUser" ctu ON m."conversationId" = ctu."A"
-    WHERE ctu."B" = ${userId}
+    WHERE m."conversationId" IN (
+      SELECT "A" FROM "_ConversationToUser" WHERE "B" = ${userId}
+    )
       AND m."authorId" != ${userId}
       AND NOT EXISTS (
         SELECT 1 FROM "MessageRead" mr WHERE mr."messageId" = m.id AND mr."userId" = ${userId}
-      )`
+      )
+  `
   // prisma.$queryRaw returns array with object containing bigint
   const count = Array.isArray(totalUnread) && totalUnread[0] ? Number((totalUnread[0] as { count: bigint }).count || 0) : 0
   // return as a JSON number

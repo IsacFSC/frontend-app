@@ -12,7 +12,7 @@ export default function LeaderDashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Carregando autenticação...</p>
+        <p>Carregando...</p>
       </div>
     );
   }
@@ -39,8 +39,10 @@ export default function LeaderDashboardPage() {
             </button>
           </div>
         </div>
-        <p className="mt-2 text-gray-200">Olá, {user?.name}!</p>
-        <p className="mt-2 text-gray-200">Você está logado como: {user?.role}</p>
+        <div className="text-gray-200">
+          <p className="mt-2">Olá, {user.name}!</p>
+          <p className="mt-2">Você está logado como: {user.role}</p>
+        </div>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link href="/leader/schedules" className="bg-teal-200 hover:bg-teal-400 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center"><FaCalendarAlt className="mr-2" /> Gerenciamento de Suas Escalas</h2>

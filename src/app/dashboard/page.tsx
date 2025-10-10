@@ -87,14 +87,15 @@ export default function DashboardPage() {
         // Ordena as escalas pela data mais recente
         const sortedSchedules = mySchedules.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         setSchedules(sortedSchedules);
+        setFilteredSchedules(sortedSchedules); // Atualiza também as escalas filtradas
         setUnreadMessagesCount(unreadCount);
       } catch (error) {
         const axiosError = error as import('axios').AxiosError;
         if (axiosError?.response?.status === 403) {
-          alert('Sua sessão expirou ou você não tem permissão. Faça login novamente.');
+          // A sessão expirou, deslogar o usuário silenciosamente.
           signOut();
         } else {
-          alert('Falha ao buscar escalas. Tente novamente.');
+          // Apenas logar o erro no console, sem exibir alerta para o usuário.
         }
         console.error("Falha ao buscar escalas", error);
       } finally {
@@ -186,17 +187,10 @@ function showToast(message: string, type: 'success' | 'error') {
     }
   }
 
-  if (!user || user.role !== Role.USER) {
-    if (loading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <p>Carregando autenticação...</p>
-        </div>
-      );
-    }
+  if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Redirecionando...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        <p>Carregando...</p>
       </div>
     );
   }

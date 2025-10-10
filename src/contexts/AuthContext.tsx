@@ -56,38 +56,46 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
   };
 
+  function signOut() {
+    destroyCookie(undefined, 'nextauth.token');
+    localStorage.removeItem('user.data');
+    setUser(null);
+    router.push('/login');
+  }
+
   useEffect(() => {
+    setLoading(true);
     const { 'nextauth.token': token } = parseCookies();
-    let restoredUser = null;
+
     if (token) {
-      try {
-        const decodedToken = jwtDecode<{ sub: number; name: string; email: string; role: Role; avatar?: string }>(token);
-        restoredUser = {
-          id: decodedToken.sub,
-          name: decodedToken.name,
-          email: decodedToken.email,
-          role: decodedToken.role,
-          avatar: decodedToken.avatar,
-        };
-        setUser(restoredUser);
-      } catch (_e) {
-        destroyCookie(undefined, 'nextauth.token');
-        localStorage.removeItem('user.data');
-        setUser(null);
-      }
-    } else {
+      api.defaults.headers['Authorization'] = `Bearer ${token}`;
       const userDataStr = localStorage.getItem('user.data');
       if (userDataStr) {
         try {
-          restoredUser = JSON.parse(userDataStr);
+          const restoredUser = JSON.parse(userDataStr);
           setUser(restoredUser as User);
-        } catch (_e) {
+        } catch (e) {
           localStorage.removeItem('user.data');
           setUser(null);
         }
       } else {
-        setUser(null);
+        try {
+            const decodedToken = jwtDecode<{ sub: number; name: string; email: string; role: Role; avatar?: string }>(token);
+            const restoredUser = {
+                id: decodedToken.sub,
+                name: decodedToken.name,
+                email: decodedToken.email,
+                role: decodedToken.role,
+                avatar: decodedToken.avatar,
+            };
+            setUser(restoredUser);
+            localStorage.setItem('user.data', JSON.stringify(restoredUser));
+        } catch (e) {
+            signOut();
+        }
       }
+    } else {
+      setUser(null);
     }
     setLoading(false);
   }, []);
@@ -142,13 +150,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       });
     }
-  }
-
-  function signOut() {
-    destroyCookie(undefined, 'nextauth.token');
-    localStorage.removeItem('user.data');
-    setUser(null);
-    router.push('/login');
   }
 
   return (

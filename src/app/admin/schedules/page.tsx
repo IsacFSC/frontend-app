@@ -6,8 +6,6 @@ import {
   createSchedule,
   updateSchedule,
   deleteSchedule,
-  addUserToSchedule,
-  removeUserFromSchedule,
   downloadScheduleFile,
   Schedule,
 } from '../../../services/scheduleService';
@@ -99,7 +97,6 @@ export default function ScheduleManagementPage() {
         getUsers(),
         getTasks({}),
       ]);
-      // Ordena as escalas pela data mais recente
       const sortedSchedules = fetchedSchedules.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
       setSchedules(sortedSchedules);
       setAllUsers(fetchedUsers);
@@ -121,23 +118,18 @@ export default function ScheduleManagementPage() {
 
   const handleFileUpload = async (file: File, scheduleId: number) => {
     console.log('File upload handler called', file, scheduleId);
-    // Placeholder for file upload logic
   };
 
   const handleDownloadClick = async (scheduleId: number) => {
      try {
-      // A service function `downloadScheduleFile` já deve cuidar disso.
-      // O scheduleId é passado para a função de download.
       await downloadScheduleFile(scheduleId);
-      // O navegador irá gerenciar o download, um toast de sucesso aqui é opcional.
     } catch (error) {
       setError('Falha ao baixar o arquivo.');
     }
   };
 
-  // Modal Handlers
   const handleOpenFormModal = (schedule: Schedule | null = null) => {
-    setSelectedSchedule(schedule);
+    setSelectedSchedule(schedule ? JSON.parse(JSON.stringify(schedule)) : null);
     setIsFormModalOpen(true);
   };
   const handleCloseFormModal = () => setIsFormModalOpen(false);
@@ -154,18 +146,18 @@ export default function ScheduleManagementPage() {
   };
   const handleCloseTaskModal = () => setIsTaskModalOpen(false);
 
-  // CRUD Handlers
   const handleFormSubmit = async (data: any) => {
     try {
+      const scheduleData = {
+        ...data,
+        users: selectedSchedule ? selectedSchedule.users.map(u => ({ userId: u.userId, skill: u.skill })) : [],
+      };
+
       if (selectedSchedule && isFormModalOpen) {
-        console.log('[UPDATE ESCALA] Payload:', data);
-        const response = await updateSchedule(selectedSchedule.id, data);
-        console.log('[UPDATE ESCALA] Response:', response);
+        const response = await updateSchedule(selectedSchedule.id, scheduleData);
         setSuccessMessage('Escala atualizada com sucesso!');
       } else {
-        console.log('[CRIAR ESCALA] Payload:', data);
-        const response = await createSchedule(data);
-        console.log('[CRIAR ESCALA] Response:', response);
+        const response = await createSchedule(scheduleData);
         setSuccessMessage('Escala criada com sucesso!');
       }
       await fetchAllData();
@@ -192,54 +184,11 @@ export default function ScheduleManagementPage() {
     }
   };
 
-  const handleAddUser = async (userId: number, skill: string) => {
-    if (!selectedSchedule) return;
-    try {
-      await addUserToSchedule(selectedSchedule.id, userId, skill);
-      setSuccessMessage('Usuário adicionado com sucesso!');
-      setError(null);
-      const userToAdd = allUsers.find(u => u.id === userId);
-      if (userToAdd) {
-        setSelectedSchedule(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            users: [...prev.users, { userId: userToAdd.id, user: userToAdd, scheduleId: prev.id, assignedAt: new Date().toISOString(), skill }]
-          };
-        });
-      }
-      await fetchAllData();
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
-      setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao adicionar usuário.');
-      setSuccessMessage(null);
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
-    }
-  };
-
-  const handleRemoveUser = async (userId: number) => {
-    if (!selectedSchedule) return;
-    try {
-      await removeUserFromSchedule(selectedSchedule.id, userId);
-      setSuccessMessage('Usuário removido com sucesso!');
-      setError(null);
-      setSelectedSchedule(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          users: prev.users.filter(u => u.userId !== userId)
-        };
-      });
-      await fetchAllData();
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
-      setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao remover usuário.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
-    }
+  const handleUpdateUsers = (updatedUsers: any[]) => {
+    setSelectedSchedule(prev => {
+      if (!prev) return null;
+      return { ...prev, users: updatedUsers };
+    });
   };
 
   const handleAssignTask = async (taskId: number) => {
@@ -302,7 +251,7 @@ export default function ScheduleManagementPage() {
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciamento de Escalas</h1>
-          <div className="flex space-x-4"> {/* Group buttons */}
+          <div className="flex space-x-4"> 
             <button
               onClick={handleBack}
               className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
@@ -446,7 +395,7 @@ export default function ScheduleManagementPage() {
 
         {isUserModalOpen && selectedSchedule && (
           <Modal isOpen={isUserModalOpen} onClose={handleCloseUserModal} title={`Gerenciar usuários para ${selectedSchedule.name}`}>
-            <ScheduleUserManagement schedule={selectedSchedule} allUsers={allUsers} onAddUser={handleAddUser} onRemoveUser={handleRemoveUser} />
+            <ScheduleUserManagement schedule={selectedSchedule} allUsers={allUsers} onUpdateUsers={handleUpdateUsers} />
           </Modal>
         )}
 
