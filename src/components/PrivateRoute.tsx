@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -10,26 +9,21 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated && !loading) {
-      router.push("/login");
+    if (!loading && !isAuthenticated) {
+      router.push('/login');
     }
   }, [isAuthenticated, loading, router]);
 
-  if (!isAuthenticated) {
-  if (loading) return <p>Carregando...</p>;
-  return null;
-  }
-
-  // Check if user has a valid role
-  if (user && user.role && !["ADMIN", "LEADER", "USER"].includes(user.role)) {
-    if (!loading) {
-      router.push("/login");
-      return null;
-    }
+  if (loading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        <p>Carregando...</p>
+      </div>
+    );
   }
 
   return <>{children}</>;
