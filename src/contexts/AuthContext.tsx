@@ -98,7 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
     }
     setLoading(false);
-  }, []);
+  }, [signOut]); // CORRIGIDO: Adicionada a função signOut ao array de dependências
 
     async function signIn({ email, password }: { email: string; password: string }) {
     setError(null); // Clear previous errors

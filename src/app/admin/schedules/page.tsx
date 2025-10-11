@@ -124,6 +124,7 @@ export default function ScheduleManagementPage() {
      try {
       await downloadScheduleFile(scheduleId);
     } catch (error) {
+      console.error('[DOWNLOAD ERROR]', error);
       setError('Falha ao baixar o arquivo.');
     }
   };
@@ -156,9 +157,11 @@ export default function ScheduleManagementPage() {
       if (selectedSchedule && isFormModalOpen) {
         const response = await updateSchedule(selectedSchedule.id, scheduleData);
         setSuccessMessage('Escala atualizada com sucesso!');
+        console.log('Update response:', response);
       } else {
         const response = await createSchedule(scheduleData);
         setSuccessMessage('Escala criada com sucesso!');
+        console.log('Create response:', response);
       }
       await fetchAllData();
       handleCloseFormModal();
@@ -178,6 +181,7 @@ export default function ScheduleManagementPage() {
         await fetchAllData();
       } catch (error) {
         setError('Falha ao deletar a escala.');
+        console.error('[DELETE ERROR]', error);
       } finally {
         setTimeout(() => setSuccessMessage(null), 3000);
       }

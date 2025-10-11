@@ -16,6 +16,7 @@ import { api } from '../../../services/api';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaTrash, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 import { Menu } from '@headlessui/react';
+import Image from 'next/image';
 
 export default function UserManagementPage() {
   const [search, setSearch] = useState('');
@@ -233,7 +234,7 @@ export default function UserManagementPage() {
                       <div className="flex items-center">
                         <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
                           {user.avatar ? (
-                            <img
+                            <Image
                               className="w-full h-full object-cover"
                               src={`${api.defaults.baseURL}/files/${user.avatar}`}
                               alt="User avatar"

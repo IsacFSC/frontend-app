@@ -11,7 +11,7 @@ export function signToken(payload: Record<string, unknown>) {
 export function verifyToken(token: string) {
   try {
     return jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
-  } catch (_err) {
+  } catch { // CORRIGIDO: Variável '_err' removida
     return null
   }
 }
