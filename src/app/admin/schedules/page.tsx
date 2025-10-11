@@ -163,10 +163,12 @@ export default function ScheduleManagementPage() {
     try {
       const scheduleData = {
         ...data,
-        users: selectedSchedule ? selectedSchedule.users.map(u => ({ userId: u.userId, skill: u.skill })) : [],
+        users: selectedSchedule
+          ? { set: selectedSchedule.users.map(u => ({ userId: u.userId, skill: u.skill })) }
+          : { connect: [] },
       };
 
-      if (selectedSchedule && isFormModalOpen) {
+      if (selectedSchedule) {
         const response = await updateSchedule(selectedSchedule.id, scheduleData);
         setSuccessMessage('Escala atualizada com sucesso!');
         console.log('Update response:', response);
@@ -200,12 +202,49 @@ export default function ScheduleManagementPage() {
     }
   };
 
-  const handleUpdateUsers = (updatedUsers: { userId: number; skill: string; user: User }[]) => {
-    setSelectedSchedule(prev => {
-      if (!prev) return null;
-      return { ...prev, users: updatedUsers };
-    });
+  const handleAddUserToSchedule = async (userId: number, skill: string) => {
+    if (!selectedSchedule) return;
+    const userToAdd = allUsers.find(u => u.id === userId);
+    if (userToAdd) {
+      const updatedUsers = [...selectedSchedule.users, { userId, skill, user: userToAdd }];
+      const scheduleData = {
+        users: {
+          set: updatedUsers.map(u => ({ userId: u.userId, skill: u.skill })),
+        },
+      };
+      try {
+        await updateSchedule(selectedSchedule.id, scheduleData);
+        setSelectedSchedule({ ...selectedSchedule, users: updatedUsers });
+        setSuccessMessage('Usuário adicionado com sucesso!');
+        await fetchAllData(); // Re-fetch to ensure UI is in sync
+      } catch (error) {
+        setError('Falha ao adicionar usuário à escala.');
+      }
+    }
   };
+
+  const handleRemoveUserFromSchedule = async (userId: number) => {
+    if (!selectedSchedule) return;
+    const updatedUsers = selectedSchedule.users.filter(u => u.userId !== userId);
+    const scheduleData = {
+      users: {
+        set: updatedUsers.map(u => ({ userId: u.userId, skill: u.skill })),
+      },
+    };
+    await updateSchedule(selectedSchedule.id, scheduleData);
+    setSelectedSchedule({ ...selectedSchedule, users: updatedUsers });
+    await fetchAllData(); // Re-fetch to ensure UI is in sync
+  };
+
+  // const handleUpdateUsers = (updatedUsers: { userId: number; skill: string; user: User }[]) => {
+  //   setSelectedSchedule(prev => {
+  //     if (!prev) return null;
+  //     return { ...prev, users: updatedUsers };
+  //   });
+  // };
+
+
+
 
   const handleAssignTask = async (taskId: number) => {
     if (!selectedSchedule) return;
@@ -400,7 +439,7 @@ export default function ScheduleManagementPage() {
         {isFormModalOpen && (
           <Modal isOpen={isFormModalOpen} onClose={handleCloseFormModal} title={selectedSchedule && isFormModalOpen ? 'Editar escala' : 'Criar escala'}>
             <ScheduleForm
-              scheduleToEdit={selectedSchedule}
+              scheduleToEdit={selectedSchedule ? { ...selectedSchedule, file: undefined } : null}
               onSubmit={handleFormSubmit}
               onCancel={handleCloseFormModal}
               successMessage={successMessage || undefined}
@@ -411,7 +450,12 @@ export default function ScheduleManagementPage() {
 
         {isUserModalOpen && selectedSchedule && (
           <Modal isOpen={isUserModalOpen} onClose={handleCloseUserModal} title={`Gerenciar usuários para ${selectedSchedule.name}`}>
-            <ScheduleUserManagement schedule={selectedSchedule} allUsers={allUsers} onUpdateUsers={handleUpdateUsers} />
+            <ScheduleUserManagement
+              schedule={selectedSchedule}
+              allUsers={allUsers}
+              onAddUser={handleAddUserToSchedule}
+              onRemoveUser={handleRemoveUserFromSchedule}
+            />
           </Modal>
         )}
 
