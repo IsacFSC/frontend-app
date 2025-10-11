@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiResponse } from 'next'
 import prisma from '../../../lib/prisma'
 import withCors from '../../../lib/withCors'
 import withAuth, { AuthenticatedRequest } from '../../../lib/withAuth'
