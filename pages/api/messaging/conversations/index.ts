@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiResponse } from 'next'
 import prisma from '#lib/prisma'
 import withCors from '#lib/withCors'
 import withAuth, { AuthenticatedRequest } from '#lib/withAuth'
@@ -16,14 +16,46 @@ async function handler(req: MessagingRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     const userId = Number(req.user?.id)
     if (!userId) return res.status(401).json({ error: 'Unauthorized' })
-    // Only return conversations where the current user is a participant
+    
     const convs = await prisma.conversation.findMany({
       where: { participants: { some: { id: userId } } },
       take: 100,
       orderBy: { updatedAt: 'desc' },
-      include: { participants: true, messages: { orderBy: { createdAt: 'desc' }, take: 1 } },
+      include: { 
+        participants: true, 
+        messages: { 
+          orderBy: { createdAt: 'desc' }, 
+          take: 1 
+        } 
+      },
     })
-    return res.json(convs)
+
+    // Get all unread messages for the user
+    const unreadMessages = await prisma.message.findMany({
+      where: {
+        conversation: {
+          participants: {
+            some: { id: userId }
+          }
+        },
+        authorId: { not: userId },
+        readBy: {
+          none: { userId: userId }
+        }
+      },
+      select: {
+        conversationId: true
+      }
+    });
+
+    const unreadConversationIds = new Set(unreadMessages.map(m => m.conversationId));
+
+    const convsWithUnread = convs.map(conv => ({
+      ...conv,
+      hasUnreadMessages: unreadConversationIds.has(conv.id)
+    }));
+
+    return res.json(convsWithUnread)
   }
 
   if (req.method === 'POST') {

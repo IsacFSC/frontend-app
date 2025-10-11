@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiResponse } from 'next'
 import prisma from '#lib/prisma'
 import withCors from '#lib/withCors'
 import withAuth, { AuthenticatedRequest } from '#lib/withAuth'
@@ -13,22 +13,25 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   res.setHeader('Pragma', 'no-cache')
   res.setHeader('Expires', '0')
 
-  // Count messages where the user is a participant in the conversation,
-  // there is no MessageRead entry for this user, and the user is not the author.
-  const totalUnread = await prisma.$queryRaw`
-    SELECT COUNT(m.id)
-    FROM "Message" m
-    WHERE m."conversationId" IN (
-      SELECT "A" FROM "_ConversationToUser" WHERE "B" = ${userId}
-    )
-      AND m."authorId" != ${userId}
-      AND NOT EXISTS (
-        SELECT 1 FROM "MessageRead" mr WHERE mr."messageId" = m.id AND mr."userId" = ${userId}
-      )
-  `
-  // prisma.$queryRaw returns array with object containing bigint
-  const count = Array.isArray(totalUnread) && totalUnread[0] ? Number((totalUnread[0] as { count: bigint }).count || 0) : 0
-  // return as a JSON number
+  const count = await prisma.message.count({
+    where: {
+      conversation: {
+        participants: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+      authorId: {
+        not: userId,
+      },
+      readBy: {
+        none: {
+          userId: userId,
+        },
+      },
+    },
+  })
   return res.status(200).json(count)
 }
 

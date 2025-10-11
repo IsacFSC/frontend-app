@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { Schedule } from '../services/scheduleService';
 import { User } from '../services/userService';
@@ -68,10 +69,12 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
                 <div className="flex items-center">
                   <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white text-sm font-bold mr-2">
                     {user.avatar ? (
-                      <img
+                      <Image
                         className="w-full h-full object-cover"
                         src={`${api.defaults.baseURL}/files/${user.avatar}`}
                         alt="User avatar"
+                        width={32}
+                        height={32}
                       />
                     ) : (
                       getInitials(user.name)
@@ -101,10 +104,12 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
               <div className="flex items-center">
                 <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white text-sm font-bold mr-2">
                   {user.avatar ? (
-                    <img
+                    <Image
                       className="w-full h-full object-cover"
                       src={`${api.defaults.baseURL}/files/${user.avatar}`}
                       alt="User avatar"
+                      width={32}
+                      height={32}
                     />
                   ) : (
                     getInitials(user.name)

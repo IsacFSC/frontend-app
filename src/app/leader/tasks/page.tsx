@@ -1,7 +1,7 @@
 'use client';
 import { Menu } from '@headlessui/react';
 
-import { useEffect, useState, useCallback, ChangeEvent } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   getTasks,
   createTask,
@@ -86,7 +86,7 @@ export default function TaskManagementPage() {
       setLoading(true);
       const offset = (pageParam - 1) * ITEMS_PER_PAGE;
 
-      const activeFilters: { [key: string]: any } = {};
+      const activeFilters: { [key: string]: string | number } = {};
       (Object.keys(filters) as Array<keyof typeof filters>).forEach((key) => {
         const value = filters[key];
         if (value) {
@@ -111,7 +111,7 @@ export default function TaskManagementPage() {
     }
   }, [currentPage, filters]);
 
-  useEffect(() => { // eslint-disable-line
+  useEffect(() => {
     if (isAuthenticated && (user?.role === 'ADMIN' || user?.role === 'LEADER')) {
       fetchTasks();
     }

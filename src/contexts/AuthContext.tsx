@@ -74,7 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
           const restoredUser = JSON.parse(userDataStr);
           setUser(restoredUser as User);
-        } catch (e) {
+        } catch {
           localStorage.removeItem('user.data');
           setUser(null);
         }
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             };
             setUser(restoredUser);
             localStorage.setItem('user.data', JSON.stringify(restoredUser));
-        } catch (e) {
+        } catch {
             signOut();
         }
       }

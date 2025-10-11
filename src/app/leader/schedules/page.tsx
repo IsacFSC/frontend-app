@@ -8,6 +8,15 @@ import PrivateRoute from '@/components/PrivateRoute';
 import { FaSync, FaDownload, FaFileUpload, FaArrowLeft } from 'react-icons/fa';
 import { AxiosError } from 'axios';
 
+interface UploadResponse {
+  schedule: Schedule;
+  conversationId: number;
+}
+
+interface ErrorResponse {
+    message: string;
+}
+
 // Função para transformar links em <a> (igual admin)
 const linkify = (text: string) => {
   if (!text) return null;
@@ -74,8 +83,6 @@ export default function LeaderScheduleManagementPage() {
   const [dateFilter, setDateFilter] = useState('');
   const [schedulesLoading, setSchedulesLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -177,11 +184,10 @@ export default function LeaderScheduleManagementPage() {
     if (!selectedSchedule) return;
     try {
       setSchedulesLoading(true);
-      const result: any = await uploadScheduleFile(selectedSchedule.id, file);
+      const result: UploadResponse = await uploadScheduleFile(selectedSchedule.id, file);
       // new API returns { schedule, conversationId }
       const convoId = result?.conversationId;
       await fetchData(); 
-      setSuccessMessage('Arquivo enviado com sucesso!');
       showToast('Arquivo enviado com sucesso!', 'success');
 
       if (convoId) {
@@ -193,13 +199,11 @@ export default function LeaderScheduleManagementPage() {
       }
     } catch (error) {
   const axiosError = error as AxiosError;
-  const data = axiosError.response?.data as any
+  const data = axiosError.response?.data as ErrorResponse
   const errorMessage = data && typeof data.message === 'string' ? data.message : 'Falha ao enviar arquivo.';
-      setError(errorMessage);
       showToast(errorMessage, 'error');
     } finally {
       setSchedulesLoading(false);
-      setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
 

@@ -13,6 +13,10 @@ interface ScheduleFileManagementProps {
   onFileUpload?: (file: File) => void;
 }
 
+interface UploadResponse {
+  conversationId?: number;
+}
+
 const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ scheduleId, onFileUpload }) => {
   const { user } = useAuth();
   const [files, setFiles] = useState<ScheduleFile[]>([]);
@@ -42,7 +46,7 @@ const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ schedul
   const handleUpload = async () => {
     if (selectedFile && scheduleId) {
       try {
-        const result: any = await uploadScheduleFile(scheduleId, selectedFile);
+        const result: UploadResponse = await uploadScheduleFile(scheduleId, selectedFile);
         setSelectedFile(null); // Clear selected file after upload
         fetchFiles();
         if (onFileUpload) onFileUpload(selectedFile);

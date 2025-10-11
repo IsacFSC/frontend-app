@@ -43,7 +43,7 @@ export const createConversation = async (subject: string, message: string, recip
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: data }));
     }
-  } catch (_e) {
+  } catch {
     // ignore
   }
   return data;
@@ -55,7 +55,7 @@ export const createMessage = async (conversationId: number, content: string): Pr
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('messaging:messageCreated', { detail: data }));
     }
-  } catch (_e) {
+  } catch {
     // ignore
   }
   return data;
@@ -74,7 +74,7 @@ export const uploadFile = async (conversationId: number, file: File): Promise<Me
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('messaging:messageCreated', { detail: data }));
     }
-  } catch (_e) {}
+  } catch {}
   return data;
 };
 
@@ -83,4 +83,12 @@ export const downloadFile = async (fileName: string) => {
     responseType: 'blob',
   });
   return data;
+};
+
+export const deleteConversation = async (conversationId: number): Promise<void> => {
+  await api.delete(`/messaging/conversations/${conversationId}`);
+};
+
+export const markConversationAsRead = async (conversationId: number): Promise<void> => {
+  await api.post(`/messaging/conversations/${conversationId}/read`);
 };

@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiResponse } from 'next'
 import withCors from '#lib/withCors'
-import withAuth from '#lib/withAuth'
+import withAuth, { AuthenticatedRequest } from '#lib/withAuth'
 import prisma from '#lib/prisma'
-import formidable from 'formidable'
+import formidable, { File, Fields, Files } from 'formidable'
 import fs from 'fs/promises'
 
 export const config = {
@@ -11,41 +11,66 @@ export const config = {
   },
 }
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
   const conversationId = Number(req.query.id)
 
   const form = new formidable.IncomingForm()
-  form.parse(req as any, async (err: any, fields: any, files: any) => {
-    if (err) return res.status(400).json({ error: 'Upload error' })
-    const file = (files.file as any)
-    // formidable provides a temporary filepath (file.filepath or file.path) depending on version
-    const filePath = file.filepath || file.filePath || file.path
-    if (!filePath) return res.status(400).json({ error: 'Uploaded file not found on server' })
-    const buffer = await fs.readFile(filePath)
-    const created = await prisma.file.create({ data: {
-      fileName: file.originalFilename || file.name || 'upload',
-      mimeType: file.mimetype || file.type || 'application/octet-stream',
-      data: buffer,
-      size: file.size || buffer.length || 0,
-    }})
-
-    const message = await prisma.message.create({ data: {
-      content: fields.content || '',
-      authorId: Number((req as any).user?.id),
-      conversationId: conversationId,
-      fileId: created.id,
-    }, include: { author: true, file: true }})
-
-    // Normalize response so client gets easy-to-use fields
-    const response = {
-      ...message,
-      // `file` expected by client to be an identifier usable in the download URL (id or filename)
-      file: message.file ? message.file.id : null,
-      fileMimeType: message.file ? message.file.mimeType : undefined,
+  form.parse(req, async (err: Error, fields: Fields, files: Files) => {
+    if (err) {
+      console.error('Formidable error:', err)
+      return res.status(400).json({ error: 'Upload error' })
     }
 
-    res.json(response)
+    const uploadedFile = files.file
+    if (!uploadedFile || Array.isArray(uploadedFile)) {
+      return res.status(400).json({ error: 'Please upload a single file named "file".' })
+    }
+    const file: File = uploadedFile
+
+    const filePath = file.filepath
+    if (!filePath) return res.status(400).json({ error: 'Uploaded file not found on server' })
+
+    try {
+      const buffer = await fs.readFile(filePath)
+      const created = await prisma.file.create({
+        data: {
+          fileName: file.originalFilename || 'upload',
+          mimeType: file.mimetype || 'application/octet-stream',
+          data: buffer,
+          size: file.size,
+        },
+      })
+
+      const content = Array.isArray(fields.content) ? fields.content[0] : fields.content
+      const message = await prisma.message.create({
+        data: {
+          content: content || '',
+          authorId: Number(req.user?.id),
+          conversationId: conversationId,
+          fileId: created.id,
+        },
+        include: { author: true, file: true },
+      })
+
+      // Normalize response so client gets easy-to-use fields
+      const response = {
+        ...message,
+        // `file` expected by client to be an identifier usable in the download URL (id or filename)
+        file: message.file ? message.file.id : null,
+        fileMimeType: message.file ? message.file.mimeType : undefined,
+      }
+
+      res.json(response)
+    } catch (error) {
+      console.error('Error processing file or creating message:', error)
+      res.status(500).json({ error: 'Internal server error' })
+    } finally {
+      // Clean up the temporary file
+      if (filePath) {
+        fs.unlink(filePath).catch(console.error)
+      }
+    }
   })
 }
 

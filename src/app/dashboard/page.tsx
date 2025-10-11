@@ -51,10 +51,13 @@ enum Role {
 const groupSchedulesByDate = (schedules: Schedule[]) => {
   const grouped: { [date: string]: Schedule[] } = {};
   schedules.forEach(schedule => {
-    const date = new Date(schedule.startTime).toLocaleDateString('pt-BR', {
+    const d = new Date(schedule.startTime);
+    // Usar UTC para evitar problemas de fuso horário
+    const date = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'UTC'
     });
     if (!grouped[date]) {
       grouped[date] = [];
@@ -142,7 +145,7 @@ export default function DashboardPage() {
       
       if (!dateFilter) {
         return matchesSearchTerm;
-      }
+      };
 
       const scheduleDate = new Date(schedule.startTime);
       const filterDate = new Date(dateFilter);
@@ -273,7 +276,7 @@ function showToast(message: string, type: 'success' | 'error') {
           </button>
         )}
 
-        {loading ? (
+        {schedulesLoading ? (
     <p className="mt-8">Carregando suas escalas...</p>
         ) : (
           <div className="mt-8">

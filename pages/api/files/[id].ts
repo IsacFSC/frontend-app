@@ -9,7 +9,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!file) return res.status(404).json({ error: 'File not found' })
   res.setHeader('Content-Type', file.mimeType || 'application/octet-stream')
   res.setHeader('Content-Disposition', `inline; filename="${file.fileName}"`)
-  res.send(file.data as any)
+  res.send(file.data)
 }
 
 export default withCors(withAuth(handler))

@@ -14,9 +14,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     file = await prisma.file.findFirst({ where: { fileName: String(fileId) } })
   }
   if (!file) return res.status(404).json({ error: 'File not found' })
-  // Ensure the stored bytes are returned as a Node Buffer
-  const rawData = file.data as any
-  const buffer = Buffer.isBuffer(rawData) ? rawData : Buffer.from(rawData as Uint8Array)
+  // Ensure file.data is a Buffer
+  const buffer = Buffer.isBuffer(file.data) ? file.data : Buffer.from(file.data)
   const mime = (file.mimeType || 'application/octet-stream').toLowerCase()
   res.setHeader('Content-Type', mime)
   // If it's an image, allow inline preview so <img src="..."> works. Otherwise force download.

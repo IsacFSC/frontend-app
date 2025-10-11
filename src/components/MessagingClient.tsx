@@ -1,8 +1,7 @@
-'use client';
-
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { FaDownload } from 'react-icons/fa';
-import { getConversations, getMessages, createMessage, createConversation, uploadFile, Conversation, Message, downloadFile } from '../services/messagingService';
+import { getConversations, getMessages, createMessage, createConversation, uploadFile, Conversation, Message, downloadFile, deleteConversation, markConversationAsRead } from '../services/messagingService';
 import { getUsers, User } from '../services/userService';
 import NewConversationModal from './NewConversationModal';
 import { useAuth } from '../hooks/useAuth';
@@ -119,15 +118,16 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       setMessages(fetchedMessages);
       // mark messages as read on the server for this conversation
       try {
-        await fetch(`/api/messaging/conversations/${conversation.id}/read`, { method: 'POST' })
+        await markConversationAsRead(conversation.id);
         // Notify other parts of the app that messages have been read
         window.dispatchEvent(new CustomEvent('messaging:messagesRead'));
       } catch (e) {
-        // ignore
+        console.error('Falha ao marcar mensagens como lidas', e);
       }
       // clear local unread flag for this conversation
       setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, hasUnreadMessages: false } : c))
     } catch (error) {
+      console.error('Falha ao buscar mensagens.', error);
       setError('Falha ao buscar mensagens.');
     }
   };
@@ -148,6 +148,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       setMessages(fetchedMessages);
       setSuccessMessage('Mensagem enviada com sucesso!');
     } catch (error) {
+      console.error('Falha ao enviar mensagem.', error);
       setError('Falha ao enviar mensagem.');
     } finally {
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -163,6 +164,27 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     } catch (error) {
       setError('Falha ao iniciar conversa.');
       throw error;
+    }
+  };
+
+  const handleDeleteConversation = async (conversationId: number) => {
+    if (window.confirm('Tem certeza que deseja deletar esta conversa?')) {
+      try {
+        await deleteConversation(conversationId);
+        setConversations(prev => prev.filter(c => c.id !== conversationId));
+        if (selectedConversation?.id === conversationId) {
+          setSelectedConversation(null);
+          setView('conversations');
+        }
+        setSuccessMessage('Conversa deletada com sucesso!');
+        // Notify other parts of the app that messages have been read
+        window.dispatchEvent(new CustomEvent('messaging:messagesRead'));
+      } catch (error) {
+        console.error('Falha ao deletar conversa.', error);
+        setError('Falha ao deletar conversa.');
+      } finally {
+        setTimeout(() => setSuccessMessage(null), 3000);
+      }
     }
   };
 
@@ -223,18 +245,30 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                 {conversations.map((convo) => (
                   <li
                     key={convo.id}
-                    onClick={() => handleSelectConversation(convo)}
-                    className={`cursor-pointer p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors ${
-                      convo.hasUnreadMessages ? 'font-bold bg-emerald-500 text-white' : 'dark:text-gray-200'
-                    }`}
-                  >
-                    {convo.subject} - {convo.participants.map(p => p.name).find(name => name !== user?.name) || 'Sem Participantes'}
-                    {selectedConversation?.id === convo.id && <span className="text-blue-500 ml-2 font-bold">●</span>}
-                    {convo.messages && convo.messages.length > 0 && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Última mensagem: {new Date(convo.messages[convo.messages.length - 1].createdAt).toLocaleString()}
-                      </div>
-                    )}
+                    className={`cursor-pointer p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors flex justify-between items-center ${
+                      convo.hasUnreadMessages ? 'font-bold bg-emerald-900 text-white' : 'dark:text-gray-200'
+                    }`}>
+                    <div onClick={() => handleSelectConversation(convo)} className="flex-grow">
+                      {convo.subject} - {convo.participants.map(p => p.name).find(name => name !== user?.name) || 'Sem Participantes'}
+                      {selectedConversation?.id === convo.id && <span className="text-blue-500 ml-2 font-bold">●</span>}
+                      {convo.messages && convo.messages.length > 0 && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Última mensagem: {new Date(convo.messages[convo.messages.length - 1].createdAt).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteConversation(convo.id);
+                      }}
+                      className="text-red-500 hover:text-red-700 ml-4 p-1 rounded-full"
+                      aria-label="Deletar conversa"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -263,7 +297,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                       {msg.file ? (
                         msg.fileMimeType && msg.fileMimeType.startsWith('image/') ? (
                           // Use relative API route; backend download accepts id or filename
-                          <img src={`/api/messaging/download/${msg.file}`} alt={msg.content || 'imagem'} className="max-w-xs rounded-lg" />
+                          <Image src={`/api/messaging/download/${msg.file}`} alt={msg.content || 'imagem'} className="max-w-xs rounded-lg" width={300} height={300} />
                         ) : (
                           <button onClick={() => handleDownload(String(msg.file))} className="text-blue-200 hover:underline flex items-center">
                             <FaDownload className="mr-2" />
