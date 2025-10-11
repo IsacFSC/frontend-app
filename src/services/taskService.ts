@@ -17,6 +17,7 @@ export interface Task {
   user: User | null;
   status: TaskStatus;
   scheduleId: number | null;
+  taskDate: string;
 }
 
 export interface TasksResponse {
@@ -47,12 +48,12 @@ export const getTasks = async (params: GetTasksParams): Promise<TasksResponse> =
   };
 };
 
-export const createTask = async (taskData: { name: string; description: string }): Promise<Task> => {
+export const createTask = async (taskData: { name: string; description: string; taskDate: string }): Promise<Task> => {
   const { data } = await api.post('/tasks', taskData);
   return data;
 };
 
-export const updateTask = async (id: number, taskData: Partial<{ name: string; description: string }>): Promise<Task> => {
+export const updateTask = async (id: number, taskData: Partial<{ name: string; description: string; taskDate: string }>): Promise<Task> => {
   const { data } = await api.patch(`/tasks/${id}`, taskData);
   return data;
 };

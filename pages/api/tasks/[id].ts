@@ -14,9 +14,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   if (req.method === 'PATCH') {
-    const data = req.body
-    const updated = await prisma.task.update({ where: { id }, data })
-    return res.json(updated)
+    const { taskDate, ...data } = req.body;
+    if (taskDate !== undefined) {
+      data.taskDate = taskDate ? new Date(taskDate) : null;
+    }
+    const updated = await prisma.task.update({ where: { id }, data });
+    return res.json(updated);
   }
 
   if (req.method === 'DELETE') {

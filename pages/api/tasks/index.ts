@@ -10,9 +10,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   if (req.method === 'POST') {
-    const data = req.body
-    const task = await prisma.task.create({ data })
-    return res.status(201).json(task)
+    const { name, description, taskDate } = req.body;
+    const data = {
+      name,
+      description,
+      taskDate: taskDate ? new Date(taskDate) : null,
+    };
+    const task = await prisma.task.create({ data });
+    return res.status(201).json(task);
   }
 
   res.status(405).end()

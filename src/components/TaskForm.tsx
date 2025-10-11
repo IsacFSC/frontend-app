@@ -6,7 +6,7 @@ import { FaTimes, FaSave } from 'react-icons/fa';
 
 interface TaskFormProps {
   taskToEdit?: Task | null;
-  onSubmit: (data: { name: string; description: string }) => void;
+  onSubmit: (data: { name: string; description: string; taskDate: string }) => void;
   onCancel: () => void;
   successMessage?: string | null;
 }
@@ -14,6 +14,7 @@ interface TaskFormProps {
 export default function TaskForm({ taskToEdit, onSubmit, onCancel, successMessage }: TaskFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [taskDate, setTaskDate] = useState('');
 
   const isEditing = !!taskToEdit;
 
@@ -21,12 +22,15 @@ export default function TaskForm({ taskToEdit, onSubmit, onCancel, successMessag
     if (isEditing && taskToEdit) {
       setName(taskToEdit.name);
       setDescription(taskToEdit.description);
+      if (taskToEdit.taskDate) {
+        setTaskDate(new Date(taskToEdit.taskDate).toISOString().split('T')[0]);
+      }
     }
   }, [taskToEdit, isEditing]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    onSubmit({ name, description });
+    onSubmit({ name, description, taskDate });
   };
 
   return (
@@ -43,6 +47,17 @@ export default function TaskForm({ taskToEdit, onSubmit, onCancel, successMessag
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="shadow appearance-none border-gr rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+          required
+        />
+      </div>
+      <div className="mb-4">
+        <label htmlFor="taskDate" className="block text-gray-200 text-sm font-bold mb-2">Data da Tarefa</label>
+        <input
+          type="date"
+          id="taskDate"
+          value={taskDate}
+          onChange={(e) => setTaskDate(e.target.value)}
           className="shadow appearance-none border-gr rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
           required
         />

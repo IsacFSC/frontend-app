@@ -167,7 +167,7 @@ export default function TaskManagementPage() {
     setIsModalOpen(false);
   };
 
-  const handleFormSubmit = async (data: { name: string; description: string }) => {
+  const handleFormSubmit = async (data: { name: string; description: string; taskDate: string }) => {
     try {
       if (editingTask) {
         await updateTask(editingTask.id, data);
