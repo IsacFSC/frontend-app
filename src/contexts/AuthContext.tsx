@@ -1,7 +1,7 @@
 'use client';
 
 import { AxiosError } from 'axios';
-import { createContext, ReactNode, useEffect, useState } from 'react';
+import { createContext, ReactNode, useEffect, useState, useCallback } from 'react'; // Adicione useCallback aqui
 import { setCookie, parseCookies, destroyCookie } from 'nookies';
 import { api } from '../services/api';
 import { useRouter } from 'next/navigation';
@@ -52,16 +52,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
   const isAuthenticated = !!user;
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
-  function signOut() {
+  const signOut = useCallback(() => { // CORRIGIDO: Envolvido em useCallback
     destroyCookie(undefined, 'nextauth.token');
     localStorage.removeItem('user.data');
     setUser(null);
     router.push('/login');
-  }
+  }, [router]); // router estável, mas uma boa prática adicioná-lo
 
   useEffect(() => {
     setLoading(true);
@@ -98,17 +98,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
     }
     setLoading(false);
-  }, [signOut]); // CORRIGIDO: Adicionada a função signOut ao array de dependências
+  }, [signOut]);
 
     async function signIn({ email, password }: { email: string; password: string }) {
-    setError(null); // Clear previous errors
+    setError(null);
     try {
       const { data } = await api.post('/auth', {
         email,
         password,
       });
 
-      // Defensive check for token and user data from API
       if (!data.token || !data.user) {
         console.error("Sign in failed: Invalid response from server.");
         setError("An unexpected error occurred. Please try again.");
@@ -118,7 +117,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { token, user: userData } = data;
 
       setCookie(undefined, 'nextauth.token', token, {
-        maxAge: 60 * 60 * 24 * 30, // 30 days
+        maxAge: 60 * 60 * 24 * 30,
         path: '/',
       });
 
@@ -133,20 +132,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const err = error as AxiosError<ErrorResponse>;
       
-      // Extract error message from API response, or use a default one
       const errorMessage = err.response?.data?.message || "Email ou senha inválidos. Por favor, tente novamente.";
 
       toast.error(errorMessage, {
-        duration: 4000, // 4 segundos
+        duration: 4000,
         position: 'top-center',
         style: {
-          background: '#FF4B4B', // Um vermelho mais vibrante
-          color: '#FFFFFF',      // Texto branco
+          background: '#FF4B4B',
+          color: '#FFFFFF',
           border: '2px solid #FF4B4B',
         },
         iconTheme: {
-          primary: '#FFFFFF',   // Cor do ícone
-          secondary: '#FF4B4B', // Cor do fundo do ícone
+          primary: '#FFFFFF',
+          secondary: '#FF4B4B',
         },
       });
     }
