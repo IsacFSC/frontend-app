@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiResponse } from 'next'
 import withCors from '../../../lib/withCors'
 import withAuth, { AuthenticatedRequest } from '../../../lib/withAuth'
 import prisma from '../../../lib/prisma'
@@ -14,7 +14,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
   try {
     await prisma.file.delete({ where: { id: userRecord.avatarFileId } })
-  } catch (_e) {
+  } catch { // Variável de erro removida, resolvendo o aviso
     // ignore
   }
 

@@ -31,7 +31,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           roleToSet = role
         }
       }
-    } catch (_err) {
+    } catch { // CORRIGIDO: Removido '_err' pois não era usado
       // ignore and default to USER
       roleToSet = 'USER'
     }
@@ -43,6 +43,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Not implemented: other verbs handled by separate routes (see next steps)
   res.status(405).end()
 }
+
 // Wrap: withCors outer, withAuth for protected routes
 export default withCors(async (req, res) => {
   // allow create user without auth (controller had @Roles(Role.ADMIN) but we keep registration open)
