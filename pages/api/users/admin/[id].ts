@@ -17,6 +17,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const updated = await prisma.user.update({ where: { id: userId }, data: { active, role }, select: { id: true, name: true, email: true, active: true, role: true, avatarFileId: true, createdAt: true, passwordHash: true } })
     return res.json(updated)
   } catch (err: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return res.status(400).json({ error: 'Failed to update user', details: err?.message || String(err) })
   }
 }

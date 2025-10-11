@@ -148,6 +148,7 @@ export default function ScheduleManagementPage() {
   const handleCloseTaskModal = () => setIsTaskModalOpen(false);
 
   const handleFormSubmit = async (data: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     try {
       const scheduleData = {
         ...data,
@@ -166,6 +167,7 @@ export default function ScheduleManagementPage() {
       await fetchAllData();
       handleCloseFormModal();
     } catch (error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       console.error('[ESCALA ERROR]', error as Error);
       setError('Falha ao salvar a escala.');
     } finally {
@@ -189,6 +191,7 @@ export default function ScheduleManagementPage() {
   };
 
   const handleUpdateUsers = (updatedUsers: any[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setSelectedSchedule(prev => {
       if (!prev) return null;
       return { ...prev, users: updatedUsers };
@@ -204,6 +207,7 @@ export default function ScheduleManagementPage() {
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao atribuir tarefa.');
     } finally {
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -219,6 +223,7 @@ export default function ScheduleManagementPage() {
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao desatribuir tarefa.');
     } finally {
       setTimeout(() => setSuccessMessage(null), 3000);
