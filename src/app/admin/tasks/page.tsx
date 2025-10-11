@@ -93,9 +93,8 @@ export default function TaskManagementPage() {
       setLoading(true);
       const offset = (pageParam - 1) * ITEMS_PER_PAGE;
 
-      const activeFilters: { [key: string]: any } = {};
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Object.keys(filters) as Array<keyof typeof filters>).forEach((key) => {
+      const activeFilters: { [key: string]: string | number } = {};
+      (Object.keys(filters) as Array<keyof typeof filters>).forEach(key => {
         const value = filters[key];
         if (value) {
           activeFilters[key] = value;

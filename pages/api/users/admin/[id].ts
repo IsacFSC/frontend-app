@@ -14,11 +14,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const { active, role } = req.body
   try {
-    const updated = await prisma.user.update({ where: { id: userId }, data: { active, role }, select: { id: true, name: true, email: true, active: true, role: true, avatarFileId: true, createdAt: true, passwordHash: true } })
+    const updated = await prisma.user.update({ where: { id: userId }, data: { active, role } })
     return res.json(updated)
-  } catch (err: any) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return res.status(400).json({ error: 'Failed to update user', details: err?.message || String(err) })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return res.status(400).json({ error: 'Failed to update user', details: message })
   }
 }
 

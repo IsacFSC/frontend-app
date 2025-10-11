@@ -21,6 +21,18 @@ import { AxiosError } from 'axios';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaDownload, FaEdit, FaTrash } from 'react-icons/fa';
 
+interface ScheduleFormData {
+  name: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  file?: File;
+}
+
+interface ErrorResponse {
+  message: string;
+}
+
 // Função para transformar links em <a> (igual admin)
 const linkify = (text: string) => {
   if (!text) return null;
@@ -147,8 +159,7 @@ export default function ScheduleManagementPage() {
   };
   const handleCloseTaskModal = () => setIsTaskModalOpen(false);
 
-  const handleFormSubmit = async (data: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleFormSubmit = async (data: ScheduleFormData) => {
     try {
       const scheduleData = {
         ...data,
@@ -166,8 +177,7 @@ export default function ScheduleManagementPage() {
       }
       await fetchAllData();
       handleCloseFormModal();
-    } catch (error: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error) {
       console.error('[ESCALA ERROR]', error as Error);
       setError('Falha ao salvar a escala.');
     } finally {
@@ -190,8 +200,7 @@ export default function ScheduleManagementPage() {
     }
   };
 
-  const handleUpdateUsers = (updatedUsers: any[]) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleUpdateUsers = (updatedUsers: { userId: number; skill: string; user: User }[]) => {
     setSelectedSchedule(prev => {
       if (!prev) return null;
       return { ...prev, users: updatedUsers };
@@ -206,8 +215,7 @@ export default function ScheduleManagementPage() {
       await fetchAllData();
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
-      const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as ErrorResponse).message : undefined;
       setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao atribuir tarefa.');
     } finally {
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -222,8 +230,7 @@ export default function ScheduleManagementPage() {
       await fetchAllData();
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
-      const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as any).message : undefined;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMessage = axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data ? (axiosError.response.data as ErrorResponse).message : undefined;
       setError(typeof errorMessage === 'string' ? errorMessage : 'Falha ao desatribuir tarefa.');
     } finally {
       setTimeout(() => setSuccessMessage(null), 3000);
