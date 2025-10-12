@@ -6,7 +6,7 @@ import PrivateRoute from '@/components/PrivateRoute';
 import { FaSignOutAlt, FaUsers, FaCalendarAlt, FaEnvelope, FaTasks } from 'react-icons/fa';
 import MessageIcon from '@/components/MessageIcon';
 
-export default function AdminDashboardPage() {
+export default function adminDashboardPage() {
   const { user, signOut, loading } = useAuth();
 
   if (loading) {
