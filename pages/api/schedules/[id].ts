@@ -3,6 +3,7 @@ import prisma from '../../../lib/prisma';
 import withCors from '../../../lib/withCors';
 import withAuth from '../../../lib/withAuth';
 import { hasAnyRole } from '../../../lib/roles';
+import { error } from 'console';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!hasAnyRole(req, ['ADMIN'])) {
@@ -44,10 +45,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(200).json({ ...updatedSchedule, users: users?.set || [] });
     } catch (error) {
       return res.status(500).json({ error: 'Failed to update schedule' });
+      console.log(error)
     }
   }
 
   return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+  console.log(error)
 }
 
 export default withCors(withAuth(handler));

@@ -219,6 +219,7 @@ export default function ScheduleManagementPage() {
         await fetchAllData(); // Re-fetch to ensure UI is in sync
       } catch (error) {
         setError('Falha ao adicionar usuário à escala.');
+        console.error('[ADD USER ERROR]', error);
       }
     }
   };
