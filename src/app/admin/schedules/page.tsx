@@ -73,7 +73,8 @@ const groupSchedulesByDate = (schedules: Schedule[]) => {
     const date = new Date(schedule.startTime).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'UTC'
     });
     if (!grouped[date]) {
       grouped[date] = [];
@@ -372,7 +373,7 @@ export default function ScheduleManagementPage() {
                               <h3 className="text-xl font-bold text-gray-900">{schedule.name}</h3>
                               <p className="text-gray-700 mt-2">{schedule.description}</p>
                               <p className="text-sm text-gray-600 mt-4">
-                                {new Date(schedule.startTime).toLocaleTimeString()} - {new Date(schedule.endTime).toLocaleTimeString()}
+                                <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} - <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
                             <div className="flex items-center space-x-2 mt-4 md:mt-0">
@@ -424,7 +425,11 @@ export default function ScheduleManagementPage() {
                               </ul>
                             </div>
                           )}
-
+                          <div className="mt-4 pt-4 border-t border-gray-400">
+                            <p className="text-sm text-gray-700">
+                              <strong>Obs:</strong> Executem as músicas com excelência, atenção para os horarios de ensaio que acontecem as 19:30h nas quintas feiras, poderão haver mudanças conforme orientações do líder. Chegar com antecedência nos cultos 30 minutos antes do início dos cultos, poderão have mudanças conforme orientações do líder. Sê tu uma benção!
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
