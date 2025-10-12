@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
-import PrivateRoute from '@/components/PrivateRoute';
+import PrivateRoute from '../../../components/PrivateRoute';
 import { FaSignOutAlt, FaUsers, FaCalendarAlt, FaEnvelope, FaTasks } from 'react-icons/fa';
-import MessageIcon from '@/components/MessageIcon';
+import MessageIcon from '../../../components/MessageIcon';
 
-export default function adminDashboardPage() {
+export default function AdminDashboardPage() {
   const { user, signOut, loading } = useAuth();
 
   if (loading) {
