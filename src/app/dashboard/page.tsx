@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, downloadScheduleFile, Schedule } from '../../services/scheduleService';
 import { getUnreadMessagesCount } from '../../services/messagingService';
-import PrivateRoute from '@/components/PrivateRoute';
+import PrivateRoute from '../../components/PrivateRoute';
 import { FaEnvelope, FaSync, FaSignOutAlt, FaDownload } from 'react-icons/fa';
 // Função para transformar links em <a> (igual admin)
 const linkify = (text: string) => {
