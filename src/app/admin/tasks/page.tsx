@@ -356,7 +356,7 @@ export default function TaskManagementPage() {
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <p className="text-gray-100 whitespace-no-wrap">{task.user?.name || 'Não atribuído'}</p>
                       </td>
-                      <td className="px-5 py-24 border-b border-gray-500 bg-gray-700 text-sm flex flex-wrap gap-2">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <div className="relative inline-block text-left w-full">
                           <Menu>
                             {() => (
