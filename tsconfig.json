@@ -21,6 +21,9 @@
     ],
     "baseUrl": ".",
     "paths": {
+      "next/*": ["./node_modules/next/*"],
+      "next/types/*": ["./node_modules/next/types/*"],
+      "*": ["./src/*"],
       "src/*": ["./src/*"],
       "lib/*": ["./lib/*"],
       "@/*": ["./src/*"],
