@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useAuth } from "../hooks/useAuth";
-import { ReactNode, useEffect } from "react";
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { ReactNode, useEffect } from 'react';
 
 interface PrivateRouteProps {
   children: ReactNode;
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/login');
+    if (status === 'unauthenticated') {
+      router.push('/login?message=login_required');
     }
-  }, [isAuthenticated, loading, router]);
+  }, [status, router]);
 
-  if (loading || !isAuthenticated) {
+  if (status === 'loading' || status === 'unauthenticated') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
         <p>Carregando...</p>

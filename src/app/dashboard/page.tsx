@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, downloadScheduleFile, Schedule } from '../../services/scheduleService';
 import { getUnreadMessagesCount } from '../../services/messagingService';
@@ -68,7 +68,9 @@ const groupSchedulesByDate = (schedules: Schedule[]) => {
 };
 
 export default function DashboardPage() {
-  const { user, signOut, loading } = useAuth();
+    const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === 'loading';
   const router = useRouter();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -105,7 +107,7 @@ export default function DashboardPage() {
         setSchedulesLoading(false);
       }
     }
-  }, [user, signOut]);
+  }, [user]);
 
   useEffect(() => {
     if (loading) return; // Aguarda autenticação

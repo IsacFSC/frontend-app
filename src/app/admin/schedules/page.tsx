@@ -16,7 +16,7 @@ import ScheduleForm from '../../../components/ScheduleForm';
 import ScheduleUserManagement from '../../../components/ScheduleUserManagement';
 import ScheduleTaskManagement from '../../../components/ScheduleTaskManagement';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import { AxiosError } from 'axios';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaDownload, FaEdit, FaTrash } from 'react-icons/fa';
@@ -85,7 +85,9 @@ const groupSchedulesByDate = (schedules: Schedule[]) => {
 };
 
 export default function ScheduleManagementPage() {
-  const { user, isAuthenticated } = useAuth();
+    const { data: session, status } = useSession();
+  const user = session?.user;
+  const isAuthenticated = status === 'authenticated';
   const router = useRouter();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);

@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -19,20 +18,10 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
-      "../*": ["../*"],
-      "src/*": ["./src/*"],
-      "lib/*": ["./lib/*"],
-      "../../*": ["../../*"],
-      "../../../*": ["../../../*"],
-      "admin/*": ["../admin/src/*"],
-      "../../app/admin/dashboard/page.js": ["../../app/admin/dashboard/page.js"],
-      "@/*": ["./src/*"],
-      "#/*": ["./*"],
-      "#lib/*": ["./lib/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }
