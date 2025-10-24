@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth';
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -13,27 +13,38 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const convId = Number(params.id);
-  if (isNaN(convId)) {
+  const numericUserId = Number(userId);
+
+  const { id } = await params;
+  const conversationId = Number(id);
+  if (isNaN(conversationId)) {
     return NextResponse.json({ error: 'Invalid conversation ID' }, { status: 400 });
   }
 
-  const messagesToMarkAsRead = await prisma.message.findMany({
+  // Find all messages in the conversation that the user has not read yet
+  const unreadMessages = await prisma.message.findMany({
     where: {
-      conversationId: convId,
-      authorId: { not: userId },
-      readBy: { none: { userId } },
+      conversationId,
+      authorId: { not: numericUserId },
+      readBy: {
+        none: {
+          userId: numericUserId,
+        },
+      },
     },
-    select: { id: true },
+    select: {
+      id: true,
+    },
   });
 
-  if (messagesToMarkAsRead.length > 0) {
+  // Create MessageRead entries for each unread message
+  if (unreadMessages.length > 0) {
     await prisma.messageRead.createMany({
-      data: messagesToMarkAsRead.map((message) => ({
+      data: unreadMessages.map((message) => ({
         messageId: message.id,
-        userId: userId,
+        userId: numericUserId,
       })),
-      skipDuplicates: true,
+      skipDuplicates: true, // In case a race condition or something similar happens
     });
   }
 

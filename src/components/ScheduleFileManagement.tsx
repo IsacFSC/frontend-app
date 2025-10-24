@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import { getScheduleFiles, uploadScheduleFile, downloadScheduleFile } from '../services/scheduleFileService';
 
 interface ScheduleFile {
@@ -18,7 +18,8 @@ interface UploadResponse {
 }
 
 const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ scheduleId, onFileUpload }) => {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const [files, setFiles] = useState<ScheduleFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 

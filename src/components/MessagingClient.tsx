@@ -4,7 +4,7 @@ import { FaDownload } from 'react-icons/fa';
 import { getConversations, getMessages, createMessage, createConversation, uploadFile, Conversation, Message, downloadFile, deleteConversation, markConversationAsRead } from '../services/messagingService';
 import { getUsers, User } from '../services/userService';
 import NewConversationModal from './NewConversationModal';
-import { useAuth } from '../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 interface MessagingClientProps {
@@ -12,7 +12,9 @@ interface MessagingClientProps {
 }
 
 export default function MessagingClient({ userRole }: MessagingClientProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isAuthenticated = status === 'authenticated';
   const router = useRouter();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);

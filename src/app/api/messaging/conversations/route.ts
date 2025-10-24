@@ -11,8 +11,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const numericUserId = Number(userId);
+
   const convs = await prisma.conversation.findMany({
-    where: { participants: { some: { id: userId } } },
+    where: { participants: { some: { id: numericUserId } } },
     take: 100,
     orderBy: { updatedAt: 'desc' },
     include: {
@@ -23,9 +25,9 @@ export async function GET(req: Request) {
 
   const unreadMessages = await prisma.message.findMany({
     where: {
-      conversation: { participants: { some: { id: userId } } },
-      authorId: { not: userId },
-      readBy: { none: { userId: userId } },
+      conversation: { participants: { some: { id: numericUserId } } },
+      authorId: { not: numericUserId },
+      readBy: { none: { userId: numericUserId } },
     },
     select: {
       conversationId: true,
@@ -51,19 +53,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const numericAuthorId = Number(authorId);
+
   const { subject, participantIds, message, recipientId } = await req.json();
 
   if (recipientId) {
     const conv = await prisma.conversation.create({
       data: {
         subject,
-        participants: { connect: [{ id: authorId }, { id: Number(recipientId) }] },
+        participants: { connect: [{ id: numericAuthorId }, { id: Number(recipientId) }] },
       },
       include: { participants: true },
     });
 
     if (message) {
-      await prisma.message.create({ data: { content: message, authorId, conversationId: conv.id } });
+      await prisma.message.create({ data: { content: message, authorId: numericAuthorId, conversationId: conv.id } });
     }
     const full = await prisma.conversation.findUnique({ where: { id: conv.id }, include: { participants: true, messages: true } });
     return NextResponse.json(full, { status: 201 });

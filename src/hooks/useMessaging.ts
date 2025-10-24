@@ -1,12 +1,12 @@
-
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { getUnreadMessagesCount } from '../services/messagingService';
-import { useAuth } from './useAuth';
+import { useSession } from 'next-auth/react';
 
 export const useMessaging = () => {
-  const { isAuthenticated } = useAuth();
+  const { status } = useSession();
+  const isAuthenticated = status === 'authenticated';
   const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchUnreadCount = useCallback(async () => {

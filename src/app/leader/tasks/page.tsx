@@ -13,7 +13,7 @@ import {
 import Modal from '../../../components/Modal';
 import TaskForm from '../../../components/TaskForm';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
@@ -60,7 +60,9 @@ const translateStatus = (status: TaskStatus) => {
 };
 
 export default function TaskManagementPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isAuthenticated = status === 'authenticated';
   const router = useRouter();
 
   const [tasks, setTasks] = useState<Task[]>([]);

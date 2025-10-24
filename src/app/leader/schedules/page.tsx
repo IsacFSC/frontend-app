@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, downloadScheduleFile, Schedule, uploadScheduleFile } from '../../../services/scheduleService';
 import PrivateRoute from '@/components/PrivateRoute';
@@ -75,7 +75,9 @@ const groupSchedulesByDate = (schedules: Schedule[]) => {
 };
 
 export default function LeaderScheduleManagementPage() {
-  const { user, signOut, loading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === 'loading';
   const router = useRouter();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);

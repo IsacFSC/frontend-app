@@ -10,7 +10,9 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const userRecord = await prisma.user.findUnique({ where: { id: userId } });
+  const numericUserId = Number(userId);
+
+  const userRecord = await prisma.user.findUnique({ where: { id: numericUserId } });
 
   if (!userRecord || !userRecord.avatarFileId) {
     return NextResponse.json({ error: 'User has no avatar' }, { status: 400 });
@@ -19,7 +21,7 @@ export async function DELETE(req: Request) {
   try {
     // First, update the user to remove the association
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: numericUserId },
       data: { avatarFileId: null },
     });
 

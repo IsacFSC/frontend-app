@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { Schedule } from '../services/scheduleService';
 import { Task } from '../services/taskService';
-import { useAuth } from '../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import ScheduleFileManagement from './ScheduleFileManagement';
 
 interface ScheduleTaskManagementProps {
@@ -15,7 +15,7 @@ interface ScheduleTaskManagementProps {
 }
 
 export default function ScheduleTaskManagement({ schedule, allTasks, onAssignTask, onUnassignTask, onFileUpload }: ScheduleTaskManagementProps) {
-  useAuth();
+  useSession();
 
   const { assignedTasks, availableTasks } = useMemo(() => {
     const assigned = allTasks.filter(t => t.scheduleId === schedule.id);

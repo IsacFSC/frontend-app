@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
-import { hashPassword } from '@/lib/auth'; // Assuming hashPassword is in auth
+import * as bcrypt from 'bcryptjs';
 
 // GET /api/users -> list users (roles: ADMIN, LEADER, USER)
 export async function GET(req: Request) {
   const session = await auth();
+  console.log('Session in /api/users:', session);
   // any authenticated user can list
   if (!session?.user) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
 
-  const passwordHash = await hashPassword(password);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   let roleToSet = 'USER';
   if (session?.user?.role === 'ADMIN' && role) {
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
 
   try {
     const user = await prisma.user.create({
-      data: { name, email, passwordHash, role: roleToSet },
+      data: { name, email, password: hashedPassword, role: roleToSet },
     });
     return NextResponse.json(user, { status: 201 });
   } catch (error) {

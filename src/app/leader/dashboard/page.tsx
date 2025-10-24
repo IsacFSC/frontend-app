@@ -1,13 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '../../../hooks/useAuth';
+import { useSession, signOut } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaSignOutAlt, FaCalendarAlt, FaTasks, FaEnvelope } from 'react-icons/fa';
 import MessageIcon from '@/components/MessageIcon';
 
 export default function LeaderDashboardPage() {
-  const { user, signOut, loading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === 'loading';
 
   if (loading) {
     return (

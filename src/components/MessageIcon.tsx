@@ -4,11 +4,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { FaEnvelope } from 'react-icons/fa';
 import { getUnreadMessagesCount } from '../services/messagingService';
-import { useAuth } from '../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function MessageIcon() {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
 

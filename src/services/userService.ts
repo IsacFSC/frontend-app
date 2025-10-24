@@ -24,7 +24,7 @@ export interface GetUsersParams {
 }
 
 export const getUsers = async (params?: GetUsersParams): Promise<User[]> => {
-  const { data } = await api.get('/users/All', { params });
+  const { data } = await api.get('/users/all', { params });
   return data?.users || [];
 };
 

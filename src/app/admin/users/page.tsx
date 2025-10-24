@@ -11,7 +11,7 @@ import {
 import Modal from '../../../components/Modal';
 import UserForm from '../../../components/UserForm';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import { api } from '../../../services/api';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaTrash, FaToggleOn, FaToggleOff } from 'react-icons/fa';
@@ -22,7 +22,10 @@ export default function UserManagementPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isAuthenticated = status === 'authenticated';
+  const authLoading = status === 'loading';
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);

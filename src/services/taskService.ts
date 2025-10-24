@@ -38,7 +38,7 @@ export interface GetTasksParams {
 }
 
 export const getTasks = async (params: GetTasksParams): Promise<TasksResponse> => {
-  const { data } = await api.get('/tasks/All', { params });
+  const { data } = await api.get('/tasks/all', { params });
   return {
     ...data,
     data: data?.data || [],

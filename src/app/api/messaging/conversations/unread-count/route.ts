@@ -10,21 +10,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const numericUserId = Number(userId);
+
   const count = await prisma.message.count({
     where: {
       conversation: {
         participants: {
           some: {
-            id: userId,
+            id: numericUserId,
           },
         },
       },
       authorId: {
-        not: userId,
+        not: numericUserId,
       },
       readBy: {
         none: {
-          userId: userId,
+          userId: numericUserId,
         },
       },
     },

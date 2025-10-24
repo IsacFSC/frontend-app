@@ -10,8 +10,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const numericUserId = Number(userId);
+
   const schedules = await prisma.schedule.findMany({
-    where: { users: { some: { userId } } },
+    where: { users: { some: { userId: numericUserId } } },
     include: { users: { include: { user: true } }, tasks: true },
   });
 
