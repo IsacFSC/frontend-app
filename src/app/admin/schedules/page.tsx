@@ -186,7 +186,8 @@ export default function ScheduleManagementPage() {
         await updateSchedule(selectedSchedule.id, data);
         setSuccessMessage('Escala atualizada com sucesso!');
       } else {
-        await createSchedule(data as any);
+        const { file, ...scheduleDataWithoutFile } = data;
+        await createSchedule(scheduleDataWithoutFile);
         setSuccessMessage('Escala criada com sucesso!');
       }
       await fetchAllData();

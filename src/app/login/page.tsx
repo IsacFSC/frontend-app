@@ -32,6 +32,7 @@ export default function LoginPage() {
     } catch (err) {
       setError('Ocorreu um erro inesperado. Tente novamente.');
       setIsLoading(false);
+      console.error('Erro ao fazer login:', err);
     }
   };
 

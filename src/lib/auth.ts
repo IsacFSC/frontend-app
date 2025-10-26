@@ -63,3 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/login',
   },
 });
+
+export async function hashPassword(password: string) {
+  return bcrypt.hash(password, 10);
+}

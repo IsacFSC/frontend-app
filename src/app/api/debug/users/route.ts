@@ -11,8 +11,9 @@ export async function GET(req: Request) {
       select: { id: true, name: true, email: true, passwordHash: true },
     });
     return NextResponse.json(users);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Debug users error:', err);
-    return NextResponse.json({ error: 'Internal error', details: err?.message || String(err) }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: 'Internal error', details: errorMessage }, { status: 500 });
   }
 }
