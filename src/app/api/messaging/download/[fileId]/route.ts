@@ -4,14 +4,15 @@ import { auth } from '@/lib/auth';
 
 export async function GET(
   req: Request,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ fileId: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const fileId = Number(params.fileId);
+  const { fileId: fileIdStr } = await params;
+  const fileId = Number(fileIdStr);
   if (isNaN(fileId)) {
     return NextResponse.json({ error: 'Invalid file ID' }, { status: 400 });
   }

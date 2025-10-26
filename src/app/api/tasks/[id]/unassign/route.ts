@@ -2,24 +2,30 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
-export async function PUT(
+export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'LEADER')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const taskId = Number(params.id);
+  const { id } = await params;
+  const taskId = Number(id);
   if (isNaN(taskId)) {
     return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
   }
 
-  const task = await prisma.task.update({
-    where: { id: taskId },
-    data: { userId: null, scheduleId: null, status: 'PENDING' },
-  });
+  try {
+    const task = await prisma.task.update({
+      where: { id: taskId },
+      data: { userId: null, scheduleId: null, status: 'PENDING' },
+    });
 
-  return NextResponse.json(task);
+    return NextResponse.json(task);
+  } catch (error) {
+    console.error('Error unassigning task:', error);
+    return NextResponse.json({ error: 'Could not unassign task' }, { status: 500 });
+  }
 }

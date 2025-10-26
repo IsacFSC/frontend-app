@@ -28,32 +28,58 @@ export async function GET(
   return NextResponse.json(task);
 }
 
-export async function PUT(
+export async function PATCH(
+
   req: Request,
+
   { params }: { params: { id: string } }
+
 ) {
+
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'LEADER')) {
+
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
   }
+
+
 
   const taskId = Number(params.id);
+
   if (isNaN(taskId)) {
+
     return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
+
   }
 
+
+
   const body = await req.json();
+
   const { name, description, status, userId, taskDate } = body;
 
+
+
   const data: any = {};
+
   if (name) data.name = name;
+
   if (description) data.description = description;
+
   if (status) data.status = status;
+
   if (userId) data.userId = userId;
+
   if (taskDate) data.taskDate = new Date(taskDate);
 
+
+
   const task = await prisma.task.update({ where: { id: taskId }, data });
+
   return NextResponse.json(task);
+
 }
 
 export async function DELETE(
@@ -61,8 +87,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'LEADER')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const taskId = Number(params.id);

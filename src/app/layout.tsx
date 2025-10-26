@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Favicon from './assets/img/icons8-farol-30.png';
 import { Toaster } from "react-hot-toast";
 import Providers from "@/app/providers";
 
@@ -17,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Gerenciador de Escalas -IEVV Musical",
   description: "Gerenciador de Escalas -IEVV Musical",
+  icons: {
+    icon: Favicon.src,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

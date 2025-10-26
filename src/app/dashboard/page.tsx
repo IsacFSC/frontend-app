@@ -7,7 +7,9 @@ import { useRouter } from 'next/navigation';
 import { getMySchedules, downloadScheduleFile, Schedule } from '../../services/scheduleService';
 import { getUnreadMessagesCount } from '../../services/messagingService';
 import PrivateRoute from '../../components/PrivateRoute';
-import { FaEnvelope, FaSync, FaSignOutAlt, FaDownload } from 'react-icons/fa';
+import { FaEnvelope, FaSync, FaSignOutAlt } from 'react-icons/fa';
+import DownloadScheduleButton from '@/components/DownloadScheduleButton';
+
 // Função para transformar links em <a> (igual admin)
 const linkify = (text: string) => {
   if (!text) return null;
@@ -159,19 +161,6 @@ export default function DashboardPage() {
     setFilteredSchedules(filtered);
   }, [searchTerm, dateFilter, schedules]);
 
-  const handleDownload = async (scheduleId: number) => {
-    try {
-      // A função já deve cuidar do download do arquivo
-      await downloadScheduleFile(scheduleId);
-      // Não é necessário um toast de sucesso aqui, pois o navegador
-      // já indica o início do download.
-      showToast('Escala baixada com sucesso!', 'success');
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      showToast('Erro ao baixar o arquivo. Tente novamente.', 'error');
-    }
-  };
-
 // Toast simples
 function showToast(message: string, type: 'success' | 'error') {
   const toast = document.createElement('div');
@@ -222,7 +211,7 @@ function showToast(message: string, type: 'success' | 'error') {
               className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center ${isRefreshing ? 'opacity-60 cursor-not-allowed' : ''}`}
               disabled={isRefreshing}
             >
-              <FaSync className="mr-2" /> Atualizar
+              <FaSync className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Atualizar
             </button>
             <button
               onClick={signOut}
@@ -300,12 +289,7 @@ function showToast(message: string, type: 'success' | 'error') {
                               </p>
                             </div>
                             <div className="flex items-center space-x-2 mt-4 md:mt-0">                              
-                                <button
-                                  onClick={() => handleDownload(schedule.id)}
-                                  className='bg-blue-600 hover:bg-blue-700 text-white rounded-3xl p-1.5 flex items-center'
-                                >
-                                  <FaDownload className="mr-2" /> Baixar Escala
-                                </button>                              
+                                <DownloadScheduleButton schedule={schedule} />                           
                             </div>
                           </div>
                           <div className="mt-4">

@@ -190,9 +190,9 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     }
   };
 
-  const handleDownload = async (fileName: string) => {
+  const handleDownload = async (fileId: number, fileName: string) => {
     try {
-      const blob = await downloadFile(fileName);
+      const blob = await downloadFile(fileId);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -293,17 +293,16 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
               </div>
               <div className="flex-grow bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 overflow-y-auto mb-4">
                 {messages.map((msg) => (
-                  <div key={msg.id} className={`mb-2 flex ${msg.authorId === user?.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`inline-block p-2 rounded-lg ${msg.authorId === user?.id ? 'bg-emerald-500' : 'bg-violet-500'} text-white`}>
+                  <div key={msg.id} className={`mb-2 flex items-end gap-2 ${msg.authorId === Number(user?.id) ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg shadow-md ${msg.authorId === Number(user?.id) ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200'}`}>
                       <p className="font-bold">{msg.author?.name || 'Participante'}</p>
                       {msg.file ? (
-                        msg.fileMimeType && msg.fileMimeType.startsWith('image/') ? (
-                          // Use relative API route; backend download accepts id or filename
-                          <Image src={`/api/messaging/download/${msg.file}`} alt={msg.content || 'imagem'} className="max-w-xs rounded-lg" width={300} height={300} />
+                        msg.file.mimeType.startsWith('image/') ? (
+                          <Image src={`/api/messaging/download/${msg.file.id}`} alt={msg.file.fileName} className="max-w-xs rounded-lg" width={300} height={300} />
                         ) : (
-                          <button onClick={() => handleDownload(String(msg.file))} className="text-blue-200 hover:underline flex items-center">
+                          <button onClick={() => handleDownload(msg.file.id, msg.file.fileName)} className="text-blue-200 hover:underline flex items-center">
                             <FaDownload className="mr-2" />
-                            {msg.content || 'Baixar Arquivo'}
+                            {msg.file.fileName}
                           </button>
                         )
                       ) : (

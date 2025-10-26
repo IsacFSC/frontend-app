@@ -4,44 +4,70 @@ import { auth } from '@/lib/auth';
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string; userId: string } }
+  { params }: { params: Promise<{ id: string; userId: string }> }
 ) {
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'LEADER')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const scheduleId = Number(params.id);
-  const userId = Number(params.userId);
+  const { id, userId } = await params;
+  const scheduleId = Number(id);
+  const numericUserId = Number(userId);
 
-  if (isNaN(scheduleId) || isNaN(userId)) {
+  if (isNaN(scheduleId) || isNaN(numericUserId)) {
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
 
-  await prisma.scheduleUser.create({ data: { scheduleId, userId } });
+  const { skill } = await req.json();
+  if (!skill) {
+    return NextResponse.json({ error: 'Missing skill' }, { status: 400 });
+  }
 
-  return new NextResponse(null, { status: 201 });
+  try {
+    const result = await prisma.usersOnSchedules.create({
+      data: {
+        scheduleId: scheduleId,
+        userId: numericUserId,
+        skill: skill,
+      },
+    });
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    console.error('Error adding user to schedule:', error);
+    return NextResponse.json({ error: 'Could not add user to schedule' }, { status: 500 });
+  }
 }
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string; userId: string } }
+  { params }: { params: Promise<{ id: string; userId: string }> }
 ) {
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'LEADER')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const scheduleId = Number(params.id);
-  const userId = Number(params.userId);
+  const { id, userId } = await params;
+  const scheduleId = Number(id);
+  const numericUserId = Number(userId);
 
-  if (isNaN(scheduleId) || isNaN(userId)) {
+  if (isNaN(scheduleId) || isNaN(numericUserId)) {
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
 
-  await prisma.scheduleUser.delete({
-    where: { scheduleId_userId: { scheduleId, userId } },
-  });
-
-  return new NextResponse(null, { status: 204 });
+  try {
+    await prisma.usersOnSchedules.delete({
+      where: {
+        userId_scheduleId: {
+          userId: numericUserId,
+          scheduleId: scheduleId,
+        },
+      },
+    });
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error('Error removing user from schedule:', error);
+    return NextResponse.json({ error: 'Could not remove user from schedule' }, { status: 500 });
+  }
 }

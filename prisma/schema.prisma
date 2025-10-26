@@ -21,7 +21,7 @@ model Message {
   content        String
   createdAt      DateTime     @default(now())
   authorId       Int
-  author         User         @relation(fields: [authorId], references: [id])
+  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   conversationId Int
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   fileId         Int?
@@ -52,6 +52,8 @@ model Task {
   status      TaskStatus @default(PENDING)
   scheduleId  Int?
   schedule    Schedule?  @relation(fields: [scheduleId], references: [id])
+
+  @@index([taskDate])
 }
 
 model Schedule {
@@ -66,10 +68,12 @@ model Schedule {
   file         File?              @relation(fields: [fileId], references: [id], onDelete: Cascade)
   users        UsersOnSchedules[]
   tasks        Task[]
+
+  @@index([startTime, endTime])
 }
 
 model UsersOnSchedules {
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
   schedule   Schedule @relation(fields: [scheduleId], references: [id])
   scheduleId Int

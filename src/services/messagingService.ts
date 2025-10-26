@@ -11,6 +11,13 @@ export interface Conversation {
   hasUnreadMessages?: boolean;
 }
 
+export interface File {
+  id: number;
+  fileName: string;
+  mimeType: string;
+  size: number;
+}
+
 export interface Message {
   id: number;
   content: string;
@@ -18,7 +25,7 @@ export interface Message {
   authorId: number; 
   author?: User;
   conversationId: number;
-  file?: string;
+  file?: File;
   fileMimeType?: string;
 }
 
@@ -61,6 +68,11 @@ export const createMessage = async (conversationId: number, content: string): Pr
   return data;
 };
 
+export const createGroupConversation = async (subject: string, participantIds: number[]): Promise<Conversation> => {
+  const { data } = await api.post('/messaging/conversations', { subject, participantIds });
+  return data;
+};
+
 export const uploadFile = async (conversationId: number, file: File): Promise<Message> => {
   const formData = new FormData();
   formData.append('file', file);
@@ -78,8 +90,8 @@ export const uploadFile = async (conversationId: number, file: File): Promise<Me
   return data;
 };
 
-export const downloadFile = async (fileName: string) => {
-  const { data } = await api.get(`/messaging/download/${fileName}`, {
+export const downloadFile = async (fileId: number) => {
+  const { data } = await api.get(`/messaging/download/${fileId}`, {
     responseType: 'blob',
   });
   return data;

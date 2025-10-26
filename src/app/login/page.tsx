@@ -1,19 +1,38 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
+import { FaSpinner } from 'react-icons/fa';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: FormEvent) => {
     e.preventDefault();
-    await signIn('credentials', { 
-      email, 
-      password, 
-      callbackUrl: '/dashboard' 
-    });
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await signIn('credentials', {
+        redirect: false, // Evita o redirecionamento automático para podermos tratar o erro
+        email,
+        password,
+      });
+
+      if (result?.error) {
+        setError('Credenciais inválidas. Verifique seu e-mail e senha.');
+        setIsLoading(false);
+      } else if (result?.ok) {
+        // Redireciona manualmente em caso de sucesso
+        window.location.href = '/dashboard';
+      }
+    } catch (err) {
+      setError('Ocorreu um erro inesperado. Tente novamente.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,13 +65,19 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            {error && <p className="text-red-500 text-xs italic mt-2">{error}</p>}
           </div>
           <div className="flex items-center justify-between">
             <button
-              className={`bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline w-full`}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
+              disabled={isLoading}
             >
-              Entrar
+              {isLoading ? (
+                <FaSpinner className="animate-spin h-5 w-5" />
+              ) : (
+                'Entrar'
+              )}
             </button>
           </div>
         </form>

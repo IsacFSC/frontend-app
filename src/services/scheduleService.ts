@@ -27,6 +27,11 @@ export const getSchedules = async (): Promise<Schedule[]> => {
   return Array.isArray(data) ? data : [];
 };
 
+export const getScheduleById = async (id: number): Promise<Schedule | null> => {
+  const { data } = await api.get(`/schedules/${id}`);
+  return data;
+};
+
 export const getTodaySchedule = async (): Promise<Schedule[]> => {
   const { data } = await api.get('/schedules/today');
   return data;
@@ -43,24 +48,11 @@ export const getMySchedules = async (): Promise<Schedule[]> => {
   return data;
 };
 
-export const downloadScheduleFile = async (scheduleId: number): Promise<void> => {
-  const response = await api.get(`/schedules/${scheduleId}/pdf`, {
-    responseType: 'blob',
-  });
-  const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
-  link.href = url;
-  const contentDisposition = response.headers['content-disposition'];
-  let fileName = `escala-${scheduleId}.pdf`; // Nome de arquivo padrão
-  if (contentDisposition) {
-    const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-    if (fileNameMatch && fileNameMatch.length === 2)
-      fileName = fileNameMatch[1];
-  }
-  link.setAttribute('download', fileName);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
+export const downloadScheduleFile = async (scheduleId: number): Promise<{ filePath: string }> => {
+  // Esta rota agora salva o arquivo no servidor e retorna um JSON com o caminho.
+  const response = await api.get(`/schedules/${scheduleId}/pdf`);
+  // A resposta esperada é um JSON: { message: string, filePath: string }
+  return response.data;
 };
 
 // New function to upload a file to a schedule

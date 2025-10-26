@@ -6,7 +6,9 @@ import {
   createSchedule,
   updateSchedule,
   deleteSchedule,
-  downloadScheduleFile,
+  addUserToSchedule,
+  removeUserFromSchedule,
+  uploadScheduleFile, // Added
   Schedule,
 } from '../../../services/scheduleService';
 import { getUsers, User } from '../../../services/userService';
@@ -19,7 +21,8 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AxiosError } from 'axios';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaDownload, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaEdit, FaTrash } from 'react-icons/fa';
+import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 
 interface ScheduleFormData {
   name: string;
@@ -132,17 +135,32 @@ export default function ScheduleManagementPage() {
   }, [fetchAllData, isAuthenticated, user]);
 
   const handleFileUpload = async (file: File, scheduleId: number) => {
-    console.log('File upload handler called', file, scheduleId);
-  };
+    if (!scheduleId) return;
+    try {
+      setLoading(true);
+      const result = await uploadScheduleFile(scheduleId, file);
+      const convoId = result?.conversationId;
 
-  const handleDownloadClick = async (scheduleId: number) => {
-     try {
-      await downloadScheduleFile(scheduleId);
+      setSuccessMessage('Arquivo enviado com sucesso e conversa criada!');
+      await fetchAllData(); 
+
+      if (convoId) {
+        router.push('/admin/messaging');
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: { id: convoId } }));
+        }, 300);
+      }
     } catch (error) {
-      console.error('[DOWNLOAD ERROR]', error);
-      setError('Falha ao baixar o arquivo.');
+      const axiosError = error as AxiosError;
+      const data = axiosError.response?.data as ErrorResponse
+      const errorMessage = data && typeof data.message === 'string' ? data.message : 'Falha ao enviar arquivo.';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSuccessMessage(null), 5000);
     }
   };
+
 
   const handleOpenFormModal = (schedule: Schedule | null = null) => {
     setSelectedSchedule(schedule ? JSON.parse(JSON.stringify(schedule)) : null);
@@ -164,21 +182,12 @@ export default function ScheduleManagementPage() {
 
   const handleFormSubmit = async (data: ScheduleFormData) => {
     try {
-      const scheduleData = {
-        ...data,
-        users: selectedSchedule
-          ? { set: selectedSchedule.users.map(u => ({ userId: u.userId, skill: u.skill })) }
-          : { connect: [] },
-      };
-
       if (selectedSchedule) {
-        const response = await updateSchedule(selectedSchedule.id, scheduleData);
+        await updateSchedule(selectedSchedule.id, data);
         setSuccessMessage('Escala atualizada com sucesso!');
-        console.log('Update response:', response);
       } else {
-        const response = await createSchedule(scheduleData);
+        await createSchedule(data as any);
         setSuccessMessage('Escala criada com sucesso!');
-        console.log('Create response:', response);
       }
       await fetchAllData();
       handleCloseFormModal();
@@ -207,48 +216,34 @@ export default function ScheduleManagementPage() {
 
   const handleAddUserToSchedule = async (userId: number, skill: string) => {
     if (!selectedSchedule) return;
-    const userToAdd = allUsers.find(u => u.id === userId);
-    if (userToAdd) {
-      const updatedUsers = [...selectedSchedule.users, { userId, skill, user: userToAdd }];
-      const scheduleData = {
-        users: {
-          set: updatedUsers.map(u => ({ userId: u.userId, skill: u.skill })),
-        },
-      };
-      try {
-        await updateSchedule(selectedSchedule.id, scheduleData);
-        setSelectedSchedule({ ...selectedSchedule, users: updatedUsers });
-        setSuccessMessage('Usuário adicionado com sucesso!');
-        await fetchAllData(); // Re-fetch to ensure UI is in sync
-      } catch (error) {
-        setError('Falha ao adicionar usuário à escala.');
-        console.error('[ADD USER ERROR]', error);
+    try {
+      await addUserToSchedule(selectedSchedule.id, userId, skill);
+      setSuccessMessage('Usuário adicionado com sucesso!');
+      // Optimistically update UI
+      const userToAdd = allUsers.find(u => u.id === userId);
+      if (userToAdd) {
+        setSelectedSchedule(prev => prev ? { ...prev, users: [...prev.users, { userId, skill, user: userToAdd, scheduleId: prev.id, assignedAt: new Date().toISOString() }] } : null);
       }
+      await fetchAllData(); // Re-fetch to ensure UI is fully in sync
+    } catch (error) {
+      setError('Falha ao adicionar usuário à escala.');
+      console.error('[ADD USER ERROR]', error);
     }
   };
 
   const handleRemoveUserFromSchedule = async (userId: number) => {
     if (!selectedSchedule) return;
-    const updatedUsers = selectedSchedule.users.filter(u => u.userId !== userId);
-    const scheduleData = {
-      users: {
-        set: updatedUsers.map(u => ({ userId: u.userId, skill: u.skill })),
-      },
-    };
-    await updateSchedule(selectedSchedule.id, scheduleData);
-    setSelectedSchedule({ ...selectedSchedule, users: updatedUsers });
-    await fetchAllData(); // Re-fetch to ensure UI is in sync
+    try {
+      await removeUserFromSchedule(selectedSchedule.id, userId);
+      setSuccessMessage('Usuário removido com sucesso!');
+      // Optimistically update UI
+      setSelectedSchedule(prev => prev ? { ...prev, users: prev.users.filter(u => u.userId !== userId) } : null);
+      await fetchAllData(); // Re-fetch to ensure UI is in sync
+    } catch (error) {
+      setError('Falha ao remover usuário da escala.');
+      console.error('[REMOVE USER ERROR]', error);
+    }
   };
-
-  // const handleUpdateUsers = (updatedUsers: { userId: number; skill: string; user: User }[]) => {
-  //   setSelectedSchedule(prev => {
-  //     if (!prev) return null;
-  //     return { ...prev, users: updatedUsers };
-  //   });
-  // };
-
-
-
 
   const handleAssignTask = async (taskId: number) => {
     if (!selectedSchedule) return;
@@ -386,14 +381,7 @@ export default function ScheduleManagementPage() {
                               <button onClick={() => handleOpenUserModal(schedule)} className="text-sm text-white bg-blue-700 hover:bg-blue-500 border rounded-3xl p-1 flex items-center" title="Gerenciar usuários">
                                 <FaUsers />
                                 <span className='ml-1 hidden sm:block'> Ministros</span>
-                              </button>                              
-                                <button
-                                  onClick={() => handleDownloadClick(schedule.id)}
-                                  className="text-sm text-white bg-blue-500 hover:bg-blue-700 border rounded-3xl p-1 flex items-center" title="Baixar Anexo"
-                                >
-                                  <FaDownload />
-                                  <span className='ml-1 hidden sm:block'>  Baixar escala</span>
-                                </button>                              
+                              </button>                              <DownloadScheduleButton schedule={schedule} />
                               <button onClick={() => handleOpenFormModal(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900 border rounded-3xl p-1 flex items-center" title="Editar">
                                 <FaEdit />
                                 <span className='ml-1 hidden sm:block'> Editar</span>

@@ -5,8 +5,9 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, downloadScheduleFile, Schedule, uploadScheduleFile } from '../../../services/scheduleService';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaSync, FaDownload, FaFileUpload, FaArrowLeft } from 'react-icons/fa';
+import { FaSync, FaFileUpload, FaArrowLeft } from 'react-icons/fa';
 import { AxiosError } from 'axios';
+import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 
 interface UploadResponse {
   schedule: Schedule;
@@ -146,18 +147,6 @@ export default function LeaderScheduleManagementPage() {
     setFilteredSchedules(filtered);
   }, [searchTerm, dateFilter, schedules]);
 
-  const handleDownload = async (scheduleId: number) => {
-    try {
-      await downloadScheduleFile(scheduleId);
-      // A função downloadScheduleFile já trata o download,
-      // então a notificação de sucesso pode não ser necessária aqui
-      // ou pode ser mostrada antes do início do download.
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      showToast('Erro ao baixar o arquivo. Tente novamente.', 'error');
-    }
-  };
-
   // Toast simples
   function showToast(message: string, type: 'success' | 'error') {
     const toast = document.createElement('div');
@@ -253,7 +242,7 @@ export default function LeaderScheduleManagementPage() {
                 className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center ${isRefreshing ? 'opacity-60 cursor-not-allowed' : ''}`}
                 disabled={isRefreshing}
             >
-              <FaSync className="mr-2" /> Atualizar
+              <FaSync className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Atualizar
             </button>
             <button
               onClick={handleBack}
@@ -330,12 +319,7 @@ export default function LeaderScheduleManagementPage() {
                               </p>
                             </div>
                             <div className="flex items-center space-x-2 mt-4 md:mt-0">                              
-                                <button
-                                  onClick={() => handleDownload(schedule.id)}
-                                  className='bg-blue-600 hover:bg-blue-700 text-white  rounded-3xl p-1.5 flex items-center'
-                                >
-                                  <FaDownload className="mr-2" /> Baixar Escala
-                                </button>                              
+                                <DownloadScheduleButton scheduleId={schedule.id.toString()} scheduleName={schedule.name} />                             
                               <button onClick={() => handleAttachFileClick(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900 rounded-3xl p-1.5 flex items-center">
                                 <FaFileUpload className="mr-2" /> Anexar / Editar Arquivo
                               </button>
