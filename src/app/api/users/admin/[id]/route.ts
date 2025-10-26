@@ -2,16 +2,17 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
-export async function PUT(
+export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (session?.user?.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const userId = Number(params.id);
+  const { id } = await params;
+  const userId = Number(id);
   if (isNaN(userId)) {
     return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
   }
