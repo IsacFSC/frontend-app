@@ -94,7 +94,17 @@ export default function UserManagementPage() {
         await updateUserByAdmin(editingUser.id, data);
         setSuccessMessage('Usuário atualizado com sucesso!');
       } else {
-        await createUser(data);
+        if (!data.name || !data.email || !data.role) {
+          setError("Nome, email e perfil são obrigatórios.");
+          return;
+        }
+        const newUser: Omit<User, 'id' | 'active'> = {
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          avatar: data.avatar,
+        };
+        await createUser(newUser);
         setSuccessMessage('Usuário criado com sucesso!');
       }
       await fetchUsers(); // Refresh list

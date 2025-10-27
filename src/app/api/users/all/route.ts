@@ -3,6 +3,9 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 
+// Defina um tipo para os papéis de usuário
+type UserRole = 'ADMIN' | 'LEADER' | 'USER';
+
 export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user) {
@@ -27,7 +30,7 @@ export async function GET(req: Request) {
     filters.push({ active: active === 'true' });
   }
   if (typeof role !== 'undefined' && role !== null && role !== 'all' && ['ADMIN', 'LEADER', 'USER'].includes(String(role))) {
-    filters.push({ role: String(role) as any });
+    filters.push({ role: String(role) as UserRole });
   }
 
   let whereClause: Prisma.UserWhereInput = {};

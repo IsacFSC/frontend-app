@@ -27,7 +27,8 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-4">
             <MessageIcon />
             <button
-              onClick={signOut}
+              onClick={() => signOut({ callbackUrl: '/login' })}
+
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >
               <FaSignOutAlt className="mr-2" /> Sair

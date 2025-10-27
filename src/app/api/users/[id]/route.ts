@@ -3,13 +3,23 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { hashPassword } from '@/lib/auth'; // Assuming hashPassword is in auth
 
+// Defina uma interface para os dados de atualização do usuário
+interface UserUpdateData {
+  name?: string;
+  email?: string;
+  passwordHash?: string;
+  role?: string;
+  active?: boolean;
+}
+
 // GET /api/users/:id -> get user (ADMIN, LEADER, or self)
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: Request, // Parâmetro não utilizado
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  const userId = Number(params.id);
+  const { id } = await params;
+  const userId = Number(id);
 
   if (isNaN(userId)) {
     return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
@@ -35,10 +45,11 @@ export async function GET(
 // PUT /api/users/:id -> update user (ADMIN or self)
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  const userId = Number(params.id);
+  const { id } = await params;
+  const userId = Number(id);
 
   if (isNaN(userId)) {
     return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
@@ -54,7 +65,7 @@ export async function PUT(
   const body = await req.json();
   const { name, email, password, role, active } = body;
 
-  const data: any = {};
+  const data: UserUpdateData = {};
   if (name) data.name = name;
   if (email) data.email = email;
   if (password) data.passwordHash = await hashPassword(password);
@@ -68,22 +79,23 @@ export async function PUT(
   try {
     const user = await prisma.user.update({ where: { id: userId }, data });
     return NextResponse.json(user);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: 'User not found or update failed' }, { status: 404 });
   }
 }
 
 // DELETE /api/users/:id -> delete user (ADMIN only)
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  _req: Request, // Parâmetro não utilizado
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (session?.user?.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const userId = Number(params.id);
+  const { id } = await params;
+  const userId = Number(id);
   if (isNaN(userId)) {
     return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
   }
@@ -91,7 +103,7 @@ export async function DELETE(
   try {
     await prisma.user.delete({ where: { id: userId } });
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: 'User not found or delete failed' }, { status: 404 });
   }
 }

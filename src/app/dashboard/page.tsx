@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { getMySchedules, downloadScheduleFile, Schedule } from '../../services/scheduleService';
+import { getMySchedules, Schedule } from '../../services/scheduleService';
 import { getUnreadMessagesCount } from '../../services/messagingService';
 import PrivateRoute from '../../components/PrivateRoute';
 import { FaEnvelope, FaSync, FaSignOutAlt } from 'react-icons/fa';
@@ -161,16 +161,6 @@ export default function DashboardPage() {
     setFilteredSchedules(filtered);
   }, [searchTerm, dateFilter, schedules]);
 
-// Toast simples
-function showToast(message: string, type: 'success' | 'error') {
-  const toast = document.createElement('div');
-  toast.textContent = message;
-  toast.className = `fixed top-6 right-6 z-50 px-4 py-2 rounded shadow-lg text-white font-bold ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
 
   const handleRefresh = async () => {
     try {

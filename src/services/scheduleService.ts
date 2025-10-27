@@ -55,8 +55,13 @@ export const downloadScheduleFile = async (scheduleId: number): Promise<{ filePa
   return response.data;
 };
 
+export interface UploadResponse {
+  schedule: Schedule;
+  conversationId: number;
+}
+
 // New function to upload a file to a schedule
-export const uploadScheduleFile = async (scheduleId: number, file: File): Promise<Schedule> => {
+export const uploadScheduleFile = async (scheduleId: number, file: File): Promise<UploadResponse> => {
   const formData = new FormData();
   formData.append('file', file);
   const { data } = await api.post(`/schedules/${scheduleId}/upload`, formData, {

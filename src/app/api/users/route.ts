@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth';
 import * as bcrypt from 'bcryptjs';
 
 // GET /api/users -> list users (roles: ADMIN, LEADER, USER)
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const session = await auth();
   console.log('Session in /api/users:', session);
   // any authenticated user can list
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       data: { name, email, password: hashedPassword, role: roleToSet },
     });
     return NextResponse.json(user, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     // Most likely a unique constraint violation on email
     return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
   }

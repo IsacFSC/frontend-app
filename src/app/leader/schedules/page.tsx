@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { getMySchedules, downloadScheduleFile, Schedule, uploadScheduleFile } from '../../../services/scheduleService';
+import { getMySchedules, Schedule, uploadScheduleFile } from '../../../services/scheduleService';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaSync, FaFileUpload, FaArrowLeft } from 'react-icons/fa';
 import { AxiosError } from 'axios';
@@ -113,7 +113,7 @@ export default function LeaderScheduleManagementPage() {
         setSchedulesLoading(false);
       }
     }
-  }, [user, signOut]);
+  }, [user]);
 
   useEffect(() => {
     if (loading) return; // Aguarda autenticação
@@ -319,7 +319,7 @@ export default function LeaderScheduleManagementPage() {
                               </p>
                             </div>
                             <div className="flex items-center space-x-2 mt-4 md:mt-0">                              
-                                <DownloadScheduleButton scheduleId={schedule.id.toString()} scheduleName={schedule.name} />                             
+                                <DownloadScheduleButton schedule={schedule} />
                               <button onClick={() => handleAttachFileClick(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900 rounded-3xl p-1.5 flex items-center">
                                 <FaFileUpload className="mr-2" /> Anexar / Editar Arquivo
                               </button>

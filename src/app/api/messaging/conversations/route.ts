@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
 // GET /api/messaging/conversations -> list conversations for current user
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const session = await auth();
   const userId = session?.user?.id;
 

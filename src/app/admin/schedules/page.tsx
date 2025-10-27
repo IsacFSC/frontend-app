@@ -183,10 +183,11 @@ export default function ScheduleManagementPage() {
   const handleFormSubmit = async (data: ScheduleFormData) => {
     try {
       if (selectedSchedule) {
-        await updateSchedule(selectedSchedule.id, data);
+        const { file: _unused, ...dataWithoutFile } = data;
+        await updateSchedule(selectedSchedule.id, dataWithoutFile);
         setSuccessMessage('Escala atualizada com sucesso!');
       } else {
-        const { file, ...scheduleDataWithoutFile } = data;
+        const { file: _unusedFile, ...scheduleDataWithoutFile } = data;
         await createSchedule(scheduleDataWithoutFile);
         setSuccessMessage('Escala criada com sucesso!');
       }
@@ -436,7 +437,7 @@ export default function ScheduleManagementPage() {
         {isFormModalOpen && (
           <Modal isOpen={isFormModalOpen} onClose={handleCloseFormModal} title={selectedSchedule && isFormModalOpen ? 'Editar escala' : 'Criar escala'}>
             <ScheduleForm
-              scheduleToEdit={selectedSchedule ? { ...selectedSchedule, file: undefined } : null}
+              scheduleToEdit={selectedSchedule ? { ...selectedSchedule, file: null } : null}
               onSubmit={handleFormSubmit}
               onCancel={handleCloseFormModal}
               successMessage={successMessage || undefined}

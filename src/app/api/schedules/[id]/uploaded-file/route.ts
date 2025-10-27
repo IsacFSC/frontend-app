@@ -4,16 +4,17 @@ import { auth } from '@/lib/auth';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const scheduleId = Number(params.id);
+  const { id } = await params;
+  const scheduleId = Number(id);
   if (isNaN(scheduleId)) {
-    return NextResponse.json({ error: 'Invalid schedule ID' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid upload ID' }, { status: 400 });
   }
 
   const schedule = await prisma.schedule.findUnique({

@@ -4,18 +4,19 @@ import { auth } from '@/lib/auth';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const convId = Number(params.id);
+  const { id } = await params;
+  const convId = Number(id);
   if (isNaN(convId)) {
     return NextResponse.json({ error: 'Invalid conversation ID' }, { status: 400 });
   }
-
+  
   const conv = await prisma.conversation.findUnique({
     where: { id: convId },
     include: {

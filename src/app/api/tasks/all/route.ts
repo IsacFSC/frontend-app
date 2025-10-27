@@ -58,8 +58,9 @@ export async function GET(req: Request) {
 
     const page = Math.floor(skip / take) + 1;
     return NextResponse.json({ data: tasks, total, page, limit: take });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Failed to fetch tasks', err);
-    return NextResponse.json({ error: 'Internal error', details: err?.message || String(err) }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: 'Internal error', details: errorMessage }, { status: 500 });
   }
 }

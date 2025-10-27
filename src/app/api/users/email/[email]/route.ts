@@ -3,9 +3,10 @@ import prisma from '@/lib/prisma';
 
 export async function GET(
   req: Request,
-  { params }: { params: { email: string } }
+  { params }: { params: Promise<{ email: string }> }
 ) {
-  const { email } = params;
+  const { email } = await params;
+  
   if (!email || typeof email !== 'string') {
     return NextResponse.json({ error: 'Email is required' }, { status: 400 });
   }

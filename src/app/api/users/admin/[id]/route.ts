@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
+// Defina uma interface para os dados de atualização do administrador
+interface AdminUserUpdateData {
+  role?: string;
+  active?: boolean;
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -20,7 +26,7 @@ export async function PATCH(
   const body = await req.json();
   const { role, active } = body;
 
-  const data: any = {};
+  const data: AdminUserUpdateData = {};
   if (role) data.role = role;
   if (typeof active === 'boolean') data.active = active;
 
@@ -34,8 +40,7 @@ export async function PATCH(
       data,
     });
     return NextResponse.json(user);
-  } catch (error) {
-    // Handle cases where the user might not be found
+  } catch (_error) {
     return NextResponse.json({ error: 'User not found or update failed' }, { status: 404 });
   }
 }
