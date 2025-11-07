@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import * as bcrypt from 'bcryptjs';
+import { Role } from '@prisma/client';
 
 // GET /api/users -> list users (roles: ADMIN, LEADER, USER)
 export async function GET(_req: Request) {
@@ -28,9 +29,9 @@ export async function POST(req: Request) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  let roleToSet = 'USER';
-  if (session?.user?.role === 'ADMIN' && role) {
-    roleToSet = role;
+  let roleToSet: Role = Role.USER;
+  if (session?.user?.role === 'ADMIN' && role && Object.values(Role).includes(role as Role)) {
+    roleToSet = role as Role;
   }
 
   try {

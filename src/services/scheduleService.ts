@@ -17,6 +17,8 @@ export interface Schedule {
   description: string | null;
   startTime: string; // ISO 8601 date string
   endTime: string;   // ISO 8601 date string
+  createdAt: string; // ISO 8601 date string
+  updatedAt: string; // ISO 8601 date string
   file: string | null; // This will store the uploaded file name
   users: UsersOnSchedules[];
   tasks: Task[];

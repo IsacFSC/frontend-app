@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
-import { hashPassword } from '@/lib/auth'; // Assuming hashPassword is in auth
+import { hashPassword } from '@/lib/auth';
+import { Role } from '@prisma/client';
 
-// Defina uma interface para os dados de atualização do usuário
+// Define interface for user update data
 interface UserUpdateData {
   name?: string;
   email?: string;
   passwordHash?: string;
-  role?: string;
+  role?: Role;
   active?: boolean;
 }
 
@@ -27,7 +28,7 @@ export async function GET(
 
   const hasAccess = session?.user?.role === 'ADMIN' || 
                     session?.user?.role === 'LEADER' || 
-                    session?.user?.id === userId;
+                    Number(session?.user?.id) === userId;
 
   if (!hasAccess) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -55,7 +56,7 @@ export async function PUT(
     return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
   }
 
-  const isOwner = session?.user?.id === userId;
+  const isOwner = Number(session?.user?.id) === userId;
   const isAdmin = session?.user?.role === 'ADMIN';
 
   if (!isOwner && !isAdmin) {
@@ -72,7 +73,9 @@ export async function PUT(
 
   // Only admin can change role and active status
   if (isAdmin) {
-    if (role) data.role = role;
+    if (role && Object.values(Role).includes(role as Role)) {
+      data.role = role as Role;
+    }
     if (typeof active === 'boolean') data.active = active;
   }
 

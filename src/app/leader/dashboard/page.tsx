@@ -34,7 +34,10 @@ export default function LeaderDashboardPage() {
           <div className="flex items-center gap-4">
             <MessageIcon />
             <button
-              onClick={signOut}
+              onClick={(e) => {
+                e.preventDefault();
+                signOut();
+              }}
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >
               <FaSignOutAlt className="mr-2" /> Sair

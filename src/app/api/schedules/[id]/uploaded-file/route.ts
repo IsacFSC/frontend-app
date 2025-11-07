@@ -31,5 +31,7 @@ export async function GET(
   headers.set('Content-Type', file.mimeType || 'application/octet-stream');
   headers.set('Content-Disposition', `inline; filename="${file.fileName}"`);
 
-  return new Response(file.data, { headers });
+  // Convert the Uint8Array to a Buffer which is accepted by Response
+  const buffer = Buffer.from(file.data);
+  return new Response(buffer, { headers });
 }

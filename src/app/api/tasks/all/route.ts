@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
+import { Prisma, TaskStatus } from '@prisma/client';
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -25,8 +25,8 @@ export async function GET(req: Request) {
   if (userId) {
     where.userId = Number(userId);
   }
-  if (status) {
-    where.status = status;
+  if (status && Object.values(TaskStatus).includes(status as TaskStatus)) {
+    where.status = status as TaskStatus;
   }
   if (name) {
     where.name = { contains: name, mode: 'insensitive' };

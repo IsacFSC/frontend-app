@@ -204,7 +204,10 @@ export default function DashboardPage() {
               <FaSync className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Atualizar
             </button>
             <button
-              onClick={signOut}
+              onClick={(e) => {
+                e.preventDefault();
+                signOut();
+              }}
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >
               <FaSignOutAlt className="mr-2" /> Sair

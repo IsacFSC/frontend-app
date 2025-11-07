@@ -1,6 +1,6 @@
 import { api } from './api';
 
-enum Role {
+export enum Role {
   ADMIN = 'ADMIN',
   LEADER = 'LEADER',
   USER = 'USER',

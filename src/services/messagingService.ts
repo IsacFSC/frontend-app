@@ -11,7 +11,7 @@ export interface Conversation {
   hasUnreadMessages?: boolean;
 }
 
-export interface File {
+export interface FileData {
   id: number;
   fileName: string;
   mimeType: string;
@@ -25,7 +25,7 @@ export interface Message {
   authorId: number; 
   author?: User;
   conversationId: number;
-  file?: File;
+  file?: FileData;
   fileMimeType?: string;
 }
 
@@ -73,7 +73,7 @@ export const createGroupConversation = async (subject: string, participantIds: n
   return data;
 };
 
-export const uploadFile = async (conversationId: number, file: File): Promise<Message> => {
+export const uploadFile = async (conversationId: number, file: globalThis.File): Promise<Message> => {
   const formData = new FormData();
   formData.append('file', file);
 

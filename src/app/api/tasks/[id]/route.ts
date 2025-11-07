@@ -2,13 +2,15 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
-// Defina uma interface para os dados de atualização da tarefa
+import { TaskStatus } from '@prisma/client';
+
+// Define the interface for task update data
 interface TaskUpdateData {
   name?: string;
   description?: string;
-  status?: string;
-  userId?: number;
-  taskDate?: Date;
+  status?: TaskStatus;
+  userId?: number | null;
+  taskDate?: Date | null;
 }
 
 export async function GET(
@@ -59,9 +61,11 @@ export async function PATCH(
   const data: TaskUpdateData = {};
   if (name) data.name = name;
   if (description) data.description = description;
-  if (status) data.status = status;
-  if (userId) data.userId = userId;
-  if (taskDate) data.taskDate = new Date(taskDate);
+  if (status && Object.values(TaskStatus).includes(status as TaskStatus)) {
+    data.status = status as TaskStatus;
+  }
+  if (userId !== undefined) data.userId = userId;
+  if (taskDate !== undefined) data.taskDate = taskDate ? new Date(taskDate) : null;
 
   try {
     const task = await prisma.task.update({ where: { id: taskId }, data });

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { Role } from '@prisma/client';
 
-// Defina uma interface para os dados de atualização do administrador
+// Define interface for admin user update data
 interface AdminUserUpdateData {
-  role?: string;
+  role?: Role;
   active?: boolean;
 }
 
@@ -27,7 +28,9 @@ export async function PATCH(
   const { role, active } = body;
 
   const data: AdminUserUpdateData = {};
-  if (role) data.role = role;
+  if (role && Object.values(Role).includes(role as Role)) {
+    data.role = role as Role;
+  }
   if (typeof active === 'boolean') data.active = active;
 
   if (Object.keys(data).length === 0) {

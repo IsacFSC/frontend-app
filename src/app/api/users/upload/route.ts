@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     });
 
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: Number(userId) },
       data: { avatarFileId: createdFile.id },
     });
 

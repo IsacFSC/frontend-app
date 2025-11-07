@@ -1,23 +1,20 @@
+import { TaskStatus } from '@prisma/client';
 import { api } from './api';
 import { User } from './userService';
 
-export enum TaskStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-}
+export { TaskStatus };
 
 export interface Task {
   id: number;
   name: string;
   description: string;
   completed: boolean;
-  createdAt: string;
+  createdAt: string | Date;
   userId: number | null;
-  user: User | null;
+  user?: User | null;
   status: TaskStatus;
   scheduleId: number | null;
-  taskDate: string;
+  taskDate: string | Date | null;
 }
 
 export interface TasksResponse {

@@ -26,7 +26,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isNewConversationModalOpen, setIsNewConversationModalOpen] = useState(false);
   const [newMessage, setNewMessage] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Browser's File API
   const [view, setView] = useState<'conversations' | 'messages'>('conversations');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
@@ -57,7 +57,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     try {
       const fetchedUsers = await getUsers();
       if (user) {
-        setUsers(fetchedUsers.filter(u => u.id !== user.id));
+        setUsers(fetchedUsers.filter(u => u.id !== Number(user.id)));
       } else {
         setUsers(fetchedUsers);
       }
@@ -139,8 +139,13 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     if (!newMessage.trim() && !selectedFile) return;
 
     try {
-      if (selectedFile) {
-        await uploadFile(selectedConversation.id, selectedFile);
+      if (selectedFile && selectedConversation) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        await fetch(`/api/messaging/conversations/${selectedConversation.id}/upload`, {
+          method: 'POST',
+          body: formData,
+        });
         setSelectedFile(null);
       } else {
         await createMessage(selectedConversation.id, newMessage);
@@ -300,7 +305,10 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                         msg.file.mimeType.startsWith('image/') ? (
                           <Image src={`/api/messaging/download/${msg.file.id}`} alt={msg.file.fileName} className="max-w-xs rounded-lg" width={300} height={300} />
                         ) : (
-                          <button onClick={() => handleDownload(msg.file.id, msg.file.fileName)} className="text-blue-200 hover:underline flex items-center">
+                          <button 
+                            onClick={() => msg.file && handleDownload(msg.file.id, msg.file.fileName)} 
+                            className="text-blue-200 hover:underline flex items-center"
+                          >
                             <FaDownload className="mr-2" />
                             {msg.file.fileName}
                           </button>
@@ -360,7 +368,6 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
         users={users}
         onSend={handleSendNewConversation}
         title="Nova Conversa"
-        userRole={userRole}
       />
     </div>
   );
