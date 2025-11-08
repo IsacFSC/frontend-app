@@ -8,6 +8,15 @@ const nextConfig = {
     config.resolve.alias.canvas = false;
     return config;
   },
+  // Enable proper URL handling for Vercel deployment
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
