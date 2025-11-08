@@ -38,7 +38,7 @@ export default function LeaderDashboardPage() {
                 e.preventDefault();
                 signOut();
               }}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >
               <FaSignOutAlt className="mr-2" /> Sair
             </button>
@@ -46,7 +46,7 @@ export default function LeaderDashboardPage() {
         </div>
         <div className="text-gray-200">
           <p className="mt-2">Olá, {user.name}!</p>
-          <p className="mt-2">Você está logado como: {user.role}</p>
+          <p className="mt-2">Você está logado como: {user.role} </p>
         </div>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link href="/leader/schedules" className="bg-teal-200 hover:bg-teal-400 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">

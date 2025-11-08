@@ -29,7 +29,7 @@ export default function AdminDashboardPage() {
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
 
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >
               <FaSignOutAlt className="mr-2" /> Sair
             </button>
