@@ -161,17 +161,17 @@ export default function UserManagementPage() {
     <PrivateRoute>
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-200">Gestão de Usuários</h1>
-          <div className="flex space-x-4">
+          <h1 className="text-3xl font-bold text-gray-200">Gerenciar Usuários</h1>
+          <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
             <button
               onClick={handleBack}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="bg-gray-500 hover:bg-gray-700 text-white text-sm w-full justify-center py-2 px-4 rounded flex items-center"
             >
               <FaArrowLeft className="mr-2" /> Voltar
             </button>
             <button
               onClick={() => handleOpenModal()}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="bg-blue-500 hover:bg-blue-700 text-white text-sm w-fit justify-center py-2 px-4 rounded flex items-center"
             >
               <FaPlus className="mr-2" /> Criar Usuário
             </button>
@@ -184,12 +184,12 @@ export default function UserManagementPage() {
             placeholder="Buscar por nome ou email"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+            className="w-full px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
           />
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+            className="flex w-full px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
           >
             <option value="">Todos os Status</option>
             <option value="true">Ativo</option>
@@ -198,7 +198,7 @@ export default function UserManagementPage() {
           <select
             value={roleFilter}
             onChange={e => setRoleFilter(e.target.value)}
-            className="px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+            className="flex w-full px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
           >
             <option value="">Todos os Perfis</option>
             <option value="ADMIN">Admin</option>
@@ -221,7 +221,7 @@ export default function UserManagementPage() {
           </div>
         )}
 
-        {!pageLoading && !error && (
+        {/* {!pageLoading && !error && (
           <div className="bg-gray-700 shadow-md rounded-lg">
             <table className="min-w-full leading-normal">
               <thead>
@@ -330,8 +330,90 @@ export default function UserManagementPage() {
               </tbody>
             </table>
           </div>
-        )}
+        )} */}
+        {/* CÓDIGO PARA TESTE AQUI INICIO*/}
+        {!pageLoading && !error && (
+          // Container que permite a rolagem horizontal
+          <div className="overflow-x-auto shadow-md rounded-lg">
+            {/* Removi o bg-gray-700 daqui para evitar conflitos de z-index com sticky backgrounds */}
+            <table className="min-w-full leading-normal">
+              <thead>
+                <tr>
+                  {/* --- COLUNA FIXA (STICKY) --- */}
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-48">
+                    Usuários
+                  </th>
+                  {/* --- FIM COLUNA FIXA --- */}
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                    Perfil
+                  </th>
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    {/* --- CÉLULA FIXA (STICKY) --- */}
+                    <td className="px-0 py-5 border-b border-gray-200 bg-gray-600 text-sm sticky left-0 z-0">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
+                          {user.avatar ? (
+                            <Image
+                              className="w-full h-full object-cover"
+                              src={`${api.defaults.baseURL}/files/${user.avatar}`}
+                              alt="User avatar"
+                            />
+                          ) : (
+                            getInitials(user.name)
+                          )}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-gray-100 whitespace-no-wrap">{user.name}</p>
+                          <p className="text-gray-200 wrap-normal text-sm font-extralight">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    {/* --- FIM CÉLULA FIXA --- */}
 
+                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                      <p className="text-gray-100 whitespace-no-wrap">{user.role}</p>
+                    </td>
+                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                      <button
+                        onClick={() => handleToggleActiveStatus(user.id, user.active)}
+                        className={`px-2 py-1 text-md font-semibold rounded-full flex items-center ${
+                          user.active ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                        } ${loadingUserIds.includes(user.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        disabled={loadingUserIds.includes(user.id)}
+                      >
+                        {loadingUserIds.includes(user.id) ? (
+                          <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            ><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                        ) : (
+                          user.active ? <FaToggleOff className="mr-1" /> : <FaToggleOn className="mr-1" />
+                        )} {user.active ? 'Desativar' : 'Ativar'}
+                      </button>
+                    </td>
+                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                      {/* Seu Menu dropdown complexo permanece o mesmo, mas a largura pode precisar de ajustes */}
+                      <div className="relative inline-block text-left w-full">
+                        <Menu>
+                          {/* ... (código do Menu) ... */}
+                        </Menu>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {/* CÓDIGO PARA TESTE AQUI FIM*/}
         {isModalOpen && (
           <Modal
             isOpen={isModalOpen}

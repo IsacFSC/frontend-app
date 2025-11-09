@@ -310,11 +310,11 @@ export default function ScheduleManagementPage() {
           <div className="flex flex-col md:flex-row md:space-x-0  md:space-y-0 gap-3 space-y-2"> 
             <button
               onClick={handleBack}
-              className="md:w-full justify-center bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="md:w-fit justify-center bg-gray-500 hover:bg-gray-700 text-white text-sm py-2 px-4 rounded flex items-center"
             >
-              <FaArrowLeft className="mr-2" /> Voltar
+              <FaArrowLeft className="mr-2 text-sm" /> Voltar
             </button>
-            <button onClick={() => handleOpenFormModal()} className="md:w-full justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
+            <button onClick={() => handleOpenFormModal()} className="md:w-fit justify-center bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded flex items-center">
               <FaPlus className="mr-2" /> Criar Escala
             </button>
           </div>

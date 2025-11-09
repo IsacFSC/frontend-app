@@ -78,7 +78,8 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}
+      className="bg-gray-800 p-6 rounded-lg max-w-lg mx-auto">
       {successMessage && (
         <div className="bg-green-900 border border-green-800 text-green-100 px-4 py-3 rounded relative mb-4" role="alert">
           <span className="block sm:inline">{successMessage}</span>
@@ -160,13 +161,13 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
         <button
           type="button"
           onClick={onCancel}
-          className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+          className="bg-gray-600 hover:bg-gray-700 text-white text-sm py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
         >
           <FaTimes className="mr-2" /> Cancelar
         </button>
         <button
           type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+          className="bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
           disabled={isLeader}
         >
           <FaSave className="mr-2" /> {isEditing ? 'Atualizar escala' : 'Criar escala'}
