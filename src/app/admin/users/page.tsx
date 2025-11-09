@@ -374,7 +374,7 @@ export default function UserManagementPage() {
                         </div>
                         <div className="ml-3">
                           <p className="text-gray-100 whitespace-no-wrap">{user.name}</p>
-                          <p className="text-gray-200 wrap-normal text-sm font-extralight">{user.email}</p>
+                          <p className="text-gray-200 truncate w-20 text-sm font-extralight">{user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -404,6 +404,41 @@ export default function UserManagementPage() {
                       <div className="relative inline-block text-left w-full">
                         <Menu>
                           {/* ... (código do Menu) ... */}
+                          {() => (
+                            <>
+                              <Menu.Button className="w-fit flex justify-center items-center bg-blue-500 hover:bg-blue-700 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <span className="mr-2"><FaEdit /></span>
+                                <span className="md:inline">Menu</span>
+                                <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                              </Menu.Button>
+                              <Menu.Items className="absolute z-10 left-0 mt-2 w-40 origin-top-right bg-gray-700 border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                                <div className="py-1 w-full">
+                                  <Menu.Item>
+                                    {({ active }) => (
+                                      <button
+                                        onClick={() => handleOpenModal(user)}
+                                        className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-blue-500 text-white' : 'bg-blue-700 text-white'} transition-colors`}
+                                        title="Editar"
+                                      >
+                                        <FaEdit className="mr-2" /> Editar
+                                      </button>
+                                    )}
+                                  </Menu.Item>
+                                  <Menu.Item>
+                                    {({ active }) => (
+                                      <button
+                                        onClick={() => handleDelete(user.id)}
+                                        className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-red-500 text-white' : 'bg-red-700 text-white'} transition-colors`}
+                                        title="Deletar"
+                                      >
+                                        <FaTrash className="mr-2" /> Deletar
+                                      </button>
+                                    )}
+                                  </Menu.Item>
+                                </div>
+                              </Menu.Items>
+                            </>
+                          )}
                         </Menu>
                       </div>
                     </td>
