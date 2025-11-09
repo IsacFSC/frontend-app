@@ -306,15 +306,15 @@ export default function ScheduleManagementPage() {
     <PrivateRoute>
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-200">Gerenciamento de Escalas</h1>
-          <div className="flex space-x-4"> 
+          <h1 className="text-3xl font-bold text-gray-200 justify-center">Gerenciar Escalas</h1>
+          <div className="flex flex-col md:flex-row md:space-x-0  md:space-y-0 gap-3 space-y-2"> 
             <button
               onClick={handleBack}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="md:w-full justify-center bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >
               <FaArrowLeft className="mr-2" /> Voltar
             </button>
-            <button onClick={() => handleOpenFormModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
+            <button onClick={() => handleOpenFormModal()} className="md:w-full justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
               <FaPlus className="mr-2" /> Criar Escala
             </button>
           </div>
@@ -383,7 +383,8 @@ export default function ScheduleManagementPage() {
                               <button onClick={() => handleOpenUserModal(schedule)} className="text-sm text-white bg-blue-700 hover:bg-blue-500 border rounded-3xl p-1 flex items-center" title="Gerenciar usuários">
                                 <FaUsers />
                                 <span className='ml-1 hidden sm:block'> Ministros</span>
-                              </button>                              <DownloadScheduleButton schedule={schedule} />
+                              </button>
+                              <DownloadScheduleButton schedule={schedule} />
                               <button onClick={() => handleOpenFormModal(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900 border rounded-3xl p-1 flex items-center" title="Editar">
                                 <FaEdit />
                                 <span className='ml-1 hidden sm:block'> Editar</span>
