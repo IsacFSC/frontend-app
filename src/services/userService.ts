@@ -15,6 +15,10 @@ export interface User {
   avatar?: string;
 }
 
+export interface CreateUserData extends Omit<User, 'id' | 'active'> {
+  password: string;
+}
+
 export interface GetUsersParams {
   limit?: number;
   offset?: number;
@@ -33,9 +37,42 @@ export const getUserByEmail = async (email: string): Promise<User> => {
   return data;
 };
 
-export const createUser = async (userData: Omit<User, 'id' | 'active'>): Promise<User> => {
-  const { data } = await api.post('/users', userData);
-  return data;
+// export const createUser = async (userData: CreateUserData): Promise<User> => {
+//   try {
+//     const { data } = await api.post('/users', userData);
+//     return data;
+//   } catch (error: unknown) {
+//     if (error.response?.status === 400) {
+//       throw new Error(error.response.data.error || 'Missing required fields');
+//     }
+//     if (error.response?.status === 409) {
+//       throw new Error('User with this email already exists');
+//     }
+//     throw new Error('Failed to create user');
+//   }
+// };
+function isAxiosError(error: unknown): error is { response: { status: number, data: { error: string } } } {
+  return typeof error === 'object' && error !== null && 'response' in error;
+}
+
+export const createUser = async (userData: CreateUserData): Promise<User> => {
+  try {
+    const { data } = await api.post('/users', userData);
+    return data;
+  } catch (error: unknown) {
+    // Usamos a função de verificação antes de acessar error.response
+    if (isAxiosError(error)) {
+      if (error.response.status === 400) {
+        throw new Error(error.response.data.error || 'Missing required fields');
+      }
+      if (error.response.status === 409) {
+        throw new Error('User with this email already exists');
+      }
+    }
+    
+    // Para qualquer outro tipo de erro ou erro não-Axios
+    throw new Error('Failed to create user');
+  }
 };
 
 export const updateUser = async (id: number, userData: Partial<User>): Promise<User> => {

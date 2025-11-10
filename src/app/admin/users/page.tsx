@@ -7,6 +7,7 @@ import {
   deleteUser,
   updateUserByAdmin,
   User,
+  CreateUserData,
 } from '../../../services/userService';
 import Modal from '../../../components/Modal';
 import UserForm from '../../../components/UserForm';
@@ -88,28 +89,29 @@ export default function UserManagementPage() {
     setIsModalOpen(false);
   };
 
-  const handleFormSubmit = async (data: Partial<User>) => {
+  const handleFormSubmit = async (data: Partial<User> & { password?: string }) => {
     try {
       if (editingUser) {
         await updateUserByAdmin(editingUser.id, data);
         setSuccessMessage('Usuário atualizado com sucesso!');
       } else {
-        if (!data.name || !data.email || !data.role) {
-          setError("Nome, email e perfil são obrigatórios.");
+        if (!data.name || !data.email || !data.role || !data.password) {
+          setError("Nome, email, senha e perfil são obrigatórios.");
           return;
         }
-        const newUser: Omit<User, 'id' | 'active'> = {
+        const newUser: CreateUserData = {
           name: data.name,
           email: data.email,
           role: data.role,
           avatar: data.avatar,
+          password: data.password
         };
         await createUser(newUser);
         setSuccessMessage('Usuário criado com sucesso!');
       }
       await fetchUsers(); // Refresh list
       handleCloseModal();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Falha ao salvar o usuário: ', error);
       setError('Não foi possível salvar os detalhes do usuário.');
     } finally {

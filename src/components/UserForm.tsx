@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User } from '../services/userService';
+import { User, CreateUserData } from '../services/userService';
 
 enum Role {
   ADMIN = 'ADMIN',
@@ -12,7 +12,7 @@ enum Role {
 
 interface UserFormProps {
   userToEdit?: User | null;
-  onSubmit: (data: Partial<User>) => void;
+  onSubmit: (data: Partial<User> & { password?: string }) => void;
   onCancel: () => void;
   successMessage?: string;
 }
@@ -37,11 +37,12 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const formData: Partial<User> & { password?: string } = { name, email, role };
-    // Only include the password if it was entered
-    if (password) {
-      formData.password = password;
-    }
+    const formData: Partial<User> & { password?: string } = {
+      name,
+      email,
+      role,
+      ...(password ? { password } : {})
+    };
     onSubmit(formData);
   };
 
