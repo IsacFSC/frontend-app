@@ -15,7 +15,7 @@ import { useSession } from 'next-auth/react';
 import { api } from '../../../services/api';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaTrash, FaToggleOn, FaToggleOff } from 'react-icons/fa';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import Image from 'next/image';
 
 export default function UserManagementPage() {
@@ -374,7 +374,9 @@ export default function UserManagementPage() {
                         </div>
                         <div className="ml-3">
                           <p className="text-gray-100 whitespace-no-wrap">{user.name}</p>
-                          <p className="text-gray-200 truncate w-20 text-sm font-extralight">{user.email}</p>
+                          <p className="text-gray-200 truncate w-20 sm:w-32 md:w-auto text-sm font-extralight">
+                            {user.email}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -406,14 +408,14 @@ export default function UserManagementPage() {
                           {/* ... (código do Menu) ... */}
                           {() => (
                             <>
-                              <Menu.Button className="w-fit flex justify-center items-center bg-blue-500 hover:bg-blue-700 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                              <MenuButton className="w-fit flex justify-center items-center bg-blue-500 hover:bg-blue-700 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <span className="mr-2"><FaEdit /></span>
                                 <span className="md:inline">Menu</span>
                                 <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                              </Menu.Button>
-                              <Menu.Items className="absolute z-10 left-0 mt-2 w-40 origin-top-right bg-gray-700 border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                              </MenuButton>
+                              <MenuItems className="absolute z-10 left-0 mt-2 w-40 origin-top-right bg-gray-700 border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
                                 <div className="py-1 w-full">
-                                  <Menu.Item>
+                                  <MenuItem>
                                     {({ active }) => (
                                       <button
                                         onClick={() => handleOpenModal(user)}
@@ -423,8 +425,8 @@ export default function UserManagementPage() {
                                         <FaEdit className="mr-2" /> Editar
                                       </button>
                                     )}
-                                  </Menu.Item>
-                                  <Menu.Item>
+                                  </MenuItem>
+                                  <MenuItem>
                                     {({ active }) => (
                                       <button
                                         onClick={() => handleDelete(user.id)}
@@ -434,9 +436,9 @@ export default function UserManagementPage() {
                                         <FaTrash className="mr-2" /> Deletar
                                       </button>
                                     )}
-                                  </Menu.Item>
+                                  </MenuItem>
                                 </div>
-                              </Menu.Items>
+                              </MenuItems>
                             </>
                           )}
                         </Menu>
