@@ -1,6 +1,6 @@
 
 'use client';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 
 import { useEffect, useState, useCallback } from 'react';
 import {
@@ -256,17 +256,17 @@ export default function TaskManagementPage() {
     <PrivateRoute>
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-200">Gerenciamento de Tarefas</h1>
-          <div className="flex space-x-4">
+          <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
+          <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
             <button
               onClick={handleBack}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="bg-gray-500 hover:bg-gray-700 text-white text-sm w-full justify-center py-2 px-4 rounded flex items-center"
             >
               <FaArrowLeft className="mr-2" /> Voltar
             </button>
             <button
               onClick={() => handleOpenModal()}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="bg-blue-500 hover:bg-blue-700 text-white text-sm w-fit justify-center py-2 px-4 rounded flex items-center"
             >
               <FaPlus className="mr-2" /> Criar Tarefa
             </button>
@@ -336,7 +336,7 @@ export default function TaskManagementPage() {
               <table className="min-w-full leading-normal">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Tarefa</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-10 w-48">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Ações</th>
@@ -345,7 +345,7 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-0">
                         <p className="text-gray-100 whitespace-no-wrap font-semibold">{task.name}</p>
                         <div className="text-gray-300 whitespace-no-wrap">{linkify(task.description)}</div>
                       </td>
@@ -363,14 +363,14 @@ export default function TaskManagementPage() {
                           <Menu>
                             {() => (
                               <>
-                                <Menu.Button className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <MenuButton className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                   <span className="mr-2"><FaEdit /></span>
                                   <span className="md:inline">Ações</span>
                                   <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                </Menu.Button>
-                                <Menu.Items className="absolute z-50 left-0 mt-2 w-44 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                                </MenuButton>
+                                <MenuItems className="absolute z-50 left-0 mt-2 w-44 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
                                   <div className="py-1 w-full">
-                                    <Menu.Item>
+                                    <MenuItem>
                                       {({ active }) => (
                                         <button
                                           onClick={() => handleOpenModal(task)}
@@ -380,8 +380,8 @@ export default function TaskManagementPage() {
                                           <FaEdit className="mr-2" /> Editar
                                         </button>
                                       )}
-                                    </Menu.Item>
-                                    <Menu.Item>
+                                    </MenuItem>
+                                    <MenuItem>
                                       {({ active }) => (
                                         <button
                                           onClick={() => handleDelete(task.id)}
@@ -391,10 +391,10 @@ export default function TaskManagementPage() {
                                           <FaTrash className="mr-2" /> Deletar
                                         </button>
                                       )}
-                                    </Menu.Item>
+                                    </MenuItem>
                                     {task.status === TaskStatus.PENDING && (
                                       <>
-                                        <Menu.Item>
+                                        <MenuItem>
                                           {({ active }) => (
                                             <button
                                               onClick={() => handleApprove(task.id)}
@@ -404,8 +404,8 @@ export default function TaskManagementPage() {
                                               <FaCheck className="mr-2" /> Aprovar
                                             </button>
                                           )}
-                                        </Menu.Item>
-                                        <Menu.Item>
+                                        </MenuItem>
+                                        <MenuItem>
                                           {({ active }) => (
                                             <button
                                               onClick={() => handleReject(task.id)}
@@ -415,11 +415,11 @@ export default function TaskManagementPage() {
                                               <FaBan className="mr-2" /> Rejeitar
                                             </button>
                                           )}
-                                        </Menu.Item>
+                                        </MenuItem>
                                       </>
                                     )}
                                   </div>
-                                </Menu.Items>
+                                </MenuItems>
                               </>
                             )}
                           </Menu>

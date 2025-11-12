@@ -36,7 +36,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
         <p className="mt-2 text-gray-200">Olá, {user?.name}!</p>
-        <p className="mt-2 text-gray-200">Você está logado como: {user?.role}</p>
+        {/* <p className="mt-2 text-gray-200">Você está logado como: {user?.role}</p> */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link href="/admin/users" className="bg-teal-200 hover:bg-teal-400 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center"><FaUsers className="mr-2" /> Gerenciamento de Usuários</h2>

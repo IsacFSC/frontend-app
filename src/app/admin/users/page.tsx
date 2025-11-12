@@ -180,7 +180,7 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-6 items-center">
+        <div className="flex flex-col md:flex-row gap-4">
           <input
             type="text"
             placeholder="Buscar por nome ou email"
@@ -336,7 +336,7 @@ export default function UserManagementPage() {
         {/* CÓDIGO PARA TESTE AQUI INICIO*/}
         {!pageLoading && !error && (
           // Container que permite a rolagem horizontal
-          <div className="overflow-x-auto shadow-md rounded-lg">
+          <div className="overflow-x-auto shadow-md rounded-lg overflow-visible">
             {/* Removi o bg-gray-700 daqui para evitar conflitos de z-index com sticky backgrounds */}
             <table className="min-w-full leading-normal">
               <thead>
