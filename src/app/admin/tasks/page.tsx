@@ -332,11 +332,11 @@ export default function TaskManagementPage() {
 
         {!loading && !error && (
           <>
-            <div className="bg-gray-700 shadow-md rounded-lg overflow-visible">
+            <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto overflow-visible">
               <table className="min-w-full leading-normal">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-10 w-48">Tarefa</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 w-48">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Ações</th>
@@ -345,7 +345,7 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-0">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 w-48">
                         <p className="text-gray-100 whitespace-no-wrap font-semibold">{task.name}</p>
                         <div className="text-gray-300 whitespace-no-wrap">{linkify(task.description)}</div>
                       </td>
@@ -427,6 +427,7 @@ export default function TaskManagementPage() {
                       </td>
                     </tr>
                   ))}
+
                 </tbody>
               </table>
             </div>
