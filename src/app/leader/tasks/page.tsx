@@ -1,5 +1,5 @@
 'use client';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 
 import { useEffect, useState, useCallback } from 'react';
 import {
@@ -213,7 +213,7 @@ export default function TaskManagementPage() {
     <PrivateRoute>
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-200">Gerenciamento de Tarefas</h1>
+          <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
           <div className="flex space-x-4">
             <button
               onClick={handleBack}
@@ -304,19 +304,19 @@ export default function TaskManagementPage() {
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <p className="text-gray-100 whitespace-no-wrap">{task.user?.name || 'Não atribuído'}</p>
                       </td>
-                      <td className="px-5 py-24 border-b border-gray-500 bg-gray-700 text-sm flex flex-wrap gap-2">
+                      <td className="px-5 py-24 border-b border-gray-500 bg-gray-700 text-sm">
                         <div className="relative inline-block text-left w-full">
                           <Menu>
                             {() => (
                               <>
-                                <Menu.Button className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <MenuButton className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                   <span className="mr-2"><FaEdit /></span>
                                   <span className="md:inline">Ações</span>
                                   <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                </Menu.Button>
-                                <Menu.Items className="absolute z-50 left-0 mt-2 w-44 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                                </MenuButton>
+                                <MenuItems className="absolute z-50 left-0 mt-2 w-44 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
                                   <div className="py-1 w-full">
-                                    <Menu.Item>
+                                    <MenuItem>
                                       {({ active }) => (
                                         <button
                                           onClick={() => handleOpenModal(task)}
@@ -326,8 +326,8 @@ export default function TaskManagementPage() {
                                           <FaEdit className="mr-2" /> Editar
                                         </button>
                                       )}
-                                    </Menu.Item>
-                                    <Menu.Item>
+                                    </MenuItem>
+                                    <MenuItem>
                                       {({ active }) => (
                                         <button
                                           onClick={() => handleDelete(task.id)}
@@ -338,9 +338,9 @@ export default function TaskManagementPage() {
                                           <FaTrash className="mr-2" /> Deletar
                                         </button>
                                       )}
-                                    </Menu.Item>
+                                    </MenuItem>
                                   </div>
-                                </Menu.Items>
+                                </MenuItems>
                               </>
                             )}
                           </Menu>
