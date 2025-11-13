@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { FaDownload } from 'react-icons/fa';
-import { getConversations, getMessages, createMessage, createConversation, uploadFile, Conversation, Message, downloadFile, deleteConversation, markConversationAsRead } from '../services/messagingService';
+import { FaArrowLeft, FaComments, FaDownload } from 'react-icons/fa';
+import { getConversations, getMessages, createMessage, createConversation, Conversation, Message, downloadFile, deleteConversation, markConversationAsRead } from '../services/messagingService';
 import { getUsers, User } from '../services/userService';
 import NewConversationModal from './NewConversationModal';
 import { useSession } from 'next-auth/react';
@@ -223,17 +223,19 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     <div className="h-screen flex flex-col p-4 md:p-8 bg-gray-100 dark:bg-gray-900">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Mensagens</h1>
-        <div>
+        <div className="flex flex-col gap-4 md:flex-row md:justify-end">
           <button
             onClick={() => setIsNewConversationModalOpen(true)}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
+            className="bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded mr-4 w-full"
           >
+            <FaComments className="mr-2 inline-flex text-gray-200" />
             Nova Conversa
           </button>
           <button
             onClick={handleBack}
-            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-gray-500 hover:bg-gray-700 text-white text-sm py-2 px-4 rounded"
           >
+           <FaArrowLeft className="mr-2 inline-flex text-sm" />
             Voltar
           </button>
         </div>
