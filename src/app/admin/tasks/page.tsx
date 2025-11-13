@@ -19,7 +19,7 @@ import TaskForm from '../../../components/TaskForm';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaCheck, FaBan, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaCheck, FaBan, FaChevronLeft, FaChevronRight, FaCross } from 'react-icons/fa';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -249,7 +249,9 @@ export default function TaskManagementPage() {
   };
 
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'LEADER')) {
-    return <p>Redirecionando para a página de login...</p>;
+    return <FaCross 
+              className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+            />
   }
 
   return (
@@ -326,7 +328,11 @@ export default function TaskManagementPage() {
           </div>
         </div>
 
-        {loading && <p>Carregando tarefas...</p>}
+        {loading && 
+          <FaCross 
+            className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+          />
+        }
         {error && <p className="text-red-500">{error}</p>}
         {successMessage && <p className="text-green-500">{successMessage}</p>}
 

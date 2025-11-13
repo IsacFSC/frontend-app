@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaSignOutAlt, FaCalendarAlt, FaTasks, FaEnvelope } from 'react-icons/fa';
+import { FaSignOutAlt, FaCalendarAlt, FaTasks, FaEnvelope, FaCross } from 'react-icons/fa';
 import MessageIcon from '@/components/MessageIcon';
 
 export default function LeaderDashboardPage() {
@@ -14,14 +14,18 @@ export default function LeaderDashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Carregando...</p>
+        <FaCross 
+          className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+        />
       </div>
     );
   }
   if (!user || user.role !== 'LEADER') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Redirecionando...</p>
+        <FaCross 
+          className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+        />
       </div>
     );
   }
@@ -46,7 +50,7 @@ export default function LeaderDashboardPage() {
         </div>
         <div className="text-gray-200">
           <p className="mt-2">Olá, {user.name}!</p>
-          <p className="mt-2">Você está logado como: {user.role} </p>
+          {/*<p className="mt-2">Você está logado como: {user.role} </p>*/}
         </div>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link href="/leader/schedules" className="bg-teal-200 hover:bg-teal-400 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">

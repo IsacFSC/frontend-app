@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { FaTruckLoading } from 'react-icons/fa';
 
 export default function HomePage() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <p>Redirecionando...</p>
+      <FaTruckLoading className="animate-spin text-4xl text-blue-600" />
     </div>
   );
 }

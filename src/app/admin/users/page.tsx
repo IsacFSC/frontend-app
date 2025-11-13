@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { api } from '../../../services/api';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaTrash, FaToggleOn, FaToggleOff } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaCross } from 'react-icons/fa';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import Image from 'next/image';
 
@@ -156,7 +156,9 @@ export default function UserManagementPage() {
   };
 
   if (authLoading || !isAuthenticated || user?.role !== 'ADMIN') {
-    return <p>Carregando ou redirecionando...</p>;
+    return <FaCross 
+            className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+          />
   }
 
   return (
@@ -215,7 +217,11 @@ export default function UserManagementPage() {
           </button>
         </div>  
 
-        {pageLoading && <p>Carregando usuários...</p>}
+        {pageLoading && 
+          <FaCross 
+            className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+          />
+        }
         {error && <p className="text-red-500">{error}</p>}
         {successMessage && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">

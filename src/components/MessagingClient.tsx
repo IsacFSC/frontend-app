@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { FaArrowLeft, FaComments, FaDownload } from 'react-icons/fa';
+import { FaArrowLeft, FaComments, FaCross, FaDownload } from 'react-icons/fa';
 import { getConversations, getMessages, createMessage, createConversation, Conversation, Message, downloadFile, deleteConversation, markConversationAsRead } from '../services/messagingService';
 import { getUsers, User } from '../services/userService';
 import NewConversationModal from './NewConversationModal';
@@ -233,15 +233,19 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
           </button>
           <button
             onClick={handleBack}
-            className="bg-gray-500 hover:bg-gray-700 text-white text-sm py-2 px-4 rounded"
+            className="bg-gray-500 hover:bg-gray-700 text-white text-sm py-2 px-4 inline-flex rounded justify-center"
           >
-           <FaArrowLeft className="mr-2 inline-flex text-sm" />
+           <FaArrowLeft className="mr-2 mt-1 inline-flex text-sm" />
             Voltar
           </button>
         </div>
       </div>
 
-      {loading && <p>Carregando...</p>}
+      {loading && 
+        <FaCross 
+          className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+        />
+      }
       {error && <p className="text-red-500">{error}</p>}
       {successMessage && <p className="text-green-500">{successMessage}</p>}
 

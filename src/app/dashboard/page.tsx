@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getMySchedules, Schedule } from '../../services/scheduleService';
 import { getUnreadMessagesCount } from '../../services/messagingService';
 import PrivateRoute from '../../components/PrivateRoute';
-import { FaEnvelope, FaSync, FaSignOutAlt } from 'react-icons/fa';
+import { FaEnvelope, FaSync, FaSignOutAlt, FaCross } from 'react-icons/fa';
 import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 
 // Função para transformar links em <a> (igual admin)
@@ -174,7 +174,9 @@ export default function DashboardPage() {
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        <p>Carregando...</p>
+        <FaCross 
+          className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+        />
       </div>
     );
   }
@@ -261,7 +263,9 @@ export default function DashboardPage() {
         )}
 
         {schedulesLoading ? (
-    <p className="mt-8">Carregando suas escalas...</p>
+          <FaCross 
+            className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+          />
         ) : (
           <div className="mt-8">
             <h2 className="text-2xl font-semibold mb-4 text-white">Suas Escalas</h2>

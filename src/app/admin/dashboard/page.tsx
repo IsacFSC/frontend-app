@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import PrivateRoute from '../../../components/PrivateRoute';
-import { FaSignOutAlt, FaUsers, FaCalendarAlt, FaEnvelope, FaTasks } from 'react-icons/fa';
+import { FaSignOutAlt, FaUsers, FaCalendarAlt, FaEnvelope, FaTasks, FaCross } from 'react-icons/fa';
 import MessageIcon from '../../../components/MessageIcon';
 
 export default function AdminDashboardPage() {
@@ -14,7 +14,9 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        <p>Carregando...</p>
+        <FaCross 
+          className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+        />
       </div>
     );
   }
@@ -27,7 +29,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-4">
             <MessageIcon />
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={() => signOut({ redirectTo: '/login' })}
 
               className="w-full justify-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >

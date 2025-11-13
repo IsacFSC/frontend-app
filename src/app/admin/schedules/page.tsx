@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AxiosError } from 'axios';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaEdit, FaTrash, FaCross } from 'react-icons/fa';
 import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 
 interface ScheduleFormData {
@@ -282,7 +282,8 @@ export default function ScheduleManagementPage() {
   };
 
   if (!isAuthenticated || user?.role !== 'ADMIN') {
-    return <p>Redirecionando para a página de login...</p>;
+    return <FaCross 
+    className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400" />;
   }
 
   const filteredSchedules = schedules.filter(schedule => {
@@ -353,7 +354,10 @@ export default function ScheduleManagementPage() {
         )}
 
         {loading ? (
-          <p className="mt-8">Carregando...</p>
+          <FaCross 
+            className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+          />
+
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
