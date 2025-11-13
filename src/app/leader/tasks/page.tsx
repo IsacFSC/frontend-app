@@ -214,16 +214,16 @@ export default function TaskManagementPage() {
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
             <button
               onClick={handleBack}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="bg-gray-500 hover:bg-gray-700 text-white text-sm w-full justify-center py-2 px-4 rounded flex items-center"
             >
               <FaArrowLeft className="mr-2" /> Voltar
             </button>
             <button
               onClick={() => handleOpenModal()}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              className="bg-blue-500 hover:bg-blue-700 text-white text-sm w-fit justify-center py-2 px-4 rounded flex items-center"
             >
               <FaPlus className="mr-2" /> Criar Tarefa
             </button>
@@ -278,11 +278,11 @@ export default function TaskManagementPage() {
 
         {!loading && !error && (
           <>
-            <div className="bg-gray-700 shadow-md rounded-lg overflow-visible">
+            <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto verflow-visible">
               <table className="min-w-full leading-normal">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Tarefa</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 w-fit md:w-48">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Ações</th>
@@ -291,7 +291,7 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 w-48">
                         <p className="text-gray-100 whitespace-no-wrap font-semibold">{task.name}</p>
                         <div className="text-gray-300 whitespace-no-wrap">{linkify(task.description)}</div>
                       </td>
