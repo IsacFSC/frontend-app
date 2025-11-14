@@ -424,7 +424,7 @@ export default function ScheduleManagementPage() {
                           )}
                           <div className="mt-4 pt-4 border-t border-gray-400">
                             <p className="text-sm text-gray-700">
-                              <strong>Obs:</strong> Executem as músicas com excelência, atenção para os horarios de ensaio que acontecem as 19:30h nas quintas feiras, poderão haver mudanças conforme orientações do líder. Chegar com antecedência nos cultos 30 minutos antes do início dos cultos, poderão have mudanças conforme orientações do líder. Sê tu uma benção!
+                              <strong>Obs:</strong> Executem as músicas com excelência, atenção para os horarios de ensaio que acontecem as 19:30h nas quintas feiras, poderão haver mudanças conforme orientações do líder. Chegar com antecedência nos cultos 30 minutos antes do início dos cultos, poderão haver mudanças conforme orientações do líder. Sê tu uma benção!
                             </p>
                           </div>
                         </div>

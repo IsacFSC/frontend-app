@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
             {/* Rodapé com Observação */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>
-                <Text style={{ fontFamily: 'Helvetica-Bold' }}>Obs:</Text> Executem as músicas com excelência, atenção para os horarios de ensaio que acontecem as 19:30h nas quintas feiras, poderão haver mudanças conforme orientações do líder. Chegar com antecedência nos cultos 30 minutos antes do início dos cultos, poderão have mudanças conforme orientações do líder. Sê tu uma benção!
+                <Text style={{ fontFamily: 'Helvetica-Bold' }}>Obs:</Text> Executem as músicas com excelência, atenção para os horarios de ensaio que acontecem as 19:30h nas quintas feiras, poderão haver mudanças conforme orientações do líder. Chegar com antecedência nos cultos 30 minutos antes do início dos cultos, poderão haver mudanças conforme orientações do líder. Sê tu uma benção!
               </Text>
             </View>
           </View>
