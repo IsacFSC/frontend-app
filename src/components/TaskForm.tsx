@@ -33,6 +33,8 @@ export default function TaskForm({ taskToEdit, onSubmit, onCancel, successMessag
     onSubmit({ name, description, taskDate });
   };
 
+  const placeholderText = "Insira conforme o texto exemplo nome, tom, link:\nNome da música - Tom Bb\nhttps://www.youtube.com/watch?v=LL6m3VqD3tE&list=RDLL6m3VqD3tE&start_radio=1";
+
   return (
     <form onSubmit={handleSubmit}>
       {successMessage && (
@@ -63,13 +65,14 @@ export default function TaskForm({ taskToEdit, onSubmit, onCancel, successMessag
         />
       </div>
       <div className="mb-6">
-        <label htmlFor="description" className="block text-gray-100 text-sm font-bold mb-2">Descrição</label>
-        <textarea
+        <label htmlFor="description" className="block text-gray-100 text-sm font-bold mb-2">Descrição</label>        <textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="shadow appearance-none border-gray-700 rounded w-full py-2 px-3 bg-gray-600 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
           required
+          placeholder={placeholderText}
+          rows={5}
         />
       </div>
       <div className="flex items-center justify-end space-x-4">
