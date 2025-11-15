@@ -226,7 +226,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
         <div className="flex flex-col gap-4 md:flex-row md:justify-end">
           <button
             onClick={() => setIsNewConversationModalOpen(true)}
-            className="bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded mr-4 w-full"
+            className="bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded mr-4 w-full inline-flex justify-center"
           >
             <FaComments className="mr-2 inline-flex text-gray-200" />
             Nova Conversa
