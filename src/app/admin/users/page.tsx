@@ -397,7 +397,7 @@ export default function UserManagementPage() {
                       <button
                         onClick={() => handleToggleActiveStatus(user.id, user.active)}
                         className={`px-2 py-1 text-md font-semibold rounded-full flex items-center ${
-                          user.active ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                          user.active ? 'bg-red-500 text-white border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md' : 'bg-green-500 text-white border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md'
                         } ${loadingUserIds.includes(user.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
                         disabled={loadingUserIds.includes(user.id)}
                       >

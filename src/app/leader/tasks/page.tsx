@@ -192,12 +192,12 @@ export default function TaskManagementPage() {
   const getStatusClass = (status: TaskStatus) => {
     switch (status) {
       case TaskStatus.APPROVED:
-        return 'bg-green-200 text-green-900';
+        return 'bg-green-200 text-green-900 border-0 rounded-md font-semibold duration-75 p-1 shadow-sky-800 shadow-md';
       case TaskStatus.REJECTED:
-        return 'bg-red-200 text-red-900';
+        return 'bg-red-200 text-red-900 border-0 rounded-md font-semibold duration-75 p-1 shadow-sky-800 shadow-md';
       case TaskStatus.PENDING:
       default:
-        return 'bg-yellow-200 text-yellow-900';
+        return 'bg-yellow-200 text-yellow-900 border-0 rounded-md font-semibold duration-75 p-1 shadow-sky-800 shadow-md';
     }
   };
 
