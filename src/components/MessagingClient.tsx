@@ -275,7 +275,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                         e.stopPropagation();
                         handleDeleteConversation(convo.id);
                       }}
-                      className="text-red-500 hover:text-red-700 ml-4 p-1 rounded-full"
+                      className="text-red-800 bg-red-300 hover:bg-red-400 border-0 rounded-md font-semibold hover:scale-110 duration-75 p-1 shadow-red-800 shadow-md flex items-center"
                       aria-label="Deletar conversa"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

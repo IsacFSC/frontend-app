@@ -116,6 +116,9 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
                   )}
                 </div>
                 <span className="text-gray-200">{user.name}</span>
+                {!user.active && (
+                  <span className="ml-2 text-xs text-red-400">(Desativado)</span>
+                )}
               </div>
               <div className="flex items-center">
                 <select
@@ -130,8 +133,9 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
                 </select>
                 <button
                   onClick={() => handleAddClick(user.id)}
-                  className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 disabled:bg-gray-400"
-                  disabled={!userSkills[user.id]}
+                  className={`text-xs px-2 py-1 rounded ${(!userSkills[user.id] || !user.active) ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                  disabled={!userSkills[user.id] || !user.active}
+                  title={!user.active ? 'Usuário desativado — não pode ser adicionado' : (!userSkills[user.id] ? 'Selecione a habilidade' : 'Adicionar usuário à escala')}
                 >
                   Adicionar
                 </button>

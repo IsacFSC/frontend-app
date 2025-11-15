@@ -380,20 +380,20 @@ export default function ScheduleManagementPage() {
                               </p>
                             </div>
                             <div className="flex items-center space-x-2 mt-4 md:mt-0">
-                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-sm text-white bg-emerald-700 hover:bg-emerald-500 border rounded-3xl p-1 flex items-center" title="Gerenciar tarefas">
+                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-sm text-white bg-emerald-700 hover:bg-emerald-500 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Gerenciar tarefas">
                                 <FaTasks />
                                 <span className='ml-1 hidden sm:block'> Músicas</span>
                               </button>
-                              <button onClick={() => handleOpenUserModal(schedule)} className="text-sm text-white bg-blue-700 hover:bg-blue-500 border rounded-3xl p-1 flex items-center" title="Gerenciar usuários">
+                              <button onClick={() => handleOpenUserModal(schedule)} className="text-sm text-white bg-blue-700 hover:bg-blue-500 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Gerenciar usuários">
                                 <FaUsers />
                                 <span className='ml-1 hidden sm:block'> Ministros</span>
                               </button>
                               <DownloadScheduleButton schedule={schedule} />
-                              <button onClick={() => handleOpenFormModal(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900 border rounded-3xl p-1 flex items-center" title="Editar">
+                              <button onClick={() => handleOpenFormModal(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Editar">
                                 <FaEdit />
                                 <span className='ml-1 hidden sm:block'> Editar</span>
                               </button>
-                              <button onClick={() => handleDelete(schedule.id)} className="text-sm text-white bg-red-600 hover:bg-red-900 border rounded-3xl p-1 flex items-center" title="Deletar">
+                              <button onClick={() => handleDelete(schedule.id)} className="text-sm text-white bg-red-600 hover:bg-red-900 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Deletar">
                                 <FaTrash />
                                 <span className='ml-1 hidden sm:block'> Deletar</span>
                               </button>

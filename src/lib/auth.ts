@@ -42,6 +42,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        // Prevent login if user was deactivated by admin
+        if (user.active === false) {
+          console.warn(`Login attempt for deactivated user: ${credentials.email}`);
+          return null;
+        }
+
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
         if (isPasswordValid) {

@@ -1,3 +1,4 @@
+import { hashPassword } from '@/lib/auth';
 import { api } from './api';
 
 export enum Role {

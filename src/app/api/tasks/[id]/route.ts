@@ -68,6 +68,17 @@ export async function PATCH(
   if (taskDate !== undefined) data.taskDate = taskDate ? new Date(taskDate) : null;
 
   try {
+    // If assigning a user to the task, ensure the user exists and is active
+    if (data.userId !== undefined && data.userId !== null) {
+      const assignedUser = await prisma.user.findUnique({ where: { id: Number(data.userId) } });
+      if (!assignedUser) {
+        return NextResponse.json({ error: 'Assigned user not found' }, { status: 404 });
+      }
+      if (!assignedUser.active) {
+        return NextResponse.json({ error: 'User is deactivated and cannot be assigned to tasks' }, { status: 400 });
+      }
+    }
+
     const task = await prisma.task.update({ where: { id: taskId }, data });
     return NextResponse.json(task);
   } catch (_error) {

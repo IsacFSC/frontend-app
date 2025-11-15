@@ -25,6 +25,15 @@ export async function POST(
   }
 
   try {
+    // Ensure the user exists and is active
+    const targetUser = await prisma.user.findUnique({ where: { id: numericUserId } });
+    if (!targetUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    if (!targetUser.active) {
+      return NextResponse.json({ error: 'User is deactivated and cannot be scheduled' }, { status: 400 });
+    }
+
     const result = await prisma.usersOnSchedules.create({
       data: {
         scheduleId: scheduleId,

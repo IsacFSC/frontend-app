@@ -18,11 +18,11 @@ const DownloadScheduleButton: React.FC<DownloadScheduleButtonProps> = ({ schedul
     <PDFDownloadLink
       document={<SchedulePDFDocument schedule={schedule} />}
       fileName={`escala-${schedule.name.replace(/\s+/g, '-').toLowerCase()}.pdf`}
-      className="text-sm text-white bg-green-600 hover:bg-green-700 border rounded-md hover:scale-105 font-semibold duration-75 p-1 flex items-center" title="Baixar Escala"
+      className="text-sm text-white bg-green-600 hover:bg-green-700 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Baixar Escala"
     >
       {({ loading }) => (loading ? 'Gerando PDF...' : (
           <span className="flex items-center">
-            <FaDownload className="w-3.5 h-3.5 mx-1" />
+            <FaDownload className="w-3 h-3 mx-1" />
             <span className='w-fit hidden sm:block'>Baixar Escala</span>
           </span>
         ))}
