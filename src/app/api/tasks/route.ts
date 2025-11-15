@@ -24,6 +24,15 @@ export async function POST(req: Request) {
     description,
     taskDate: taskDate ? new Date(taskDate) : null,
   };
-  const task = await prisma.task.create({ data });
+  // associate the created task with the currently authenticated user
+  const numericUserId = session.user?.id ? Number(session.user.id) : null;
+  if (numericUserId && !isNaN(numericUserId)) {
+    // set userId on creation
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    data.userId = numericUserId;
+  }
+
+  const task = await prisma.task.create({ data, include: { user: true } });
   return NextResponse.json(task, { status: 201 });
 }
