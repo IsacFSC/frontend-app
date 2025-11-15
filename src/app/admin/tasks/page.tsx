@@ -19,7 +19,7 @@ import TaskForm from '../../../components/TaskForm';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaCheck, FaBan, FaChevronLeft, FaChevronRight, FaCross } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaTrash, FaCheck, FaBan, FaChevronLeft, FaChevronRight, FaCross, FaEdit } from 'react-icons/fa';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -49,6 +49,15 @@ const linkify = (text: string) => {
       })}
     </div>
   ));
+};
+
+const formatDateTime = (d?: string | Date | null) => {
+  if (!d) return '-';
+  try {
+    return new Date(d).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return String(d);
+  }
 };
 
 const translateStatus = (status: TaskStatus) => {
@@ -345,6 +354,8 @@ export default function TaskManagementPage() {
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 w-48">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado em</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Última atualização</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Ações</th>
                   </tr>
                 </thead>
@@ -352,8 +363,10 @@ export default function TaskManagementPage() {
                   {tasks.map((task) => (
                     <tr key={task.id}>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 w-48">
-                        <p className="text-gray-100 whitespace-no-wrap font-semibold">{task.name}</p>
-                        <div className="text-gray-300 whitespace-no-wrap">{linkify(task.description)}</div>
+                        <button onClick={() => handleOpenModal(task)} className="text-left w-full">
+                          <p className="text-gray-100 whitespace-no-wrap font-semibold hover:underline">{task.name}</p>
+                          <div className="text-gray-300 whitespace-no-wrap">{linkify(task.description)}</div>
+                        </button>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${getStatusClass(task.status)}`}>
@@ -363,6 +376,17 @@ export default function TaskManagementPage() {
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <p className="text-gray-100 whitespace-no-wrap">{task.user?.name || 'Não atribuído'}</p>
+                      </td>
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                        <p className="text-gray-100 whitespace-no-wrap">{formatDateTime(task.createdAt)}</p>
+                      </td>
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                        <p className="text-gray-100 whitespace-no-wrap">
+                          {task.updatedAt ? formatDateTime(task.updatedAt) : formatDateTime(task.createdAt)}
+                        </p>
+                        <p className="text-gray-300 whitespace-no-wrap text-xs">
+                          {task.updatedBy?.email || task.updatedBy?.name || ''}
+                        </p>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm gap-2">
                         <div className="relative inline-block text-left w-full">
@@ -376,17 +400,7 @@ export default function TaskManagementPage() {
                                 </MenuButton>
                                 <MenuItems className="absolute z-50 left-0 mt-2 w-44 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
                                   <div className="py-1 w-full">
-                                    <MenuItem>
-                                      {({ active }) => (
-                                        <button
-                                          onClick={() => handleOpenModal(task)}
-                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-indigo-600 text-white' : 'text-indigo-700'} transition-colors`}
-                                          title="Editar"
-                                        >
-                                          <FaEdit className="mr-2" /> Editar
-                                        </button>
-                                      )}
-                                    </MenuItem>
+                                    {/* Edit is now available by clicking the task name; removed duplicate Edit action */}
                                     <MenuItem>
                                       {({ active }) => (
                                         <button

@@ -10,6 +10,9 @@ export interface Task {
   description: string;
   completed: boolean;
   createdAt: string | Date;
+  // optional fields sometimes returned by the API
+  updatedAt?: string | Date | null;
+  updatedBy?: { id?: number; email?: string | null; name?: string | null } | null;
   userId: number | null;
   user?: User | null;
   status: TaskStatus;
