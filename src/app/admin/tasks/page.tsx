@@ -16,6 +16,7 @@ import {
 import { getUsers, User } from '../../../services/userService';
 import Modal from '../../../components/Modal';
 import TaskForm from '../../../components/TaskForm';
+import DescriptionWithReadMore from '../../../components/DescriptionWithReadMore';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
@@ -351,7 +352,7 @@ export default function TaskManagementPage() {
               <table className="min-w-full leading-normal">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 w-48">Tarefa</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 min-w-52">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado em</th>
@@ -362,10 +363,14 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 w-48">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 min-w-52 h-24 align-top overflow-hidden">
                         <button onClick={() => handleOpenModal(task)} className="text-left w-full">
-                          <p className="text-gray-100 whitespace-no-wrap font-semibold hover:underline">{task.name}</p>
-                          <div className="text-gray-300 whitespace-no-wrap">{linkify(task.description)}</div>
+                          <p className="text-gray-100 truncate block font-semibold hover:underline">{task.name}</p>
+                          <div className="text-gray-300 mt-1">
+                            <DescriptionWithReadMore>
+                              <div className="text-sm text-gray-300">{linkify(task.description)}</div>
+                            </DescriptionWithReadMore>
+                          </div>
                         </button>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
@@ -375,16 +380,16 @@ export default function TaskManagementPage() {
                         </span>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                        <p className="text-gray-100 whitespace-no-wrap">{task.user?.name || 'Não atribuído'}</p>
+                        <p className="text-gray-100 whitespace-nowrap">{task.user?.name || 'Não atribuído'}</p>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                        <p className="text-gray-100 whitespace-no-wrap">{formatDateTime(task.createdAt)}</p>
+                        <p className="text-gray-100 whitespace-nowrap">{formatDateTime(task.createdAt)}</p>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                        <p className="text-gray-100 whitespace-no-wrap">
+                        <p className="text-gray-100 whitespace-nowrap">
                           {task.updatedAt ? formatDateTime(task.updatedAt) : formatDateTime(task.createdAt)}
                         </p>
-                        <p className="text-gray-300 whitespace-no-wrap text-xs">
+                        <p className="text-gray-300 whitespace-nowrap text-xs">
                           {task.updatedBy?.email || task.updatedBy?.name || ''}
                         </p>
                       </td>

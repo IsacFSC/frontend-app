@@ -12,6 +12,7 @@ import {
 } from '../../../services/taskService';
 import Modal from '../../../components/Modal';
 import TaskForm from '../../../components/TaskForm';
+import DescriptionWithReadMore from '../../../components/DescriptionWithReadMore';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
@@ -297,9 +298,15 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 w-48">
-                        <p className="text-gray-100 whitespace-no-wrap font-semibold">{task.name}</p>
-                        <div className="text-gray-300 whitespace-no-wrap">{linkify(task.description)}</div>
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 w-48 h-24 align-top overflow-hidden">
+                        <button onClick={() => handleOpenModal(task)} className="text-left w-full">
+                          <p className="text-gray-100 truncate block font-semibold">{task.name}</p>
+                          <div className="text-gray-300 mt-1">
+                            <DescriptionWithReadMore>
+                              <div className="text-sm text-gray-300">{linkify(task.description)}</div>
+                            </DescriptionWithReadMore>
+                          </div>
+                        </button>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${getStatusClass(task.status)}`}>
