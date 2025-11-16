@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@headlessui/react';
 import { useState } from 'react';
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
   previewMaxHeight?: string; // Tailwind max-h- class like 'max-h-24'
 }
 
-export default function DescriptionWithReadMore({ children, previewMaxHeight = 'max-h-24' }: Props) {
+export default function DescriptionWithReadMore({ children, previewMaxHeight = 'max-h-20' }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   const toggle = (e: React.MouseEvent) => {
@@ -20,14 +21,14 @@ export default function DescriptionWithReadMore({ children, previewMaxHeight = '
     <div className="w-full">
       <div className={`${expanded ? '' : `${previewMaxHeight} overflow-hidden`} text-sm`}>{children}</div>
       <div className="mt-2">
-        <button
+        <Button
           type="button"
           onClick={toggle}
           className="text-xs text-blue-100 bg-cyan-900 hover:bg-cyan-950 p-1 shadow-md hover:scale-105 rounded"
           aria-expanded={expanded}
         >
           {expanded ? 'ver menos' : 'ver mais'}
-        </button>
+        </Button>
       </div>
     </div>
   );

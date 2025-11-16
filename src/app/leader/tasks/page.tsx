@@ -83,6 +83,7 @@ export default function TaskManagementPage() {
     endDate: '',
     name: '',
   });
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
 
   const fetchTasks = useCallback(async (pageParam: number = currentPage) => {
     try {
@@ -214,7 +215,7 @@ export default function TaskManagementPage() {
 
   return (
     <PrivateRoute>
-      <div className="p-8">
+      <div className="px-2 sm:px-8 py-4 sm:py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -234,7 +235,7 @@ export default function TaskManagementPage() {
         </div>
 
         <div className="p-4 bg-gray-700 rounded-lg mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white">Nome da Tarefa</label>
               <input
@@ -247,24 +248,37 @@ export default function TaskManagementPage() {
                 className="p-2 border rounded w-full mt-1 bg-gray-800 text-white"
               />
             </div>
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-white">Status</label>
-              <select id="status" name="status" value={filters.status} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
-                <option value="">Todos</option>
-                {Object.values(TaskStatus).map(s => (
-                  <option key={s} value={s}>{translateStatus(s)}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-white">Criação (Início)</label>
-              <input id="startDate" type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
-            </div>
-            <div>
-              <label htmlFor="endDate" className="block text-sm font-medium text-white">Criação (Fim)</label>
-              <input id="endDate" type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={() => setShowMoreFilters(s => !s)}
+                className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-0 rounded-md hover:scale-102 font-semibold duration-75 shadow-cyan-200 shadow-md flex justify-center"
+              >
+                {showMoreFilters ? 'Ocultar filtros' : 'Mais filtros'}
+              </button>
             </div>
           </div>
+          {showMoreFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-white">Status</label>
+                <select id="status" name="status" value={filters.status} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
+                  <option value="">Todos</option>
+                  {Object.values(TaskStatus).map(s => (
+                    <option key={s} value={s}>{translateStatus(s)}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="startDate" className="block text-sm font-medium text-white">Data Inicial</label>
+                <input id="startDate" type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block text-sm font-medium text-white">Data Final</label>
+                <input id="endDate" type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
+              </div>
+            </div>
+          )}
           <div className="mt-4 flex space-x-2">
             <button onClick={handleApplyFilters} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded flex items-center">
               <FaSearch className="mr-2" /> Aplicar Filtros
@@ -289,7 +303,7 @@ export default function TaskManagementPage() {
               <table className="min-w-full leading-normal">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 w-fit md:w-48">Tarefa</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 w-fit md:w-32">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Ações</th>
@@ -298,12 +312,12 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 w-48 h-24 align-top overflow-hidden">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 md:w-32 h-20 align-top overflow-hidden">
                         <button onClick={() => handleOpenModal(task)} className="text-left w-full">
                           <p className="text-gray-100 truncate block font-semibold">{task.name}</p>
                           <div className="text-gray-300 mt-1">
                             <DescriptionWithReadMore>
-                              <div className="text-sm text-gray-300">{linkify(task.description)}</div>
+                              <div className="text-sm trucate text-gray-300">{linkify(task.description)}</div>
                             </DescriptionWithReadMore>
                           </div>
                         </button>

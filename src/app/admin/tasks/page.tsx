@@ -98,6 +98,7 @@ export default function TaskManagementPage() {
     endDate: '',
     name: '',
   });
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
 
 
   const fetchTasks = useCallback(async (pageParam: number = currentPage) => {
@@ -266,7 +267,7 @@ export default function TaskManagementPage() {
 
   return (
     <PrivateRoute>
-      <div className="p-8">
+      <div className="px-2 sm:px-8 py-4 sm:py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -286,7 +287,7 @@ export default function TaskManagementPage() {
         </div>
 
         <div className="p-4 bg-gray-700 rounded-lg mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white">Nome da Tarefa</label>
               <input
@@ -299,35 +300,48 @@ export default function TaskManagementPage() {
                 className="p-2 border rounded w-full mt-1 bg-gray-800 text-white"
               />
             </div>
-            {user?.role === 'ADMIN' && (
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={() => setShowMoreFilters(s => !s)}
+                className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-0 rounded-md hover:scale-102 font-semibold duration-75 shadow-cyan-200 shadow-md flex justify-center"
+              >
+                {showMoreFilters ? 'Ocultar filtros' : 'Mais filtros'}
+              </button>
+            </div>
+          </div>
+          {showMoreFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+              {user?.role === 'ADMIN' && (
+                <div>
+                  <label htmlFor="userId" className="block text-sm font-medium text-white">Usuário</label>
+                  <select id="userId" name="userId" value={filters.userId} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
+                    <option value="">Todos</option>
+                    {usersForFilter.map(u => (
+                      <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
-                <label htmlFor="userId" className="block text-sm font-medium text-white">Usuário</label>
-                <select id="userId" name="userId" value={filters.userId} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
+                <label htmlFor="status" className="block text-sm font-medium text-white">Status</label>
+                <select id="status" name="status" value={filters.status} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
                   <option value="">Todos</option>
-                  {usersForFilter.map(u => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
+                  {Object.values(TaskStatus).map(s => (
+                    <option key={s} value={s}>{translateStatus(s)}</option>
                   ))}
                 </select>
               </div>
-            )}
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-white">Status</label>
-              <select id="status" name="status" value={filters.status} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
-                <option value="">Todos</option>
-                {Object.values(TaskStatus).map(s => (
-                  <option key={s} value={s}>{translateStatus(s)}</option>
-                ))}
-              </select>
+              <div>
+                <label htmlFor="startDate" className="block text-sm font-medium text-white">Data Inícial</label>
+                <input id="startDate" type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block text-sm font-medium text-white">Data Final</label>
+                <input id="endDate" type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
+              </div>
             </div>
-            <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-white">Criação (Início)</label>
-              <input id="startDate" type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
-            </div>
-            <div>
-              <label htmlFor="endDate" className="block text-sm font-medium text-white">Criação (Fim)</label>
-              <input id="endDate" type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white" />
-            </div>
-          </div>
+          )}
           <div className="mt-4 flex space-x-2">
             <button onClick={handleApplyFilters} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded flex items-center">
               <FaSearch className="mr-2" /> Aplicar Filtros

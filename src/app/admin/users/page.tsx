@@ -163,7 +163,7 @@ export default function UserManagementPage() {
 
   return (
     <PrivateRoute>
-      <div className="p-8">
+      <div className="px-2 sm:px-8 py-4 sm:py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Usuários</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -381,7 +381,7 @@ export default function UserManagementPage() {
                           )}
                         </div>
                         <div className="ml-3">
-                          <p className="text-gray-100 whitespace-no-wrap">{user.name}</p>
+                          <p className="text-gray-100 whitespace-nowrap">{user.name}</p>
                           <p className="text-gray-200 truncate w-20 sm:w-32 md:w-auto text-sm font-extralight">
                             {user.email}
                           </p>
