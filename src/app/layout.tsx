@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Gerenciador de Escalas -IEVV Musical",
-  description: "Gerenciador de Escalas -IEVV Musical",
+  description: "Gerenciar Escalas -IEVV Musical",
   icons: {
     icon: Favicon.src,
   },
