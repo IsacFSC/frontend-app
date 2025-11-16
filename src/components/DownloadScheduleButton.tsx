@@ -23,7 +23,7 @@ const DownloadScheduleButton: React.FC<DownloadScheduleButtonProps> = ({ schedul
       {({ loading }) => (loading ? 'Gerando PDF...' : (
           <span className="flex items-center">
             <FaDownload className="w-3 h-3 mx-1" />
-            <span className='w-fit hidden sm:block'>Baixar Escala</span>
+            <span className="w-fit hidden sm:block">Baixar Escala</span>
           </span>
         ))}
     </PDFDownloadLink>

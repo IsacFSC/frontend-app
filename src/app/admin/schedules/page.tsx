@@ -373,19 +373,19 @@ export default function ScheduleManagementPage() {
                     <h3 className="text-xl font-semibold text-gray-200 mb-4 border-b-2 pb-2">{date}</h3>
                     <div className="space-y-4">
                       {groupedSchedules[date].map(schedule => (
-                        <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-orange-200 hover:bg-orange-300 transition-shadow">
-                          <div className="flex justify-between items-center flex-col md:flex-row">
-                            <div className="flex-1 md:text-center">
-                              <h3 className="text-xl font-bold text-gray-900 md:flex md:justify-center uppercase">{schedule.name}</h3>
-                              <p className="text-gray-700 mt-2">{schedule.description}</p>
-                              <p className="text-sm text-gray-600 mt-2 inline-flex">
+                        <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-purple-200 hover:bg-purple-300 transition-shadow">
+                          <div className="flex justify-between md:items-center flex-col md:flex-row">
+                            <div className="flex-1">
+                              <h3 className="text-xl font-bold text-gray-900 flex items-center justify-center space-x-2 mt-4 md:mt-0 uppercase">{schedule.name}</h3>
+                              <p className="text-gray-700 flex items-center justify-center space-x-2 mt-4 md:mt-0">{schedule.description}</p>
+                              <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center">
                                 <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})} {/*, hour: '2-digit', minute: '2-digit'*/}
                               </p>
-                              <p className="text-sm text-gray-600 mt-2 inline-flex ml-4">
+                              <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center sm:ml-4">
                                 <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})} {/*, hour: '2-digit', minute: '2-digit'*/}
                               </p>
                             </div>
-                            <div className="flex items-center space-x-2 mt-4 md:mt-0">
+                            <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">
                               <button onClick={() => handleOpenTaskModal(schedule)} className="text-sm text-white bg-emerald-700 hover:bg-emerald-500,
                                 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
                                 title="Gerenciar tarefas">

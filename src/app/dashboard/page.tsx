@@ -277,15 +277,18 @@ export default function DashboardPage() {
                     <div className="space-y-4">
                       {groupedSchedules[date].map(schedule => (
                         <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-orange-200 hover:bg-orange-300 transition-shadow">
-                          <div className="flex justify-between items-start flex-wrap">
+                          <div className="flex justify-between md:items-center flex-col md:flex-row">
                             <div className="flex-1">
-                              <h3 className="text-xl font-bold text-gray-900">{schedule.name}</h3>
-                              <p className="text-gray-700 mt-2">{schedule.description}</p>
-                              <p className="text-sm text-gray-600 mt-4">
-                                <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} - <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              <h3 className="text-xl font-bold text-gray-900 flex items-center justify-center space-x-2 mt-4 md:mt-0 uppercase">{schedule.name}</h3>
+                              <p className="text-gray-700 flex items-center justify-center space-x-2 mt-4 md:mt-0">{schedule.description}</p>
+                              <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center">
+                                <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})}
+                              </p>
+                              <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center sm:ml-4">
+                                <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
-                            <div className="flex items-center space-x-2 mt-4 md:mt-0">                              
+                            <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">                              
                                 <DownloadScheduleButton schedule={schedule} />                           
                             </div>
                           </div>
