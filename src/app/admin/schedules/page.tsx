@@ -311,11 +311,14 @@ export default function ScheduleManagementPage() {
           <div className="flex flex-col md:flex-row md:space-x-0  md:space-y-0 gap-3 space-y-2"> 
             <button
               onClick={handleBack}
-              className="md:w-fit justify-center bg-gray-500 hover:bg-gray-700 text-white text-sm py-2 px-4 rounded flex items-center"
+              className="md:w-fit justify-center bg-gray-500 hover:bg-gray-700,
+               text-white text-sm py-2 px-4 rounded flex items-center"
             >
               <FaArrowLeft className="mr-2 text-sm" /> Voltar
             </button>
-            <button onClick={() => handleOpenFormModal()} className="md:w-fit justify-center bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded flex items-center">
+            <button onClick={() => handleOpenFormModal()}
+              className="md:w-fit justify-center bg-blue-500 hover:bg-blue-700,
+               text-white text-sm py-2 px-4 rounded flex items-center">
               <FaPlus className="mr-2" /> Criar Escala
             </button>
           </div>
@@ -371,29 +374,40 @@ export default function ScheduleManagementPage() {
                     <div className="space-y-4">
                       {groupedSchedules[date].map(schedule => (
                         <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-orange-200 hover:bg-orange-300 transition-shadow">
-                          <div className="flex justify-between items-start flex-wrap">
-                            <div className="flex-1">
-                              <h3 className="text-xl font-bold text-gray-900">{schedule.name}</h3>
+                          <div className="flex justify-between items-center flex-col md:flex-row">
+                            <div className="flex-1 md:text-center">
+                              <h3 className="text-xl font-bold text-gray-900 md:flex md:justify-center uppercase">{schedule.name}</h3>
                               <p className="text-gray-700 mt-2">{schedule.description}</p>
-                              <p className="text-sm text-gray-600 mt-4">
-                                <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} - <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              <p className="text-sm text-gray-600 mt-2 inline-flex">
+                                <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})} {/*, hour: '2-digit', minute: '2-digit'*/}
+                              </p>
+                              <p className="text-sm text-gray-600 mt-2 inline-flex ml-4">
+                                <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})} {/*, hour: '2-digit', minute: '2-digit'*/}
                               </p>
                             </div>
                             <div className="flex items-center space-x-2 mt-4 md:mt-0">
-                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-sm text-white bg-emerald-700 hover:bg-emerald-500 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Gerenciar tarefas">
+                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-sm text-white bg-emerald-700 hover:bg-emerald-500,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                                title="Gerenciar tarefas">
                                 <FaTasks />
                                 <span className='ml-1 hidden sm:block'> Músicas</span>
                               </button>
-                              <button onClick={() => handleOpenUserModal(schedule)} className="text-sm text-white bg-blue-700 hover:bg-blue-500 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Gerenciar usuários">
+                              <button onClick={() => handleOpenUserModal(schedule)} className="text-sm text-white bg-blue-700 hover:bg-blue-500,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                                title="Gerenciar usuários">
                                 <FaUsers />
                                 <span className='ml-1 hidden sm:block'> Ministros</span>
                               </button>
                               <DownloadScheduleButton schedule={schedule} />
-                              <button onClick={() => handleOpenFormModal(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Editar">
+                              <button onClick={() => handleOpenFormModal(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                                title="Editar">
                                 <FaEdit />
                                 <span className='ml-1 hidden sm:block'> Editar</span>
                               </button>
-                              <button onClick={() => handleDelete(schedule.id)} className="text-sm text-white bg-red-600 hover:bg-red-900 border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center" title="Deletar">
+                              <button onClick={() => handleDelete(schedule.id)} className="text-sm text-white bg-red-600 hover:bg-red-900,
+                              border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                              title="Deletar">
                                 <FaTrash />
                                 <span className='ml-1 hidden sm:block'> Deletar</span>
                               </button>
