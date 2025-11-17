@@ -60,7 +60,8 @@ export default function TaskForm({ taskToEdit, onSubmit, onCancel, successMessag
           id="taskDate"
           value={taskDate}
           onChange={(e) => setTaskDate(e.target.value)}
-          className="shadow appearance-none border-gr rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow border border-gray-700 appeardance-auto rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+          style={{ WebkitAppearance: 'textfield', MozAppearance: 'textfield', appearance: 'auto' }}
           required
         />
       </div>

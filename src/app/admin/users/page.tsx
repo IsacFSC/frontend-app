@@ -163,7 +163,7 @@ export default function UserManagementPage() {
 
   return (
     <PrivateRoute>
-      <div className="px-2 sm:px-8 py-4 sm:py-8">
+      <div className="px-2 sm:px-8 py-4 bg-gray-800 sm:py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Usuários</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -188,12 +188,12 @@ export default function UserManagementPage() {
             placeholder="Buscar por nome ou email"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+            className="w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
           />
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="flex w-full px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+            className="flex w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
           >
             <option value="">Todos os Status</option>
             <option value="true">Ativo</option>
@@ -202,7 +202,7 @@ export default function UserManagementPage() {
           <select
             value={roleFilter}
             onChange={e => setRoleFilter(e.target.value)}
-            className="flex w-full px-4 py-2 rounded border border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+            className="flex w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
           >
             <option value="">Todos os Perfis</option>
             <option value="ADMIN">Admin</option>
@@ -421,13 +421,13 @@ export default function UserManagementPage() {
                                 <span className="md:inline">Menu</span>
                                 <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                               </MenuButton>
-                              <MenuItems className="absolute z-10 left-0 mt-2 w-40 origin-top-right bg-gray-700 border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
-                                <div className="py-1 w-full">
+                              <MenuItems className="absolute z-10 left-0 mt-2 w-28 origin-top-right bg-gray-700 border-0 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                                <div className="py-1 w-28">
                                   <MenuItem>
                                     {({ active }) => (
                                       <button
                                         onClick={() => handleOpenModal(user)}
-                                        className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-blue-500 text-white' : 'bg-blue-700 text-white'} transition-colors`}
+                                        className={`w-28 flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-blue-500 text-white' : 'bg-blue-700 text-white'} transition-colors`}
                                         title="Editar"
                                       >
                                         <FaEdit className="mr-2" /> Editar
@@ -438,7 +438,7 @@ export default function UserManagementPage() {
                                     {({ active }) => (
                                       <button
                                         onClick={() => handleDelete(user.id)}
-                                        className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-red-500 text-white' : 'bg-red-700 text-white'} transition-colors`}
+                                        className={`w-28 flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-red-500 text-white' : 'bg-red-700 text-white'} transition-colors`}
                                         title="Deletar"
                                       >
                                         <FaTrash className="mr-2" /> Deletar

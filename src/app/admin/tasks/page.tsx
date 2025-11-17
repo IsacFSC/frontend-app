@@ -267,9 +267,9 @@ export default function TaskManagementPage() {
 
   return (
     <PrivateRoute>
-      <div className="px-2 sm:px-8 py-4 sm:py-8">
+      <div className="px-2 sm:px-8 bg-gray-900 py-4 sm:py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
+          <h1 className="text-3xl font-bold text-gray-100">Gerenciar Tarefas</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
             <button
               onClick={handleBack}
@@ -286,7 +286,7 @@ export default function TaskManagementPage() {
           </div>
         </div>
 
-        <div className="p-4 bg-gray-700 rounded-lg mb-6">
+        <div className="p-4 bg-gray-800 rounded-lg mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white">Nome da Tarefa</label>
@@ -297,14 +297,14 @@ export default function TaskManagementPage() {
                 placeholder="Buscar por nome..."
                 value={filters.name}
                 onChange={handleFilterChange}
-                className="p-2 border rounded w-full mt-1 bg-gray-800 text-white"
+                className="p-2 border rounded w-full mt-1 bg-gray-800 border-gray-400 text-white"
               />
             </div>
             <div className="flex items-end">
               <button
                 type="button"
                 onClick={() => setShowMoreFilters(s => !s)}
-                className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-0 rounded-md hover:scale-102 font-semibold duration-75 shadow-cyan-200 shadow-md flex justify-center"
+                className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-0 rounded-md hover:scale-102 font-semibold duration-75 shadow-gray-700 shadow-md flex justify-center"
               >
                 {showMoreFilters ? 'Ocultar filtros' : 'Mais filtros'}
               </button>
@@ -379,7 +379,7 @@ export default function TaskManagementPage() {
                     <tr key={task.id}>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 min-w-52 h-24 align-top overflow-hidden">
                         <button onClick={() => handleOpenModal(task)} className="text-left w-full">
-                          <p className="text-gray-100 truncate block font-semibold hover:underline">{task.name}</p>
+                          <p className="text-gray-100 truncate block font-bold text-md w-fit p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
                           <div className="text-gray-300 mt-1">
                             <DescriptionWithReadMore>
                               <div className="text-sm text-gray-300">{linkify(task.description)}</div>
@@ -417,14 +417,14 @@ export default function TaskManagementPage() {
                                   <span className="md:inline">Ações</span>
                                   <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </MenuButton>
-                                <MenuItems className="absolute z-50 left-0 mt-2 w-44 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
-                                  <div className="py-1 w-full">
+                                <MenuItems className="absolute z-50 left-0 mt-2 w-32 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                                  <div className="py-1 w-fit">
                                     {/* Edit is now available by clicking the task name; removed duplicate Edit action */}
                                     <MenuItem>
                                       {({ active }) => (
                                         <button
                                           onClick={() => handleDelete(task.id)}
-                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-red-600 text-white' : 'text-red-700'} transition-colors`}
+                                          className={`w-full flex items-center px-2 py-2 text-sm rounded ${active ? 'bg-red-600 text-white' : 'text-red-700'} transition-colors`}
                                           title="Deletar"
                                         >
                                           <FaTrash className="mr-2" /> Deletar
@@ -437,7 +437,7 @@ export default function TaskManagementPage() {
                                           {({ active }) => (
                                             <button
                                               onClick={() => handleApprove(task.id)}
-                                              className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-green-600 text-white' : 'text-green-700'} transition-colors`}
+                                              className={`w-full flex items-center px-2 py-2 text-sm rounded ${active ? 'bg-green-600 text-white' : 'text-green-700'} transition-colors`}
                                               title="Aprovar"
                                             >
                                               <FaCheck className="mr-2" /> Aprovar
@@ -448,7 +448,7 @@ export default function TaskManagementPage() {
                                           {({ active }) => (
                                             <button
                                               onClick={() => handleReject(task.id)}
-                                              className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-yellow-600 text-white' : 'text-yellow-700'} transition-colors`}
+                                              className={`w-full flex items-center px-2 py-2 text-sm rounded ${active ? 'bg-yellow-600 text-white' : 'text-yellow-700'} transition-colors`}
                                               title="Rejeitar"
                                             >
                                               <FaBan className="mr-2" /> Rejeitar

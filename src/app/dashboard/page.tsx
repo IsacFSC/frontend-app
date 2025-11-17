@@ -276,7 +276,7 @@ export default function DashboardPage() {
                     <h3 className="text-xl font-semibold text-gray-200 mb-4 border-b-2 pb-2">{date}</h3>
                     <div className="space-y-4">
                       {groupedSchedules[date].map(schedule => (
-                        <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-orange-200 hover:bg-orange-300 transition-shadow">
+                        <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-violet-200 hover:bg-violet-300 transition-shadow">
                           <div className="flex justify-between md:items-center flex-col md:flex-row">
                             <div className="flex-1">
                               <h3 className="text-xl font-bold text-gray-900 flex items-center justify-center space-x-2 mt-4 md:mt-0 uppercase">{schedule.name}</h3>
@@ -288,8 +288,8 @@ export default function DashboardPage() {
                                 <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
-                            <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">                              
-                                <DownloadScheduleButton schedule={schedule} />                           
+                            <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">
+                                <DownloadScheduleButton schedule={schedule} />
                             </div>
                           </div>
                           <div className="mt-4">

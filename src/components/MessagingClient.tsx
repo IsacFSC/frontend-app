@@ -220,9 +220,9 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
   };
 
   return (
-    <div className="h-screen flex flex-col p-4 md:p-8 bg-gray-100 dark:bg-gray-900">
+    <div className="h-screen flex flex-col p-4 md:p-8 bg-gray-900">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Mensagens</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-100">Mensagens</h1>
         <div className="flex flex-col gap-4 md:flex-row md:justify-end">
           <button
             onClick={() => setIsNewConversationModalOpen(true)}
@@ -249,21 +249,21 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       {error && <p className="text-red-500">{error}</p>}
       {successMessage && <p className="text-green-500">{successMessage}</p>}
 
-      <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden bg-gray-800">
         <div className={`md:col-span-1 ${view === 'messages' && 'hidden md:block'}`}>
-          <h2 className="text-xl font-bold mb-4 dark:text-gray-200">Conversas</h2>
-          <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Conversas</h2>
+          <div className="bg-gray-800 shadow-md rounded-lg p-4">
             {conversations.length > 0 ? (
               <ul>
                 {conversations.map((convo) => (
                   <li
                     key={convo.id}
-                    className={`cursor-pointer p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors flex justify-between items-center ${
-                      convo.hasUnreadMessages ? 'font-bold bg-emerald-900 text-white' : 'dark:text-gray-200'
+                    className={`cursor-pointer p-2 hover:bg-gray-200 rounded-md transition-colors flex justify-between items-center ${
+                      convo.hasUnreadMessages ? 'font-bold bg-emerald-900 text-white' : 'text-gray-200'
                     }`}>
                     <div onClick={() => handleSelectConversation(convo)} className="flex-grow">
                       {convo.subject} - {convo.participants.map(p => p.name).find(name => name !== user?.name) || 'Sem Participantes'}
-                      {selectedConversation?.id === convo.id && <span className="text-blue-500 ml-2 font-bold">●</span>}
+                      {selectedConversation?.id === convo.id && <span className="text-blue-500 ml-2 font-extrabold">●</span>}
                       {convo.messages && convo.messages.length > 0 && (
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           Última mensagem: {new Date(convo.messages[convo.messages.length - 1].createdAt).toLocaleString()}
@@ -300,9 +300,9 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <h2 className="text-xl font-bold dark:text-gray-200">{selectedConversation.subject}</h2>
+                <h2 className="text-xl font-bold text-gray-200">{selectedConversation.subject}</h2>
               </div>
-              <div className="flex-grow bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 overflow-y-auto mb-4">
+              <div className="flex-grow bg-gray-800 shadow-md rounded-lg p-4 overflow-y-auto mb-4">
                 {messages.map((msg) => (
                   <div key={msg.id} className={`mb-2 flex items-end gap-2 ${msg.authorId === Number(user?.id) ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg shadow-md ${msg.authorId === Number(user?.id) ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200'}`}>
@@ -333,7 +333,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  className="shadow appearance-none border dark:border-gray-600 rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border dark:border-gray-600 rounded w-full py-2 px-3 text-gray-300 bg-gray-800 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Digite uma mensagem..."
                 />
                  <input
