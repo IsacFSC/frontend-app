@@ -16,7 +16,7 @@ import DescriptionWithReadMore from '../../../components/DescriptionWithReadMore
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaChevronLeft, FaChevronRight, FaSpinner, FaSpider, FaAngleUp, FaCross } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaChevronLeft, FaChevronRight, FaCross } from 'react-icons/fa';
 
 const ITEMS_PER_PAGE = 10;
 

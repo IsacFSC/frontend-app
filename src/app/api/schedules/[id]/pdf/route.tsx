@@ -54,6 +54,7 @@ export async function GET(
           email: u.user.email ?? '',
           image: u.user.image ?? null,
           createdAt: u.user.createdAt?.toISOString() ?? new Date().toISOString(),
+          updatedAt: u.user.updatedAt?.toISOString(),
           role: u.user.role as Role,
         },
       })),

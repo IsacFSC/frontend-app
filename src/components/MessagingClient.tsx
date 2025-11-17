@@ -12,6 +12,7 @@ interface MessagingClientProps {
 }
 
 export default function MessagingClient({ userRole }: MessagingClientProps) {
+  console.log('userRole', userRole);
   const { data: session, status } = useSession();
   const user = session?.user;
   const isAuthenticated = status === 'authenticated';

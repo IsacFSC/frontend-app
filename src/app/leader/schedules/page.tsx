@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, Schedule, uploadScheduleFile } from '../../../services/scheduleService';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaSync, FaFileUpload, FaArrowLeft, FaCross } from 'react-icons/fa';
+import { FaFileUpload, FaArrowLeft, FaCross } from 'react-icons/fa';
 import { AxiosError } from 'axios';
 import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 

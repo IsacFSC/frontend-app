@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, CreateUserData } from '../services/userService';
+import { User } from '../services/userService';
 
 enum Role {
   ADMIN = 'ADMIN',

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getMySchedules, Schedule } from '../../services/scheduleService';
 import { getUnreadMessagesCount } from '../../services/messagingService';
 import PrivateRoute from '../../components/PrivateRoute';
-import { FaEnvelope, FaSync, FaSignOutAlt, FaCross } from 'react-icons/fa';
+import { FaEnvelope, FaSignOutAlt, FaCross } from 'react-icons/fa';
 import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 
 // Função para transformar links em <a> (igual admin)

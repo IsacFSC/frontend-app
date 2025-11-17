@@ -1,4 +1,4 @@
-import { hashPassword } from '@/lib/auth';
+// import { hashPassword } from '@/lib/auth';
 import { api } from './api';
 
 export enum Role {
@@ -14,6 +14,8 @@ export interface User {
   role: Role;
   active: boolean;
   avatar?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateUserData extends Omit<User, 'id' | 'active'> {

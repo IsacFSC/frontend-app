@@ -356,6 +356,12 @@ export default function UserManagementPage() {
                     Perfil
                   </th>
                   <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                    Criado em
+                  </th>
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                    Última atualização
+                  </th>
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
@@ -391,8 +397,14 @@ export default function UserManagementPage() {
                     {/* --- FIM CÉLULA FIXA --- */}
 
                     <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
-                      <p className="text-gray-100 whitespace-no-wrap">{user.role}</p>
+                        <p className="text-gray-100 whitespace-nowrap">{user.role}</p>
                     </td>
+                      <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                        <p className="text-gray-100 whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
+                      </td>
+                      <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                        <p className="text-gray-300 whitespace-nowrap text-sm">{user.updatedAt ? new Date(user.updatedAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
+                      </td>
                     <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
                       <button
                         onClick={() => handleToggleActiveStatus(user.id, user.active)}
@@ -413,7 +425,7 @@ export default function UserManagementPage() {
                       {/* Seu Menu dropdown complexo permanece o mesmo, mas a largura pode precisar de ajustes */}
                       <div className="relative inline-block text-left w-full">
                         <Menu as="div" className="relative inline-block text-left">
-                          {({ open }) => ( // Use o estado 'open' para rotacionar o ícone, se quiser
+                          {({ open: _open }) => ( // Use o estado 'open' para rotacionar o ícone, se quiser
                             <>
                               <MenuButton className="flex items-center p-2 text-gray-200 hover:text-gray-300,
                               rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out,
