@@ -20,7 +20,9 @@ import DescriptionWithReadMore from '../../../components/DescriptionWithReadMore
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaTrash, FaCheck, FaBan, FaChevronLeft, FaChevronRight, FaCross, FaEdit } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaCheck,
+FaBan, FaChevronLeft, FaChevronRight, FaCross, FaEdit,
+FaEllipsisV, FaTrashAlt } from 'react-icons/fa';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -286,7 +288,7 @@ export default function TaskManagementPage() {
           </div>
         </div>
 
-        <div className="p-4 bg-gray-800 rounded-lg mb-6">
+        <div className="p-4 bg-gray-800 rounded-lg mb-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white">Nome da Tarefa</label>
@@ -304,7 +306,8 @@ export default function TaskManagementPage() {
               <button
                 type="button"
                 onClick={() => setShowMoreFilters(s => !s)}
-                className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-0 rounded-md hover:scale-102 font-semibold duration-75 shadow-gray-700 shadow-md flex justify-center"
+                className="w-full flex bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-1,
+                rounded-md hover:scale-102 font-semibold duration-75 justify-center"
               >
                 {showMoreFilters ? 'Ocultar filtros' : 'Mais filtros'}
               </button>
@@ -315,7 +318,8 @@ export default function TaskManagementPage() {
               {user?.role === 'ADMIN' && (
                 <div>
                   <label htmlFor="userId" className="block text-sm font-medium text-white">Usuário</label>
-                  <select id="userId" name="userId" value={filters.userId} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
+                  <select id="userId" name="userId" value={filters.userId} onChange={handleFilterChange}
+                    className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
                     <option value="">Todos</option>
                     {usersForFilter.map(u => (
                       <option key={u.id} value={u.id}>{u.name}</option>
@@ -325,7 +329,8 @@ export default function TaskManagementPage() {
               )}
               <div>
                 <label htmlFor="status" className="block text-sm font-medium text-white">Status</label>
-                <select id="status" name="status" value={filters.status} onChange={handleFilterChange} className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
+                <select id="status" name="status" value={filters.status} onChange={handleFilterChange}
+                  className="p-2 border rounded w-full mt-1 bg-gray-800 text-white">
                   <option value="">Todos</option>
                   {Object.values(TaskStatus).map(s => (
                     <option key={s} value={s}>{translateStatus(s)}</option>
@@ -379,7 +384,7 @@ export default function TaskManagementPage() {
                     <tr key={task.id}>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 min-w-52 h-24 align-top overflow-hidden">
                         <button onClick={() => handleOpenModal(task)} className="text-left w-full">
-                          <p className="text-gray-100 truncate block font-bold text-md w-fit p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
+                          <p className="text-gray-100 truncate block font-bold lg:text-lg w-fit p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
                           <div className="text-gray-300 mt-1">
                             <DescriptionWithReadMore>
                               <div className="text-sm text-gray-300">{linkify(task.description)}</div>
@@ -409,49 +414,83 @@ export default function TaskManagementPage() {
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm gap-2">
                         <div className="relative inline-block text-left w-full">
-                          <Menu>
+                          <Menu as="div" className="relative inline-block text-left">
                             {() => (
                               <>
-                                <MenuButton className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                  <span className="mr-2"><FaEdit /></span>
-                                  <span className="md:inline">Ações</span>
-                                  <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                <MenuButton className="flex items-center p-2 text-gray-200 hover:text-gray-400,
+                                rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out,
+                                hover:scale-105 font-semibold">
+                                  {/* Botão de ícone discreto para economizar espaço na tabela */}
+                                  <FaEllipsisV className="h-5 w-5" aria-hidden="true" />
                                 </MenuButton>
-                                <MenuItems className="absolute z-50 left-0 mt-2 w-32 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
-                                  <div className="py-1 w-fit">
-                                    {/* Edit is now available by clicking the task name; removed duplicate Edit action */}
+
+                                {/* Painel do Dropdown: Design limpo, branco com sombra */}
+                                <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100,
+                                rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                  <div className="py-1">
+
+                                    {/* Opção EDITAR */}
+                                    <MenuItem>
+                                      {({ active }) => (
+                                        <button
+                                          onClick={() => handleOpenModal(task)}
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                            active ? 'bg-blue-700 text-white' : 'text-gray-700'
+                                          }`}
+                                        >
+                                          <FaEdit className="mr-3 h-4 w-4" />
+                                          Editar
+                                        </button>
+                                      )}
+                                    </MenuItem>
+
+                                    {/* Opção DELETAR (use hover vermelho) */}
                                     <MenuItem>
                                       {({ active }) => (
                                         <button
                                           onClick={() => handleDelete(task.id)}
-                                          className={`w-full flex items-center px-2 py-2 text-sm rounded ${active ? 'bg-red-600 text-white' : 'text-red-700'} transition-colors`}
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                            active ? 'bg-red-600 text-white' : 'text-gray-700'
+                                          }`}
                                           title="Deletar"
                                         >
-                                          <FaTrash className="mr-2" /> Deletar
+                                          <FaTrashAlt className="mr-3 h-4 w-4" /> {/* Alterado para FaTrashAlt para consistência */}
+                                          Deletar
                                         </button>
                                       )}
                                     </MenuItem>
+                                    
+                                    {/* Opções Condicionais para PENDING */}
                                     {task.status === TaskStatus.PENDING && (
                                       <>
+                                        {/* Opção APROVAR (use hover verde) */}
                                         <MenuItem>
                                           {({ active }) => (
                                             <button
                                               onClick={() => handleApprove(task.id)}
-                                              className={`w-full flex items-center px-2 py-2 text-sm rounded ${active ? 'bg-green-600 text-white' : 'text-green-700'} transition-colors`}
+                                              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                                active ? 'bg-green-600 text-white' : 'text-gray-700'
+                                              }`}
                                               title="Aprovar"
                                             >
-                                              <FaCheck className="mr-2" /> Aprovar
+                                              <FaCheck className="mr-3 h-4 w-4" />
+                                              Aprovar
                                             </button>
                                           )}
                                         </MenuItem>
+                                        
+                                        {/* Opção REJEITAR (use hover amarelo/laranja) */}
                                         <MenuItem>
                                           {({ active }) => (
                                             <button
                                               onClick={() => handleReject(task.id)}
-                                              className={`w-full flex items-center px-2 py-2 text-sm rounded ${active ? 'bg-yellow-600 text-white' : 'text-yellow-700'} transition-colors`}
+                                              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                                active ? 'bg-yellow-600 text-white' : 'text-gray-700'
+                                              }`}
                                               title="Rejeitar"
                                             >
-                                              <FaBan className="mr-2" /> Rejeitar
+                                              <FaBan className="mr-3 h-4 w-4" />
+                                              Rejeitar
                                             </button>
                                           )}
                                         </MenuItem>

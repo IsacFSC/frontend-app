@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { api } from '../../../services/api';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaCross } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaToggleOn, FaToggleOff, FaCross, FaTrashAlt, FaEllipsisV } from 'react-icons/fa';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import Image from 'next/image';
 
@@ -163,7 +163,7 @@ export default function UserManagementPage() {
 
   return (
     <PrivateRoute>
-      <div className="px-2 sm:px-8 py-4 bg-gray-800 sm:py-8">
+      <div className="min-h-screenpx-2 sm:px-8 py-4 bg-gray-900 sm:py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Usuários</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -182,7 +182,7 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="p-4 mb-4 flex flex-col md:flex-row gap-4 bg-gray-800 rounded-lg">
           <input
             type="text"
             placeholder="Buscar por nome ou email"
@@ -342,7 +342,7 @@ export default function UserManagementPage() {
         {/* CÓDIGO PARA TESTE AQUI INICIO*/}
         {!pageLoading && !error && (
           // Container que permite a rolagem horizontal
-          <div className="overflow-x-auto shadow-md rounded-lg overflow-visible">
+          <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto overflow-visible">
             {/* Removi o bg-gray-700 daqui para evitar conflitos de z-index com sticky backgrounds */}
             <table className="min-w-full leading-normal">
               <thead>
@@ -369,7 +369,7 @@ export default function UserManagementPage() {
                     {/* --- CÉLULA FIXA (STICKY) --- */}
                     <td className="px-0 py-5 border-b border-gray-200 bg-gray-600 text-sm sticky left-0 z-0">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
+                        <div className="flex-shrink-0 w-10 h-10 ml-2 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
                           {user.avatar ? (
                             <Image
                               className="w-full h-full object-cover"
@@ -412,36 +412,46 @@ export default function UserManagementPage() {
                     <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
                       {/* Seu Menu dropdown complexo permanece o mesmo, mas a largura pode precisar de ajustes */}
                       <div className="relative inline-block text-left w-full">
-                        <Menu>
-                          {/* ... (código do Menu) ... */}
-                          {() => (
+                        <Menu as="div" className="relative inline-block text-left">
+                          {({ open }) => ( // Use o estado 'open' para rotacionar o ícone, se quiser
                             <>
-                              <MenuButton className="w-fit flex justify-center items-center bg-blue-500 hover:bg-blue-700 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <span className="mr-2"><FaEdit /></span>
-                                <span className="md:inline">Menu</span>
-                                <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                              <MenuButton className="flex items-center p-2 text-gray-200 hover:text-gray-300,
+                              rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out,
+                              hover:scale-105 font-semibold">
+                                {/* Botão de ícone limpo para a coluna de ações */}
+                                <FaEllipsisV className="h-5 w-5" aria-hidden="true" />
                               </MenuButton>
-                              <MenuItems className="absolute z-10 left-0 mt-2 w-28 origin-top-right bg-transparent border-0 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
-                                <div className="py-1 w-28">
+
+                              {/* Painel do Dropdown */}
+                              <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                <div className="py-1">
+                                  
+                                  {/* Opção EDITAR */}
                                   <MenuItem>
                                     {({ active }) => (
                                       <button
                                         onClick={() => handleOpenModal(user)}
-                                        className={`w-28 flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-blue-500 text-white' : 'bg-blue-700 text-white'} transition-colors`}
-                                        title="Editar"
+                                        className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                          active ? 'bg-indigo-600 text-white' : 'text-gray-700'
+                                        }`}
                                       >
-                                        <FaEdit className="mr-2" /> Editar
+                                        <FaEdit className="mr-3 h-4 w-4" />
+                                        Editar
                                       </button>
                                     )}
                                   </MenuItem>
+
+                                  {/* Opção DELETAR */}
                                   <MenuItem>
                                     {({ active }) => (
                                       <button
                                         onClick={() => handleDelete(user.id)}
-                                        className={`w-28 flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-red-500 text-white' : 'bg-red-700 text-white'} transition-colors`}
-                                        title="Deletar"
+                                        className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                          active ? 'bg-red-600 text-white' : 'text-gray-700'
+                                        }`}
                                       >
-                                        <FaTrash className="mr-2" /> Deletar
+                                        <FaTrashAlt className="mr-3 h-4 w-4" />
+                                        Deletar
                                       </button>
                                     )}
                                   </MenuItem>
@@ -450,6 +460,7 @@ export default function UserManagementPage() {
                             </>
                           )}
                         </Menu>
+
                       </div>
                     </td>
                   </tr>
