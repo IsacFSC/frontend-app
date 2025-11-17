@@ -215,7 +215,7 @@ export default function TaskManagementPage() {
 
   return (
     <PrivateRoute>
-      <div className="px-2 sm:px-8 py-4 sm:py-8">
+      <div className="px-2 sm:px-8 bg-gray-900 py-4 sm:py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -234,7 +234,7 @@ export default function TaskManagementPage() {
           </div>
         </div>
 
-        <div className="p-4 bg-gray-700 rounded-lg mb-6">
+  <div className="p-4 bg-gray-800 rounded-lg mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white">Nome da Tarefa</label>
@@ -252,7 +252,7 @@ export default function TaskManagementPage() {
               <button
                 type="button"
                 onClick={() => setShowMoreFilters(s => !s)}
-                className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-0 rounded-md hover:scale-102 font-semibold duration-75 shadow-cyan-200 shadow-md flex justify-center"
+                className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 border-0 rounded-md hover:scale-102 font-semibold duration-75 shadow-gray-700 shadow-md flex justify-center"
               >
                 {showMoreFilters ? 'Ocultar filtros' : 'Mais filtros'}
               </button>
@@ -299,11 +299,11 @@ export default function TaskManagementPage() {
 
         {!loading && !error && (
           <>
-            <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto verflow-visible">
+            <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto overflow-visible">
               <table className="min-w-full leading-normal">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 w-fit md:w-32">Tarefa</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider sticky left-0 z-50 min-w-52">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Ações</th>
@@ -312,12 +312,12 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 md:w-32 h-20 align-top overflow-hidden">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 min-w-52 h-24 align-top overflow-hidden">
                         <button onClick={() => handleOpenModal(task)} className="text-left w-full">
-                          <p className="text-gray-100 truncate block font-semibold">{task.name}</p>
+                          <p className="text-gray-100 truncate block font-bold text-md w-fit p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
                           <div className="text-gray-300 mt-1">
                             <DescriptionWithReadMore>
-                              <div className="text-sm trucate text-gray-300">{linkify(task.description)}</div>
+                              <div className="text-sm text-gray-300">{linkify(task.description)}</div>
                             </DescriptionWithReadMore>
                           </div>
                         </button>
@@ -329,9 +329,9 @@ export default function TaskManagementPage() {
                         </span>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                        <p className="text-gray-100 whitespace-no-wrap">{task.user?.name || 'Não atribuído'}</p>
+                        <p className="text-gray-100 whitespace-nowrap">{task.user?.name || 'Não atribuído'}</p>
                       </td>
-                      <td className="px-5 py-24 border-b border-gray-500 bg-gray-700 text-sm">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm gap-2">
                         <div className="relative inline-block text-left w-full">
                           <Menu>
                             {() => (
@@ -341,7 +341,7 @@ export default function TaskManagementPage() {
                                   <span className="md:inline">Ações</span>
                                   <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </MenuButton>
-                                <MenuItems className="absolute z-50 left-0 mt-2 w-44 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                                <MenuItems className="absolute z-50 left-0 mt-2 w-32 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
                                   <div className="py-1 w-full">
                                     <MenuItem>
                                       {({ active }) => (

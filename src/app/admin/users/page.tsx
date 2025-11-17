@@ -421,7 +421,7 @@ export default function UserManagementPage() {
                                 <span className="md:inline">Menu</span>
                                 <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                               </MenuButton>
-                              <MenuItems className="absolute z-10 left-0 mt-2 w-28 origin-top-right bg-gray-700 border-0 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                              <MenuItems className="absolute z-10 left-0 mt-2 w-28 origin-top-right bg-transparent border-0 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
                                 <div className="py-1 w-28">
                                   <MenuItem>
                                     {({ active }) => (
