@@ -65,7 +65,7 @@ export default function FAQButton() {
     <>
       <button
         onClick={openModal}
-        className="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed bottom-4 right-4 bg-blue-500 opacity-75 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
         aria-label="Ajuda e FAQ"
       >
         <FaQuestion size={24} />
