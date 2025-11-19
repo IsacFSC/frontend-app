@@ -4,7 +4,7 @@ import "./globals.css";
 import Favicon from './assets/img/icons8-farol-30.png';
 import { Toaster } from "react-hot-toast";
 import Providers from "@/app/providers";
-import FAQButton from "@/components/FAQButton";
+{/*import FAQButton from "@/components/FAQButton";*/}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           {children}
           <Toaster />
-          <FAQButton />
+          {/*<FAQButton />*/}
         </Providers>
       </body>
     </html>
