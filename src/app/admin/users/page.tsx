@@ -348,7 +348,7 @@ export default function UserManagementPage() {
               <thead>
                 <tr>
                   {/* --- COLUNA FIXA (STICKY) --- */}
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-48">
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-52">
                     Usuários
                   </th>
                   {/* --- FIM COLUNA FIXA --- */}
@@ -388,7 +388,7 @@ export default function UserManagementPage() {
                         </div>
                         <div className="ml-3">
                           <p className="text-gray-100 whitespace-nowrap">{user.name}</p>
-                          <p className="text-gray-200 truncate w-20 sm:w-32 md:w-auto text-sm font-extralight">
+                          <p className="text-gray-200 truncate w-28 sm:w-32 md:w-auto text-sm font-extralight">
                             {user.email}
                           </p>
                         </div>

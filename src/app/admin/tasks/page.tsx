@@ -372,7 +372,7 @@ export default function TaskManagementPage() {
               <table className="min-w-full leading-normal">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-50 min-w-48">Tarefa</th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-48">Tarefa</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado por</th>
                     <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Criado em</th>
@@ -383,12 +383,12 @@ export default function TaskManagementPage() {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task.id}>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-600 text-sm sticky left-0 z-50 min-w-48 h-24 align-top overflow-hidden">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-600 text-sm sticky left-0 z-10 w-48 sm:w-32 h-24 align-top overflow-hidden">
                         <button onClick={() => handleOpenModal(task)} className="text-left w-full">
-                          <p className="text-gray-100 truncate block font-bold lg:text-lg w-fit p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
+                          <p className="text-gray-100 truncate w-48 sm:w-32 block font-bold lg:text-lg p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
                           <div className="text-gray-300 mt-1">
                             <DescriptionWithReadMore>
-                              <div className="text-sm text-gray-300">{linkify(task.description)}</div>
+                              <div className="text-sm text-gray-300 truncate w-48 sm:w-32">{linkify(task.description)}</div>
                             </DescriptionWithReadMore>
                           </div>
                         </button>
@@ -427,7 +427,7 @@ export default function TaskManagementPage() {
 
                                 {/* Painel do Dropdown: Design limpo, branco com sombra */}
                                 <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100,
-                                rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20">
                                   <div className="py-1">
 
                                     {/* Opção EDITAR */}
