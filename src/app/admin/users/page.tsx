@@ -348,7 +348,7 @@ export default function UserManagementPage() {
               <thead>
                 <tr>
                   {/* --- COLUNA FIXA (STICKY) --- */}
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-48">
+                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-48">
                     Usuários
                   </th>
                   {/* --- FIM COLUNA FIXA --- */}
@@ -373,7 +373,7 @@ export default function UserManagementPage() {
                 {users.map((user) => (
                   <tr key={user.id}>
                     {/* --- CÉLULA FIXA (STICKY) --- */}
-                    <td className="px-0 py-5 border-b border-gray-200 bg-gray-600 text-sm sticky left-0 z-0">
+                    <td className="px-0 py-5 border-b border-gray-200 bg-gray-700 text-sm sticky left-0 z-0">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 w-10 h-10 ml-2 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
                           {user.avatar ? (
