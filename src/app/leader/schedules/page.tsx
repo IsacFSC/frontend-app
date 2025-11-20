@@ -327,7 +327,7 @@ export default function LeaderScheduleManagementPage() {
                             </div>
                             <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">                              
                                 <DownloadScheduleButton schedule={schedule} />
-                              <button onClick={() => handleAttachFileClick(schedule)} className="text-sm text-white bg-indigo-600 hover:bg-indigo-900,
+                              <button onClick={() => handleAttachFileClick(schedule)} className="text-md text-white bg-indigo-600 hover:bg-indigo-900,
                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center">
                                 <FaFileUpload className="w-3.5 h-3.5 mx-1" />
                                 <span className="w-fit hidden sm:block">Anexar Arquivo</span>
