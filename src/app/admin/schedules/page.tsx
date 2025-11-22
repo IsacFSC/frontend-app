@@ -9,7 +9,6 @@ import {
   addUserToSchedule,
   removeUserFromSchedule,
   uploadScheduleFile, // Added
-  Schedule,
 } from '../../../services/scheduleService';
 import { getUsers, User } from '../../../services/userService';
 import { getTasks, assignTaskToSchedule, unassignTaskFromSchedule, Task } from '../../../services/taskService';
@@ -20,9 +19,11 @@ import ScheduleTaskManagement from '../../../components/ScheduleTaskManagement';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AxiosError } from 'axios';
+import type { Schedule } from '../../../services/scheduleService';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaEdit, FaTrash, FaCross } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaTasks, FaUsers, FaEdit, FaTrash, FaCross, FaFileUpload } from 'react-icons/fa';
 import DownloadScheduleButton from '@/components/DownloadScheduleButton';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface ScheduleFormData {
   name: string;
@@ -105,6 +106,8 @@ export default function ScheduleManagementPage() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false);
+  const [selectedFileForUpload, setSelectedFileForUpload] = useState<File | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
 
   const fetchAllData = useCallback(async () => {
@@ -136,28 +139,18 @@ export default function ScheduleManagementPage() {
 
   const handleFileUpload = async (file: File, scheduleId: number) => {
     if (!scheduleId) return;
+    const toastId = toast.loading('Enviando arquivo...');
     try {
-      setLoading(true);
       const result = await uploadScheduleFile(scheduleId, file);
       const convoId = result?.conversationId;
 
-      setSuccessMessage('Arquivo enviado com sucesso e conversa criada!');
+      toast.success('Arquivo enviado com sucesso!', { id: toastId });
       await fetchAllData(); 
-
-      if (convoId) {
-        router.push('/admin/messaging');
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: { id: convoId } }));
-        }, 300);
-      }
     } catch (error) {
       const axiosError = error as AxiosError;
       const data = axiosError.response?.data as ErrorResponse
       const errorMessage = data && typeof data.message === 'string' ? data.message : 'Falha ao enviar arquivo.';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-      setTimeout(() => setSuccessMessage(null), 5000);
+      toast.error(errorMessage, { id: toastId });
     }
   };
 
@@ -179,6 +172,17 @@ export default function ScheduleManagementPage() {
     setIsTaskModalOpen(true);
   };
   const handleCloseTaskModal = () => setIsTaskModalOpen(false);
+
+  const handleOpenFileUploadModal = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+    setSelectedFileForUpload(null);
+    setIsFileUploadModalOpen(true);
+  };
+  const handleCloseFileUploadModal = () => {
+    setSelectedFileForUpload(null);
+    setIsFileUploadModalOpen(false);
+    setSelectedSchedule(null);
+  };
 
   const handleFormSubmit = async (data: ScheduleFormData) => {
     try {
@@ -306,6 +310,7 @@ export default function ScheduleManagementPage() {
   return (
     <PrivateRoute>
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
+        <Toaster position="top-center" reverseOrder={false} />
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200 justify-center">Gerenciar Escalas</h1>
           <div className="flex flex-col md:flex-row md:space-x-0  md:space-y-0 gap-3 space-y-2"> 
@@ -386,27 +391,33 @@ export default function ScheduleManagementPage() {
                               </p>
                             </div>
                             <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">
-                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-md text-white bg-emerald-700 hover:bg-emerald-500,
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-md text-white bg-emerald-900 hover:bg-emerald-800,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
                                 title="Gerenciar tarefas">
                                 <FaTasks />
                                 <span className='ml-1 hidden sm:block'> Músicas</span>
                               </button>
-                              <button onClick={() => handleOpenUserModal(schedule)} className="text-md text-white bg-blue-700 hover:bg-blue-500,
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenUserModal(schedule)} className="text-md text-white bg-blue-900 hover:bg-blue-800,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
                                 title="Gerenciar usuários">
                                 <FaUsers />
                                 <span className='ml-1 hidden sm:block'> Ministros</span>
                               </button>
                               <DownloadScheduleButton schedule={schedule} />
-                              <button onClick={() => handleOpenFormModal(schedule)} className="text-md text-white bg-indigo-600 hover:bg-indigo-900,
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenFormModal(schedule)} className="text-md text-white bg-indigo-900 hover:bg-indigo-800,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
                                 title="Editar">
                                 <FaEdit />
                                 <span className='ml-1 hidden sm:block'> Editar</span>
                               </button>
-                              <button onClick={() => handleDelete(schedule.id)} className="text-md text-white bg-red-600 hover:bg-red-900,
-                              border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenFileUploadModal(schedule)} className="text-md text-white bg-green-600 hover:bg-green-500,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
+                                title="Anexar Arquivo">
+                                <FaFileUpload />
+                                <span className='ml-1 hidden sm:block'> Anexar</span>
+                              </button>
+                              <button onClick={() => handleDelete(schedule.id)} className="text-md text-white bg-red-800 hover:bg-red-700,
+                              border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
                               title="Deletar">
                                 <FaTrash />
                                 <span className='ml-1 hidden sm:block'> Deletar</span>
@@ -460,7 +471,6 @@ export default function ScheduleManagementPage() {
               onSubmit={handleFormSubmit}
               onCancel={handleCloseFormModal}
               successMessage={successMessage || undefined}
-              onFileUpload={(file) => handleFileUpload(file, selectedSchedule?.id ?? 0)}
             />
           </Modal>
         )}
@@ -479,6 +489,43 @@ export default function ScheduleManagementPage() {
         {isTaskModalOpen && selectedSchedule && (
           <Modal isOpen={isTaskModalOpen} onClose={handleCloseTaskModal} title={`Gerenciar tarefas para ${selectedSchedule.name}`}>
             <ScheduleTaskManagement schedule={selectedSchedule} allTasks={allTasks} onAssignTask={handleAssignTask} onUnassignTask={handleUnassignTask} onFileUpload={(file) => handleFileUpload(file, selectedSchedule?.id ?? 0)} />
+          </Modal>
+        )}
+
+        {isFileUploadModalOpen && selectedSchedule && (
+          <Modal isOpen={isFileUploadModalOpen} onClose={handleCloseFileUploadModal} title={`Anexar arquivo para ${selectedSchedule.name}`}>
+            <div className="p-4">
+              <p className="text-gray-400 mb-4">Selecione um arquivo (PDF ou imagem) para anexar a esta escala.</p>
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) {
+                    setSelectedFileForUpload(e.target.files[0]);
+                  }
+                }}
+                className="w-full p-2 border border-gray-300 rounded-md" />
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={handleCloseFileUploadModal}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    if (selectedFileForUpload) {
+                      await handleFileUpload(selectedFileForUpload, selectedSchedule.id);
+                      handleCloseFileUploadModal();
+                    }
+                  }}
+                  disabled={!selectedFileForUpload}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  Enviar
+                </button>
+              </div>
+            </div>
           </Modal>
         )}
       </div>
