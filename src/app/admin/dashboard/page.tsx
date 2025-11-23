@@ -13,9 +13,11 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+      // Container principal: fixed, tela cheia, bg preto com opacidade 75%
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+        {/* Ícone de Loading: centralizado, sem background próprio */}
         <FaCross 
-          className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
+          className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
         />
       </div>
     );

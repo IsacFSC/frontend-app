@@ -243,9 +243,13 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       </div>
 
       {loading && 
-        <FaCross 
-          className="animate-bounce delay-75 text-9xl text-blue-200 mx-auto my-40 bg-sky-900 rounded-3xl p-2 border-2 border-cyan-400"
-        />
+        // Container principal: fixed, tela cheia, bg preto com opacidade 75%
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+          {/* Ícone de Loading: centralizado, sem background próprio */}
+          <FaCross 
+            className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
+          />
+        </div>
       }
       {error && <p className="text-red-500">{error}</p>}
       {successMessage && <p className="text-green-500">{successMessage}</p>}
@@ -253,7 +257,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden bg-gray-800">
         <div className={`md:col-span-1 ${view === 'messages' && 'hidden md:block'}`}>
           <h2 className="text-xl font-bold mb-4 text-gray-800">Conversas</h2>
-          <div className="bg-gray-800 shadow-md rounded-lg p-4">
+          <div className="bg-red-800 flex-grow shadow-md rounded-lg p-4">
             {conversations.length > 0 ? (
               <ul>
                 {conversations.map((convo) => (
