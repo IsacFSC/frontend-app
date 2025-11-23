@@ -8,6 +8,9 @@ import PrivateRoute from '@/components/PrivateRoute';
 import { FaFileUpload, FaArrowLeft, FaCross } from 'react-icons/fa';
 import { AxiosError } from 'axios';
 import DownloadScheduleButton from '@/components/DownloadScheduleButton';
+import Modal from '../../../components/Modal';
+import toast, { Toaster } from 'react-hot-toast';
+
 
 interface UploadResponse {
   schedule: Schedule;
@@ -86,10 +89,11 @@ export default function LeaderScheduleManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [schedulesLoading, setSchedulesLoading] = useState(true);
-  // const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false);
+  const [selectedFileForUpload, setSelectedFileForUpload] = useState<File | null>(null);
+
 
   const fetchData = useCallback(async () => {
     if (user) {
@@ -103,10 +107,10 @@ export default function LeaderScheduleManagementPage() {
       } catch (error) {
         const axiosError = error as import('axios').AxiosError;
         if (axiosError?.response?.status === 403) {
-          alert('Sua sessão expirou ou você não tem permissão. Faça login novamente.');
+          toast.error('Sua sessão expirou ou você não tem permissão. Faça login novamente.');
           signOut();
         } else {
-          alert('Falha ao buscar escalas. Tente novamente.');
+          toast.error('Falha ao buscar escalas. Tente novamente.');
         }
         console.error("Falha ao buscar escalas", error);
       } finally {
@@ -147,55 +151,33 @@ export default function LeaderScheduleManagementPage() {
     setFilteredSchedules(filtered);
   }, [searchTerm, dateFilter, schedules]);
 
-  // Toast simples
-  function showToast(message: string, type: 'success' | 'error') {
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    toast.className = `fixed top-6 right-6 z-50 px-4 py-2 rounded shadow-lg text-white font-bold ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.remove();
-    }, 3000);
-  }
-
-  // const handleRefresh = async () => {
-  //   try {
-  //     setIsRefreshing(true);
-  //     await fetchData();
-  //   } finally {
-  //     setIsRefreshing(false);
-  //   }
-  // }
-
-  const handleAttachFileClick = (schedule: Schedule) => {
+  const handleOpenFileUploadModal = (schedule: Schedule) => {
     setSelectedSchedule(schedule);
-    fileInputRef.current?.click();
+    setSelectedFileForUpload(null);
+    setIsFileUploadModalOpen(true);
   };
 
-  const handleFileUpload = async (file: File) => {
-    if (!selectedSchedule) return;
-    try {
-      setSchedulesLoading(true);
-      const result: UploadResponse = await uploadScheduleFile(selectedSchedule.id, file);
-      // new API returns { schedule, conversationId }
-      const convoId = result?.conversationId;
-      await fetchData(); 
-      showToast('Arquivo enviado com sucesso!', 'success');
+  const handleCloseFileUploadModal = () => {
+    setSelectedFileForUpload(null);
+    setIsFileUploadModalOpen(false);
+    setSelectedSchedule(null);
+  };
 
-      if (convoId) {
-        // navigate to messaging page and notify MessagingClient to open the conversation
-        router.push('/leader/messaging');
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('messaging:conversationCreated', { detail: { id: convoId } }));
-        }, 300);
-      }
+  const handleFileUpload = async (file: File, scheduleId: number) => {
+    if (!scheduleId) return;
+    const toastId = toast.loading('Enviando arquivo...');
+    try {
+        const result = await uploadScheduleFile(scheduleId, file);
+        const convoId = result?.conversationId;
+
+        toast.success('Arquivo enviado com sucesso!', { id: toastId });
+        await fetchData();
+
     } catch (error) {
-  const axiosError = error as AxiosError;
-  const data = axiosError.response?.data as ErrorResponse
-  const errorMessage = data && typeof data.message === 'string' ? data.message : 'Falha ao enviar arquivo.';
-      showToast(errorMessage, 'error');
-    } finally {
-      setSchedulesLoading(false);
+        const axiosError = error as AxiosError;
+        const data = axiosError.response?.data as ErrorResponse;
+        const errorMessage = data && typeof data.message === 'string' ? data.message : 'Falha ao enviar arquivo.';
+        toast.error(errorMessage, { id: toastId });
     }
   };
 
@@ -226,28 +208,11 @@ export default function LeaderScheduleManagementPage() {
 
   return (
     <PrivateRoute>
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: 'none' }}
-        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-        onChange={(e) => {
-          if (e.target.files && e.target.files[0] && selectedSchedule) {
-            handleFileUpload(e.target.files[0]);
-          }
-        }}
-      />
+      <Toaster position="top-center" reverseOrder={false} />
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-white">Gerenciamento de Suas Escalas</h1>
           <div className="flex flex-col sm:flex-row gap-2">
-            {/* <button
-                onClick={handleRefresh}
-                className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center ${isRefreshing ? 'opacity-60 cursor-not-allowed' : ''}`}
-                disabled={isRefreshing}
-            >
-              <FaSync className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> Atualizar
-            </button> */}
             <button
               onClick={handleBack}
               className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex items-center"
@@ -257,7 +222,6 @@ export default function LeaderScheduleManagementPage() {
           </div>
         </div>
         <p className="mt-2 text-gray-200">Bem-vindo, {user.name}!</p>
-        {/* <p className="mt-2 text-gray-200">Você está logado como: {user.role}</p> */}
 
         <div className="mt-8 flex flex-col md:flex-row gap-4">
           <div className="flex-1">
@@ -281,16 +245,6 @@ export default function LeaderScheduleManagementPage() {
             />
           </div>
         </div>
-        {/* {isRefreshing && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="bg-transparent p-4 rounded">
-              <svg className="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-              </svg>
-            </div>
-          </div>
-        )} */}
 
         {dateFilter && (
           <button
@@ -333,10 +287,11 @@ export default function LeaderScheduleManagementPage() {
                             </div>
                             <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">                              
                                 <DownloadScheduleButton schedule={schedule} />
-                              <button onClick={() => handleAttachFileClick(schedule)} className="text-md text-white bg-indigo-600 hover:bg-indigo-900,
-                               border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md flex items-center">
-                                <FaFileUpload className="w-3.5 h-3.5 mx-1" />
-                                <span className="w-fit hidden sm:block">Anexar Arquivo</span>
+                                <button onClick={() => handleOpenFileUploadModal(schedule)} className="text-md text-white,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-cyan-600 hover:bg-cyan-800 shadow-sky-800 shadow-md flex items-center"
+                                title="Anexar Arquivo">
+                                <FaFileUpload />
+                                <span className='ml-1 hidden sm:block'> Anexar</span>
                               </button>
                             </div>
                           </div>
@@ -378,6 +333,42 @@ export default function LeaderScheduleManagementPage() {
               )}
             </div>
           </div>
+        )}
+        {isFileUploadModalOpen && selectedSchedule && (
+          <Modal isOpen={isFileUploadModalOpen} onClose={handleCloseFileUploadModal} title={`Anexar arquivo para ${selectedSchedule.name}`}>
+            <div className="p-4">
+              <p className="text-gray-400 mb-4">Selecione um arquivo (PDF ou imagem) para anexar a esta escala.</p>
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) {
+                    setSelectedFileForUpload(e.target.files[0]);
+                  }
+                }}
+                className="w-full p-2 border border-gray-300 rounded-md" />
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={handleCloseFileUploadModal}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    if (selectedFileForUpload) {
+                      await handleFileUpload(selectedFileForUpload, selectedSchedule.id);
+                      handleCloseFileUploadModal();
+                    }
+                  }}
+                  disabled={!selectedFileForUpload}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  Enviar
+                </button>
+              </div>
+            </div>
+          </Modal>
         )}
       </div>
     </PrivateRoute>
