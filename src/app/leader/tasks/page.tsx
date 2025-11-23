@@ -1,5 +1,5 @@
 'use client';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Button, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 
 import { useEffect, useState, useCallback } from 'react';
 import {
@@ -322,14 +322,14 @@ export default function TaskManagementPage() {
                   {tasks.map((task) => (
                     <tr key={task.id}>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm sticky left-0 z-50 min-w-52 h-24 align-top overflow-hidden">
-                        <button onClick={() => handleOpenModal(task)} className="text-left w-full">
+                        <Button onClick={() => handleOpenModal(task)} className="text-left w-full">
                           <p className="text-gray-100 truncate block font-bold text-md w-fit p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
                           <div className="text-gray-300 mt-1">
                             <DescriptionWithReadMore>
                               <div className="text-sm text-gray-300">{linkify(task.description)}</div>
                             </DescriptionWithReadMore>
                           </div>
-                        </button>
+                        </Button>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${getStatusClass(task.status)}`}>
