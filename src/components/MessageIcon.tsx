@@ -49,9 +49,9 @@ export default function MessageIcon() {
       onClick={handleClick}
       className="relative bg-gray-800 p-2 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
     >
-      <FaEnvelope />
+      <FaEnvelope className='w-6 h-6'/>
       {unreadCount > 0 && (
-        <span className="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+        <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
           {unreadCount}
         </span>
       )}
