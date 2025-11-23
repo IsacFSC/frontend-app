@@ -1,28 +1,17 @@
-
 'use client';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-
-import { useEffect, useState, useCallback } from 'react';
-import {
-  getTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-  approveTask,
-  rejectTask,
-  Task,
-  TaskStatus,
-} from '../../../services/taskService';
-import { getUsers, User } from '../../../services/userService';
-import Modal from '../../../components/Modal';
-import TaskForm from '../../../components/TaskForm';
-import DescriptionWithReadMore from '../../../components/DescriptionWithReadMore';
-import { useRouter } from 'next/navigation';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 import { useSession } from 'next-auth/react';
+import { useCallback, useEffect, useState } from 'react';
+import { approveTask, createTask, deleteTask, getTasks, rejectTask, Task, TaskStatus, updateTask } from '@/services/taskService';
+import toast, { Toaster } from 'react-hot-toast';
+import { getUsers, User } from '@/services/userService';
+import { FaArrowLeft, FaBan, FaCheck, FaChevronLeft, FaChevronRight, FaCross, FaEdit, FaEllipsisV, FaPlus, FaSearch, FaTimes, FaTrashAlt } from 'react-icons/fa';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaCheck,
-FaBan, FaChevronLeft, FaChevronRight, FaCross, FaEdit,
-FaEllipsisV, FaTrashAlt } from 'react-icons/fa';
+import DescriptionWithReadMore from '@/components/DescriptionWithReadMore';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import Modal from '@/components/Modal';
+import TaskForm from '@/components/TaskForm';
+import { useRouter } from 'next/navigation';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -84,9 +73,7 @@ export default function TaskManagementPage() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -102,6 +89,8 @@ export default function TaskManagementPage() {
     name: '',
   });
   const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
 
   const fetchTasks = useCallback(async (pageParam: number = currentPage) => {
@@ -124,10 +113,9 @@ export default function TaskManagementPage() {
       });
       setTasks(response.data);
       setTotalPages(Math.ceil(response.total / ITEMS_PER_PAGE));
-      setError(null);
       setCurrentPage(pageParam);
     } catch (err) {
-      setError('Falha ao buscar tarefas.');
+      toast.error('Falha ao buscar tarefas.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -185,13 +173,14 @@ export default function TaskManagementPage() {
   };
 
   const handleFormSubmit = async (data: { name: string; description: string; taskDate: string }) => {
+    const toastId = toast.loading(editingTask ? 'Atualizando tarefa...' : 'Criando tarefa...');
     try {
       if (editingTask) {
         await updateTask(editingTask.id, data);
-        setSuccessMessage('Tarefa atualizada com sucesso!');
+        toast.success('Tarefa atualizada com sucesso!', { id: toastId });
       } else {
         await createTask(data);
-        setSuccessMessage('Tarefa criada com sucesso!');
+        toast.success('Tarefa criada com sucesso!', { id: toastId });
       }
       // Reset filters and fetch first page so new task appears
       handleClearFilters();
@@ -199,50 +188,51 @@ export default function TaskManagementPage() {
       handleCloseModal();
     } catch (error) {
       console.error('Falha ao salvar tarefa: ', error);
-      setError('Não foi possível salvar os detalhes da tarefa.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
+      toast.error('Não foi possível salvar os detalhes da tarefa.', { id: toastId });
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Você tem certeza de que deseja excluir esta tarefa?')) {
-      try {
-        await deleteTask(id);
-        setSuccessMessage('Tarefa excluída com sucesso!');
-        await fetchTasks();
-      } catch (error) {
-        console.error('Falha ao deletar a tarefa: ', error);
-        setError('Não foi possível deletar a tarefa.');
-      } finally {
-        setTimeout(() => setSuccessMessage(null), 3000);
-      }
+  const handleDelete = (id: number) => {
+    setItemToDelete(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (itemToDelete === null) return;
+    const toastId = toast.loading('Excluindo tarefa...');
+    try {
+      await deleteTask(itemToDelete);
+      toast.success('Tarefa excluída com sucesso!', { id: toastId });
+      await fetchTasks();
+    } catch (error) {
+      console.error('Falha ao deletar a tarefa: ', error);
+      toast.error('Não foi possível deletar a tarefa.', { id: toastId });
+    } finally {
+      setItemToDelete(null);
     }
   };
 
   const handleApprove = async (id: number) => {
+    const toastId = toast.loading('Aprovando tarefa...');
     try {
       await approveTask(id);
-      setSuccessMessage('Tarefa aprovada com sucesso!');
+      toast.success('Tarefa aprovada com sucesso!', { id: toastId });
       await fetchTasks();
     } catch (error) {
       console.error('Falha ao aprovar a tarefa: ', error);
-      setError('Não foi possível aprovar a tarefa.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
+      toast.error('Não foi possível aprovar a tarefa.', { id: toastId });
     }
   };
 
   const handleReject = async (id: number) => {
+    const toastId = toast.loading('Rejeitando tarefa...');
     try {
       await rejectTask(id);
-      setSuccessMessage('Tarefa rejeitada com sucesso!');
+      toast.success('Tarefa rejeitada com sucesso!', { id: toastId });
       await fetchTasks();
     } catch (error) {
       console.error('Falha ao rejeitar a tarefa: ', error);
-      setError('Não foi possível rejeitar a tarefa.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
+      toast.error('Não foi possível rejeitar a tarefa.', { id: toastId });
     }
   };
 
@@ -276,6 +266,7 @@ export default function TaskManagementPage() {
   return (
     <PrivateRoute>
       <div className="px-2 sm:px-8 bg-gray-900 py-4 sm:py-8">
+        <Toaster position="top-center" reverseOrder={false} />
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-100">Gerenciar Tarefas</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -372,10 +363,8 @@ export default function TaskManagementPage() {
             />
           </div>
         }
-        {error && <p className="text-red-500">{error}</p>}
-        {successMessage && <p className="text-green-500">{successMessage}</p>}
 
-        {!loading && !error && (
+        {!loading && (
           <>
             <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto overflow-visible">
               <table className="min-w-full leading-normal">
@@ -441,11 +430,11 @@ export default function TaskManagementPage() {
 
                                     {/* Opção EDITAR */}
                                     <MenuItem>
-                                      {({ active }) => (
+                                      {({ focus}) => (
                                         <button
                                           onClick={() => handleOpenModal(task)}
                                           className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                            active ? 'bg-blue-700 text-white' : 'text-gray-700'
+                                            focus? 'bg-blue-700 text-white' : 'text-gray-700'
                                           }`}
                                         >
                                           <FaEdit className="mr-3 h-4 w-4" />
@@ -456,11 +445,11 @@ export default function TaskManagementPage() {
 
                                     {/* Opção DELETAR (use hover vermelho) */}
                                     <MenuItem>
-                                      {({ active }) => (
+                                      {({ focus}) => (
                                         <button
                                           onClick={() => handleDelete(task.id)}
                                           className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                            active ? 'bg-red-600 text-white' : 'text-gray-700'
+                                            focus? 'bg-red-600 text-white' : 'text-gray-700'
                                           }`}
                                           title="Deletar"
                                         >
@@ -475,11 +464,11 @@ export default function TaskManagementPage() {
                                       <>
                                         {/* Opção APROVAR (use hover verde) */}
                                         <MenuItem>
-                                          {({ active }) => (
+                                          {({ focus}) => (
                                             <button
                                               onClick={() => handleApprove(task.id)}
                                               className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                                active ? 'bg-green-600 text-white' : 'text-gray-700'
+                                                focus? 'bg-green-600 text-white' : 'text-gray-700'
                                               }`}
                                               title="Aprovar"
                                             >
@@ -491,11 +480,11 @@ export default function TaskManagementPage() {
                                         
                                         {/* Opção REJEITAR (use hover amarelo/laranja) */}
                                         <MenuItem>
-                                          {({ active }) => (
+                                          {({ focus}) => (
                                             <button
                                               onClick={() => handleReject(task.id)}
                                               className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                                active ? 'bg-yellow-600 text-white' : 'text-gray-700'
+                                                focus? 'bg-yellow-600 text-white' : 'text-gray-700'
                                               }`}
                                               title="Rejeitar"
                                             >
@@ -548,10 +537,16 @@ export default function TaskManagementPage() {
               taskToEdit={editingTask}
               onSubmit={handleFormSubmit}
               onCancel={handleCloseModal}
-              successMessage={successMessage}
             />
           </Modal>
         )}
+        <ConfirmationModal
+          isOpen={isConfirmModalOpen}
+          onClose={() => setIsConfirmModalOpen(false)}
+          onConfirm={executeDelete}
+          title="Confirmar Exclusão"
+          message="Você tem certeza que deseja excluir este item? Esta ação não pode ser desfeita."
+        />
       </div>
     </PrivateRoute>
   );

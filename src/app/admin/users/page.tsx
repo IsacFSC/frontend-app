@@ -15,9 +15,14 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { api } from '../../../services/api';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaEdit, FaToggleOn, FaToggleOff, FaCross, FaTrashAlt, FaEllipsisV } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaSearch,
+  FaEdit, FaToggleOn, FaToggleOff,
+  FaCross, FaTrashAlt, FaEllipsisV } 
+from 'react-icons/fa';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import Image from 'next/image';
+import ConfirmationModal from '../../../components/ConfirmationModal';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function UserManagementPage() {
   const [search, setSearch] = useState('');
@@ -32,10 +37,10 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUserIds, setLoadingUserIds] = useState<number[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -64,9 +69,8 @@ export default function UserManagementPage() {
       };
       const fetchedUsers = await getUsers(params);
       setUsers(fetchedUsers);
-      setError(null);
     } catch (err) {
-      setError('Falha ao buscar usuários. Por favor, tente novamente mais tarde.');
+      toast.error('Falha ao buscar usuários. Por favor, tente novamente mais tarde.');
       console.error(err);
     } finally {
       setPageLoading(false);
@@ -90,13 +94,14 @@ export default function UserManagementPage() {
   };
 
   const handleFormSubmit = async (data: Partial<User> & { password?: string }) => {
+    const toastId = toast.loading(editingUser ? 'Atualizando usuário...' : 'Criando usuário...');
     try {
       if (editingUser) {
         await updateUserByAdmin(editingUser.id, data);
-        setSuccessMessage('Usuário atualizado com sucesso!');
+        toast.success('Usuário atualizado com sucesso!', { id: toastId });
       } else {
         if (!data.name || !data.email || !data.role || !data.password) {
-          setError("Nome, email, senha e perfil são obrigatórios.");
+          toast.error("Nome, email, senha e perfil são obrigatórios.", { id: toastId });
           return;
         }
         const newUser: CreateUserData = {
@@ -107,47 +112,48 @@ export default function UserManagementPage() {
           password: data.password
         };
         await createUser(newUser);
-        setSuccessMessage('Usuário criado com sucesso!');
+        toast.success('Usuário criado com sucesso!', { id: toastId });
       }
       await fetchUsers(); // Refresh list
       handleCloseModal();
     } catch (error: unknown) {
       console.error('Falha ao salvar o usuário: ', error);
-      setError('Não foi possível salvar os detalhes do usuário.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 2000);
+      toast.error('Não foi possível salvar os detalhes do usuário.', { id: toastId });
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Você tem certeza de que deseja excluir este usuário?')) {
-      try {
-        await deleteUser(id);
-        setSuccessMessage('Usuário excluído com sucesso!');
-        await fetchUsers(); // Refresh list
-      } catch (error) {
-        console.error('Falha ao deletar o usuário:', error);
-        setError('Não foi possível deletar o usuário.');
-      } finally {
-        setTimeout(() => setSuccessMessage(null), 3000);
-      }
+  const handleDelete = (id: number) => {
+    setItemToDelete(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (itemToDelete === null) return;
+    const toastId = toast.loading('Excluindo usuário...');
+    try {
+      await deleteUser(itemToDelete);
+      toast.success('Usuário excluído com sucesso!', { id: toastId });
+      await fetchUsers(); // Refresh list
+    } catch (error) {
+      console.error('Falha ao deletar o usuário:', error);
+      toast.error('Não foi possível deletar o usuário.', { id: toastId });
+    } finally {
+      setItemToDelete(null);
     }
   };
 
   const handleToggleActiveStatus = async (id: number, currentStatus: boolean) => {
+    const toastId = toast.loading('Atualizando status...');
     try {
-      // mark this user as loading
       setLoadingUserIds((prev) => [...prev, id]);
       await updateUserByAdmin(id, { active: !currentStatus });
-      setSuccessMessage('Status do usuário atualizado com sucesso!');
+      toast.success('Status do usuário atualizado com sucesso!', { id: toastId });
       await fetchUsers(); // Refresh list
     } catch (error) {
       console.error('Falha ao atualizar status do usuário:', error);
-      setError('Não foi possível atualizar o status do usuário.');
+      toast.error('Não foi possível atualizar o status do usuário.', { id: toastId });
     } finally {
-      // remove loading mark
       setLoadingUserIds((prev) => prev.filter((uid) => uid !== id));
-      setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
 
@@ -169,6 +175,7 @@ export default function UserManagementPage() {
   return (
     <PrivateRoute>
       <div className="min-h-screenpx-2 sm:px-8 py-4 bg-gray-900 sm:py-8">
+        <Toaster position="top-center" reverseOrder={false} />
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Usuários</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -231,125 +238,9 @@ export default function UserManagementPage() {
             />
           </div>
         }
-        {error && <p className="text-red-500">{error}</p>}
-        {successMessage && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span className="block sm:inline">{successMessage}</span>
-          </div>
-        )}
-
-        {/* {!pageLoading && !error && (
-          <div className="bg-gray-700 shadow-md rounded-lg">
-            <table className="min-w-full leading-normal">
-              <thead>
-                <tr>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Usuários
-                  </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Perfil
-                  </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
-                          {user.avatar ? (
-                            <Image
-                              className="w-full h-full object-cover"
-                              src={`${api.defaults.baseURL}/files/${user.avatar}`}
-                              alt="User avatar"
-                            />
-                          ) : (
-                            getInitials(user.name)
-                          )}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-gray-100 whitespace-no-wrap">{user.name}</p>
-                          <p className="text-gray-200 whitespace-no-wrap">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
-                      <p className="text-gray-100 whitespace-no-wrap">{user.role}</p>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
-                      
-                      <button
-                        onClick={() => handleToggleActiveStatus(user.id, user.active)}
-                        className={`px-2 py-1 text-md font-semibold rounded-full flex items-center ${
-                          user.active ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                        } ${loadingUserIds.includes(user.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
-                        disabled={loadingUserIds.includes(user.id)}
-                      >
-                        {loadingUserIds.includes(user.id) ? (
-                          <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                          </svg>
-                        ) : (
-                          user.active ? <FaToggleOff className="mr-1" /> : <FaToggleOn className="mr-1" />
-                        )} {user.active ? 'Desativar' : 'Ativar'}
-                      </button>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
-                      <div className="relative inline-block text-left w-full">
-                        <Menu>
-                          {() => (
-                            <>
-                              <Menu.Button className="w-fit flex justify-center items-center bg-blue-500 hover:bg-blue-700 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <span className="mr-2"><FaEdit /></span>
-                                <span className="md:inline">Menu</span>
-                                <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                              </Menu.Button>
-                              <Menu.Items className="absolute z-10 left-0 mt-2 w-40 origin-top-right bg-gray-700 border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
-                                <div className="py-1 w-full">
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <button
-                                        onClick={() => handleOpenModal(user)}
-                                        className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-blue-500 text-white' : 'bg-blue-700 text-white'} transition-colors`}
-                                        title="Editar"
-                                      >
-                                        <FaEdit className="mr-2" /> Editar
-                                      </button>
-                                    )}
-                                  </Menu.Item>
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <button
-                                        onClick={() => handleDelete(user.id)}
-                                        className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-red-500 text-white' : 'bg-red-700 text-white'} transition-colors`}
-                                        title="Deletar"
-                                      >
-                                        <FaTrash className="mr-2" /> Deletar
-                                      </button>
-                                    )}
-                                  </Menu.Item>
-                                </div>
-                              </Menu.Items>
-                            </>
-                          )}
-                        </Menu>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )} */}
+        
         {/* CÓDIGO PARA TESTE AQUI INICIO*/}
-        {!pageLoading && !error && (
+        {!pageLoading && (
           // Container que permite a rolagem horizontal
           <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto overflow-visible">
             {/* Removi o bg-gray-700 daqui para evitar conflitos de z-index com sticky backgrounds */}
@@ -501,10 +392,16 @@ export default function UserManagementPage() {
               userToEdit={editingUser}
               onSubmit={handleFormSubmit}
               onCancel={handleCloseModal}
-              successMessage={successMessage ?? undefined}
             />
           </Modal>
         )}
+        <ConfirmationModal
+          isOpen={isConfirmModalOpen}
+          onClose={() => setIsConfirmModalOpen(false)}
+          onConfirm={executeDelete}
+          title="Confirmar Exclusão"
+          message="Você tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita."
+        />
       </div>
     </PrivateRoute>
   );

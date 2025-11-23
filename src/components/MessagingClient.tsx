@@ -4,8 +4,10 @@ import { FaArrowLeft, FaComments, FaCross, FaDownload } from 'react-icons/fa';
 import { getConversations, getMessages, createMessage, createConversation, Conversation, Message, downloadFile, deleteConversation, markConversationAsRead } from '../services/messagingService';
 import { getUsers, User } from '../services/userService';
 import NewConversationModal from './NewConversationModal';
+import ConfirmationModal from './ConfirmationModal';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface MessagingClientProps {
   userRole: 'ADMIN' | 'LEADER' | 'USER';
@@ -23,13 +25,13 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isNewConversationModalOpen, setIsNewConversationModalOpen] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null); // Browser's File API
   const [view, setView] = useState<'conversations' | 'messages'>('conversations');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,9 +47,8 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       const fetchedConversations = await getConversations();
       // normalize hasUnreadMessages default and sort
       setConversations(fetchedConversations.map(c => ({ ...c, hasUnreadMessages: !!c.hasUnreadMessages })));
-      setError(null);
     } catch (err) {
-      setError('Falha ao buscar conversas.');
+      toast.error('Falha ao buscar conversas.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -131,7 +132,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, hasUnreadMessages: false } : c))
     } catch (error) {
       console.error('Falha ao buscar mensagens.', error);
-      setError('Falha ao buscar mensagens.');
+      toast.error('Falha ao buscar mensagens.');
     }
   };
 
@@ -139,6 +140,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     if (!selectedConversation) return;
     if (!newMessage.trim() && !selectedFile) return;
 
+    const toastId = toast.loading('Enviando mensagem...');
     try {
       if (selectedFile && selectedConversation) {
         const formData = new FormData();
@@ -154,49 +156,53 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       }
       const fetchedMessages = await getMessages(selectedConversation.id);
       setMessages(fetchedMessages);
-      setSuccessMessage('Mensagem enviada com sucesso!');
+      toast.success('Mensagem enviada com sucesso!', { id: toastId });
     } catch (error) {
       console.error('Falha ao enviar mensagem.', error);
-      setError('Falha ao enviar mensagem.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
+      toast.error('Falha ao enviar mensagem.', { id: toastId });
     }
   };
 
   const handleSendNewConversation = async (recipientId: number, subject: string, message: string) => {
+    const toastId = toast.loading('Iniciando conversa...');
     try {
       await createConversation(subject, message, recipientId);
       fetchConversations();
-      setSuccessMessage('Conversa iniciada com sucesso!');
+      toast.success('Conversa iniciada com sucesso!', { id: toastId });
       setIsNewConversationModalOpen(false);
     } catch (error) {
-      setError('Falha ao iniciar conversa.');
+      toast.error('Falha ao iniciar conversa.', { id: toastId });
       throw error;
     }
   };
 
-  const handleDeleteConversation = async (conversationId: number) => {
-    if (window.confirm('Tem certeza que deseja deletar esta conversa?')) {
-      try {
-        await deleteConversation(conversationId);
-        setConversations(prev => prev.filter(c => c.id !== conversationId));
-        if (selectedConversation?.id === conversationId) {
-          setSelectedConversation(null);
-          setView('conversations');
-        }
-        setSuccessMessage('Conversa deletada com sucesso!');
-        // Notify other parts of the app that messages have been read
-        window.dispatchEvent(new CustomEvent('messaging:messagesRead'));
-      } catch (error) {
-        console.error('Falha ao deletar conversa.', error);
-        setError('Falha ao deletar conversa.');
-      } finally {
-        setTimeout(() => setSuccessMessage(null), 3000);
+  const handleDeleteConversation = (conversationId: number) => {
+    setItemToDelete(conversationId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const executeDeleteConversation = async () => {
+    if (itemToDelete === null) return;
+    const toastId = toast.loading('Deletando conversa...');
+    try {
+      await deleteConversation(itemToDelete);
+      setConversations(prev => prev.filter(c => c.id !== itemToDelete));
+      if (selectedConversation?.id === itemToDelete) {
+        setSelectedConversation(null);
+        setView('conversations');
       }
+      toast.success('Conversa deletada com sucesso!', { id: toastId });
+      window.dispatchEvent(new CustomEvent('messaging:messagesRead'));
+    } catch (error) {
+      console.error('Falha ao deletar conversa.', error);
+      toast.error('Falha ao deletar conversa.', { id: toastId });
+    } finally {
+      setItemToDelete(null);
     }
   };
 
   const handleDownload = async (fileId: number, fileName: string) => {
+    const toastId = toast.loading('Baixando arquivo...');
     try {
       const blob = await downloadFile(fileId);
       const url = window.URL.createObjectURL(blob);
@@ -206,7 +212,9 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       document.body.appendChild(a);
       a.click();
       a.remove();
+      toast.success('Download iniciado!', { id: toastId });
     } catch (error) {
+      toast.error('Falha ao baixar o arquivo.', { id: toastId });
       console.error("Falha ao baixar o arquivo.", error);
     }
   };
@@ -222,6 +230,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
 
   return (
     <div className="h-screen flex flex-col p-4 md:p-8 bg-gray-900">
+      <Toaster position="top-center" reverseOrder={false} />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-100">Mensagens</h1>
         <div className="flex flex-col gap-4 md:flex-row md:justify-end">
@@ -251,9 +260,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
           />
         </div>
       }
-      {error && <p className="text-red-500">{error}</p>}
-      {successMessage && <p className="text-green-500">{successMessage}</p>}
-
+      
       <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden bg-gray-800">
         <div className={`md:col-span-1 ${view === 'messages' && 'hidden md:block'}`}>
           <h2 className="text-xl font-bold text-gray-800">Conversas</h2>
@@ -379,6 +386,13 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
         users={users}
         onSend={handleSendNewConversation}
         title="Nova Conversa"
+      />
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={executeDeleteConversation}
+        title="Confirmar Exclusão"
+        message="Você tem certeza que deseja excluir esta conversa? Esta ação não pode ser desfeita."
       />
     </div>
   );

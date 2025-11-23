@@ -1,22 +1,17 @@
 'use client';
-import { Button, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-
-import { useEffect, useState, useCallback } from 'react';
-import {
-  getTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-  Task,
-  TaskStatus,
-} from '../../../services/taskService';
-import Modal from '../../../components/Modal';
-import TaskForm from '../../../components/TaskForm';
-import DescriptionWithReadMore from '../../../components/DescriptionWithReadMore';
-import { useRouter } from 'next/navigation';
+import { TaskStatus } from '@prisma/client';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { createTask, deleteTask, getTasks, Task, updateTask } from '@/services/taskService';
+import toast, { Toaster } from 'react-hot-toast';
+import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaCross, FaEdit, FaPlus, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch, FaTimes, FaEdit, FaTrash, FaChevronLeft, FaChevronRight, FaCross } from 'react-icons/fa';
+import { Button, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import DescriptionWithReadMore from '@/components/DescriptionWithReadMore';
+import Modal from '@/components/Modal';
+import TaskForm from '@/components/TaskForm';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -68,9 +63,7 @@ export default function TaskManagementPage() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -84,6 +77,8 @@ export default function TaskManagementPage() {
     name: '',
   });
   const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
   const fetchTasks = useCallback(async (pageParam: number = currentPage) => {
     try {
@@ -105,10 +100,9 @@ export default function TaskManagementPage() {
       });
       setTasks(response.data);
       setTotalPages(Math.ceil(response.total / ITEMS_PER_PAGE));
-      setError(null);
       setCurrentPage(pageParam);
     } catch (err) {
-      setError('Falha ao buscar tarefas.');
+      toast.error('Falha ao buscar tarefas.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -134,13 +128,11 @@ export default function TaskManagementPage() {
   const handleClearFilters = () => {
     setFilters({ status: '', startDate: '', endDate: '', name: '' });
     setCurrentPage(1);
-    // We need to trigger a re-fetch after clearing filters
     fetchTasks(1);
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
-      // Directly fetch the requested page
       fetchTasks(newPage);
     }
   };
@@ -156,38 +148,41 @@ export default function TaskManagementPage() {
   };
 
   const handleFormSubmit = async (data: { name: string; description: string; taskDate: string }) => {
+    const toastId = toast.loading(editingTask ? 'Atualizando tarefa...' : 'Criando tarefa...');
     try {
       if (editingTask) {
         await updateTask(editingTask.id, data);
-        setSuccessMessage('Tarefa atualizada com sucesso!');
+        toast.success('Tarefa atualizada com sucesso!', { id: toastId });
       } else {
         await createTask(data);
-        setSuccessMessage('Tarefa criada com sucesso!');
+        toast.success('Tarefa criada com sucesso!', { id: toastId });
       }
-      // Reset filters and show first page with fresh data
       handleClearFilters();
       await fetchTasks(1);
       handleCloseModal();
     } catch (error) {
       console.error('Falha ao salvar tarefa: ', error);
-      setError('Não foi possível salvar os detalhes da tarefa.');
-    } finally {
-      setTimeout(() => setSuccessMessage(null), 3000);
+      toast.error('Não foi possível salvar os detalhes da tarefa.', { id: toastId });
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Você tem certeza de que deseja excluir esta tarefa?')) {
-      try {
-        await deleteTask(id);
-        setSuccessMessage('Tarefa excluída com sucesso!');
-        await fetchTasks();
-      } catch (error) {
-        console.error('Falha ao deletar a tarefa: ', error);
-        setError('Não foi possível deletar a tarefa.');
-      } finally {
-        setTimeout(() => setSuccessMessage(null), 3000);
-      }
+  const handleDelete = (id: number) => {
+    setItemToDelete(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (itemToDelete === null) return;
+    const toastId = toast.loading('Excluindo tarefa...');
+    try {
+      await deleteTask(itemToDelete);
+      toast.success('Tarefa excluída com sucesso!', { id: toastId });
+      await fetchTasks();
+    } catch (error) {
+      console.error('Falha ao deletar a tarefa: ', error);
+      toast.error('Não foi possível deletar a tarefa.', { id: toastId });
+    } finally {
+      setItemToDelete(null);
     }
   };
 
@@ -221,6 +216,7 @@ export default function TaskManagementPage() {
   return (
     <PrivateRoute>
       <div className="px-2 sm:px-8 bg-gray-900 py-4 sm:py-8">
+        <Toaster position="top-center" reverseOrder={false} />
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-200">Gerenciar Tarefas</h1>
           <div className="flex space-x-4 flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
@@ -239,7 +235,7 @@ export default function TaskManagementPage() {
           </div>
         </div>
 
-  <div className="p-4 bg-gray-800 rounded-lg mb-6">
+        <div className="p-4 bg-gray-800 rounded-lg mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white">Nome da Tarefa</label>
@@ -303,10 +299,8 @@ export default function TaskManagementPage() {
             />
           </div>
         }
-        {error && <p className="text-red-500">{error}</p>}
-        {successMessage && <p className="text-green-500">{successMessage}</p>}
 
-        {!loading && !error && (
+        {!loading && (
           <>
             <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto overflow-visible">
               <table className="min-w-full leading-normal">
@@ -353,10 +347,10 @@ export default function TaskManagementPage() {
                                 <MenuItems className="absolute z-50 left-0 mt-2 w-32 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
                                   <div className="py-1 w-full">
                                     <MenuItem>
-                                      {({ active }) => (
+                                      {({ focus }) => (
                                         <button
                                           onClick={() => handleOpenModal(task)}
-                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-indigo-600 text-white' : 'text-indigo-700'} transition-colors`}
+                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${focus ? 'bg-indigo-600 text-white' : 'text-indigo-700'} transition-colors`}
                                           title="Editar"
                                         >
                                           <FaEdit className="mr-2" /> Editar
@@ -364,11 +358,11 @@ export default function TaskManagementPage() {
                                       )}
                                     </MenuItem>
                                     <MenuItem>
-                                      {({ active }) => (
+                                      {({ focus }) => (
                                         <button
                                           onClick={() => handleDelete(task.id)}
                                           disabled={task.status !== TaskStatus.PENDING}
-                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${active ? 'bg-red-600 text-white' : 'text-red-700'} transition-colors ${task.status !== TaskStatus.PENDING ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${focus ? 'bg-red-600 text-white' : 'text-red-700'} transition-colors ${task.status !== TaskStatus.PENDING ? 'opacity-50 cursor-not-allowed' : ''}`}
                                           title="Deletar"
                                         >
                                           <FaTrash className="mr-2" /> Deletar
@@ -416,10 +410,16 @@ export default function TaskManagementPage() {
               taskToEdit={editingTask}
               onSubmit={handleFormSubmit}
               onCancel={handleCloseModal}
-              successMessage={successMessage}
             />
           </Modal>
         )}
+        <ConfirmationModal
+          isOpen={isConfirmModalOpen}
+          onClose={() => setIsConfirmModalOpen(false)}
+          onConfirm={executeDelete}
+          title="Confirmar Exclusão"
+          message="Você tem certeza que deseja excluir este item? Esta ação não pode ser desfeita."
+        />
       </div>
     </PrivateRoute>
   );
