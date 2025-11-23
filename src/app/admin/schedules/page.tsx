@@ -401,33 +401,33 @@ export default function ScheduleManagementPage() {
                               </p>
                             </div>
                             <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">
-                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-md text-white bg-emerald-900 hover:bg-emerald-800,
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-md text-white,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-emerald-900 hover:bg-emerald-950 shadow-sky-800 shadow-md flex items-center"
                                 title="Gerenciar tarefas">
                                 <FaTasks />
                                 <span className='ml-1 hidden sm:block'> Músicas</span>
                               </button>
-                              <button onClick={() => handleOpenUserModal(schedule)} className="text-md text-white bg-blue-900 hover:bg-blue-800,
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenUserModal(schedule)} className="text-md text-white,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-blue-900 hover:bg-blue-950 shadow-sky-800 shadow-md flex items-center"
                                 title="Gerenciar usuários">
                                 <FaUsers />
                                 <span className='ml-1 hidden sm:block'> Ministros</span>
                               </button>
                               <DownloadScheduleButton schedule={schedule} />
-                              <button onClick={() => handleOpenFormModal(schedule)} className="text-md text-white bg-indigo-900 hover:bg-indigo-800,
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenFormModal(schedule)} className="text-md text-white,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-indigo-900 hover:bg-indigo-950 shadow-sky-800 shadow-md flex items-center"
                                 title="Editar">
                                 <FaEdit />
                                 <span className='ml-1 hidden sm:block'> Editar</span>
                               </button>
-                              <button onClick={() => handleOpenFileUploadModal(schedule)} className="text-md text-white bg-green-600 hover:bg-green-500,
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleOpenFileUploadModal(schedule)} className="text-md text-white,
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-cyan-600 hover:bg-cyan-800 shadow-sky-800 shadow-md flex items-center"
                                 title="Anexar Arquivo">
                                 <FaFileUpload />
                                 <span className='ml-1 hidden sm:block'> Anexar</span>
                               </button>
-                              <button onClick={() => handleDelete(schedule.id)} className="text-md text-white bg-red-800 hover:bg-red-700,
-                              border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 shadow-sky-800 shadow-md flex items-center"
+                              <button onClick={() => handleDelete(schedule.id)} className="text-md text-white ,
+                              border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-red-800 hover:bg-red-950 shadow-sky-800 shadow-md flex items-center"
                               title="Deletar">
                                 <FaTrash />
                                 <span className='ml-1 hidden sm:block'> Deletar</span>
