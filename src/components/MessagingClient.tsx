@@ -256,14 +256,14 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
 
       <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden bg-gray-800">
         <div className={`md:col-span-1 ${view === 'messages' && 'hidden md:block'}`}>
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Conversas</h2>
-          <div className="bg-red-800 flex-grow shadow-md rounded-lg p-4">
+          <h2 className="text-xl font-bold text-gray-800">Conversas</h2>
+          <div className="bg-gray-800 hover:bg-gray-700 flex-grow shadow-md rounded-lg p-4 space-y-2 h-[70vh] overflow-y-scroll">
             {conversations.length > 0 ? (
               <ul>
                 {conversations.map((convo) => (
                   <li
                     key={convo.id}
-                    className={`cursor-pointer p-2 hover:bg-gray-200 rounded-md transition-colors flex justify-between items-center ${
+                    className={`cursor-pointer p-2 hover:bg-gray-800 rounded-md transition-colors flex justify-between items-center ${
                       convo.hasUnreadMessages ? 'font-bold bg-emerald-900 text-white' : 'text-gray-200'
                     }`}>
                     <div onClick={() => handleSelectConversation(convo)} className="flex-grow">
