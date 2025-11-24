@@ -248,23 +248,23 @@ export default function UserManagementPage() {
               <thead>
                 <tr>
                   {/* --- COLUNA FIXA (STICKY) --- */}
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-52">
+                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-52">
                     Usuários
                   </th>
                   {/* --- FIM COLUNA FIXA --- */}
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                     Perfil
                   </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                     Criado em
                   </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                     Última atualização
                   </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-400 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -273,7 +273,7 @@ export default function UserManagementPage() {
                 {users.map((user) => (
                   <tr key={user.id}>
                     {/* --- CÉLULA FIXA (STICKY) --- */}
-                    <td className="px-0 py-5 border-b border-gray-200 bg-gray-700 text-sm sticky left-0 z-0">
+                    <td className="px-0 py-5 border-b border-gray-500 bg-gray-600 text-sm sticky left-0 z-0">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 w-10 h-10 ml-2 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
                           {user.avatar ? (
@@ -296,16 +296,16 @@ export default function UserManagementPage() {
                     </td>
                     {/* --- FIM CÉLULA FIXA --- */}
 
-                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                    <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <p className="text-gray-100 whitespace-nowrap">{user.role}</p>
                     </td>
-                      <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <p className="text-gray-100 whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
                       </td>
-                      <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <p className="text-gray-300 whitespace-nowrap text-sm">{user.updatedAt ? new Date(user.updatedAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
                       </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                    <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                       <button
                         onClick={() => handleToggleActiveStatus(user.id, user.active)}
                         className={`px-2 py-1 text-md font-semibold rounded-full flex items-center ${
@@ -321,7 +321,7 @@ export default function UserManagementPage() {
                         )} {user.active ? 'Desativar' : 'Ativar'}
                       </button>
                     </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-gray-600 text-sm">
+                    <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                       {/* Seu Menu dropdown complexo permanece o mesmo, mas a largura pode precisar de ajustes */}
                       <div className="relative inline-block text-left w-full">
                         <Menu as="div" className="relative inline-block text-left">

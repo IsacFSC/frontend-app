@@ -7,13 +7,13 @@ import { User } from '../services/userService';
 import { api } from '../services/api';
 
 enum Skill {
-  VOCAL_LEAD = 'VOCAL_LEAD',
-  BACKING_VOCAL = 'BACKING_VOCAL',
+  VOCAL_LEAD = 'VOZ PRINCIPAL',
+  BACKING_VOCAL = 'VOZ DE APOIO',
   VIOLAO = 'VIOLAO',
   SAX = 'SAX',
   GUITARRA = 'GUITARRA',
   TECLADO = 'TECLADO',
-  CONTRA_BAIXO = 'CONTRA_BAIXO',
+  CONTRA_BAIXO = 'CONTRA-BAIXO',
   BATERIA = 'BATERIA',
   OUTROS = 'OUTROS',
 }
