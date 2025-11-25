@@ -26,6 +26,7 @@ import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 import toast, { Toaster } from 'react-hot-toast';
 
 import ConfirmationModal from '../../../components/ConfirmationModal';
+import ScheduleFilter from '@/components/ScheduleFilter';
 
 
 
@@ -173,11 +174,11 @@ export default function ScheduleManagementPage() {
 
   const [allTasks, setAllTasks] = useState<Task[]>([]);
 
-  const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
-  const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
 
-  const [dateFilter, setDateFilter] = useState('');
+    const [currentDate, setCurrentDate] = useState(new Date());
 
 
 
@@ -576,31 +577,12 @@ export default function ScheduleManagementPage() {
 
 
   const filteredSchedules = schedules.filter(schedule => {
-
-    const matchesSearchTerm = schedule.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-    
-
-    if (!dateFilter) {
-
-      return matchesSearchTerm;
-
-    }
-
-
-
     const scheduleDate = new Date(schedule.startTime);
-
-    const filterDate = new Date(dateFilter);
-
-    const matchesDate = scheduleDate.getUTCFullYear() === filterDate.getUTCFullYear() &&
-
-                        scheduleDate.getUTCMonth() === filterDate.getUTCMonth() &&
-
-                        scheduleDate.getUTCDate() === filterDate.getUTCDate();
-
+    const matchesSearchTerm = schedule.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = scheduleDate.getUTCFullYear() === currentDate.getFullYear() &&
+                        scheduleDate.getUTCMonth() === currentDate.getMonth();
+    
     return matchesSearchTerm && matchesDate;
-
   });
 
 
@@ -653,237 +635,139 @@ export default function ScheduleManagementPage() {
 
 
 
-        <div className="mt-8 flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-8">
 
-          <div className="flex-1">
+          <main className="flex-1 order-2 md:order-1">
 
-            <span className="text-gray-400">Buscar:</span>
+            {loading ? (
 
-            <input
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
 
-              type="text"
+                <FaCross 
 
-              placeholder="Buscar escalas pelo nome..."
+                  className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
 
-              value={searchTerm}
+                />
 
-              onChange={(e) => setSearchTerm(e.target.value)}
+              </div>
 
-              className="w-full p-2 border border-gray-700 bg-gray-800 text-white rounded-md"
+            ) : (
 
-            />
+              <div className="space-y-8">
 
-          </div>
+                {Object.keys(groupedSchedules).length > 0 ? (
 
-          <div className="flex-1">
+                  Object.keys(groupedSchedules).map(date => (
 
-            <span className="text-gray-400">Filtrar por data do dia da Escala:</span>
+                    <div key={date}>
 
-            <input
+                      <h3 className="text-xl font-semibold text-gray-200 mb-4 border-b-2 pb-2">{date}</h3>
 
-              type="date"
+                      <div className="space-y-4">
 
-              placeholder="Filtrar por data do dia da Escala..."
+                        {groupedSchedules[date].map(schedule => (
 
-              value={dateFilter}
+                          <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-violet-200 hover:bg-violet-300 transition-shadow">
 
-              onChange={(e) => setDateFilter(e.target.value)}
+                            <div className="flex justify-between md:items-center flex-col md:flex-row">
 
-              className="w-full p-2 border border-gray-700 bg-gray-800 text-white rounded-md"
+                              <div className="flex-1">
 
-            />
+                                <h3 className="text-xl font-bold text-gray-900 flex items-center justify-center space-x-2 mt-4 md:mt-0 uppercase">{schedule.name}</h3>
 
-          </div>
+                                <p className="text-gray-700 flex items-center justify-center space-x-2 mt-4 md:mt-0">{schedule.description}</p>
 
-        </div>
+                                <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center">
 
+                                  <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})}
 
+                                </p>
 
-        {dateFilter && (
+                                <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center sm:ml-4">
 
-          <button
+                                  <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})}
 
-            onClick={() => setDateFilter('')}
+                                </p>
 
-            className="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                              </div>
 
-          >
+                              <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">
 
-            Limpar Filtro de Data
+                                <button onClick={() => handleOpenTaskModal(schedule)} className="text-md text-white,
 
-          </button>
+                                  border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-emerald-900 hover:bg-emerald-950 shadow-sky-800 shadow-md flex items-center"
 
-        )}
+                                  title="Gerenciar tarefas">
 
+                                  <FaTasks />
 
+                                  <span className='ml-1 hidden sm:block'> Músicas</span>
 
-        {loading ? (
+                                </button>
 
-          // Container principal: fixed, tela cheia, bg preto com opacidade 75%
+                                <button onClick={() => handleOpenUserModal(schedule)} className="text-md text-white,
 
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+                                  border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-blue-900 hover:bg-blue-950 shadow-sky-800 shadow-md flex items-center"
 
-            {/* Ícone de Loading: centralizado, sem background próprio */}
+                                  title="Gerenciar usuários">
 
-            <FaCross 
+                                  <FaUsers />
 
-              className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
+                                  <span className='ml-1 hidden sm:block'> Ministros</span>
 
-            />
+                                </button>
 
-          </div>
+                                <DownloadScheduleButton schedule={schedule} />
 
+                                <button onClick={() => handleOpenFormModal(schedule)} className="text-md text-white,
 
+                                  border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-indigo-900 hover:bg-indigo-950 shadow-sky-800 shadow-md flex items-center"
 
-        ) : (
+                                  title="Editar">
 
-          <div className="mt-8">
+                                  <FaEdit />
 
-            <h2 className="text-2xl font-semibold mb-4 text-white">Suas Escalas</h2>
+                                  <span className='ml-1 hidden sm:block'> Editar</span>
 
-            <div className="space-y-8">
+                                </button>
 
-              {Object.keys(groupedSchedules).length > 0 ? (
+                                <button onClick={() => handleOpenFileUploadModal(schedule)} className="text-md text-white,
 
-                Object.keys(groupedSchedules).map(date => (
+                                  border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-cyan-600 hover:bg-cyan-800 shadow-sky-800 shadow-md flex items-center"
 
-                  <div key={date}>
+                                  title="Anexar Arquivo">
 
-                    <h3 className="text-xl font-semibold text-gray-200 mb-4 border-b-2 pb-2">{date}</h3>
+                                  <FaFileUpload />
 
-                    <div className="space-y-4">
+                                  <span className='ml-1 hidden sm:block'> Anexar</span>
 
-                      {groupedSchedules[date].map(schedule => (
+                                </button>
 
-                        <div key={schedule.id} className="p-6 rounded-lg shadow-blue-600 shadow-lg bg-violet-200 hover:bg-violet-300 transition-shadow">
+                                <button onClick={() => handleDelete(schedule.id)} className="text-md text-white ,
 
-                          <div className="flex justify-between md:items-center flex-col md:flex-row">
+                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-red-800 hover:bg-red-950 shadow-sky-800 shadow-md flex items-center"
 
-                            <div className="flex-1">
+                                title="Deletar">
 
-                              <h3 className="text-xl font-bold text-gray-900 flex items-center justify-center space-x-2 mt-4 md:mt-0 uppercase">{schedule.name}</h3>
+                                  <FaTrash />
 
-                              <p className="text-gray-700 flex items-center justify-center space-x-2 mt-4 md:mt-0">{schedule.description}</p>
+                                  <span className='ml-1 hidden sm:block'> Deletar</span>
 
-                              <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center">
+                                </button>
 
-                                <strong>Início:</strong> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})} {/*, hour: '2-digit', minute: '2-digit'*/}
-
-                              </p>
-
-                              <p className="text-sm text-gray-600 mt-2 md:inline-flex text-center sm:ml-4">
-
-                                <strong>Fim:</strong> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric'})} {/*, hour: '2-digit', minute: '2-digit'*/}
-
-                              </p>
+                              </div>
 
                             </div>
-
-                            <div className="flex items-center justify-center space-x-2 mt-4 md:mt-0">
-
-                              <button onClick={() => handleOpenTaskModal(schedule)} className="text-md text-white,
-
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-emerald-900 hover:bg-emerald-950 shadow-sky-800 shadow-md flex items-center"
-
-                                title="Gerenciar tarefas">
-
-                                <FaTasks />
-
-                                <span className='ml-1 hidden sm:block'> Músicas</span>
-
-                              </button>
-
-                              <button onClick={() => handleOpenUserModal(schedule)} className="text-md text-white,
-
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-blue-900 hover:bg-blue-950 shadow-sky-800 shadow-md flex items-center"
-
-                                title="Gerenciar usuários">
-
-                                <FaUsers />
-
-                                <span className='ml-1 hidden sm:block'> Ministros</span>
-
-                              </button>
-
-                              <DownloadScheduleButton schedule={schedule} />
-
-                              <button onClick={() => handleOpenFormModal(schedule)} className="text-md text-white,
-
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-indigo-900 hover:bg-indigo-950 shadow-sky-800 shadow-md flex items-center"
-
-                                title="Editar">
-
-                                <FaEdit />
-
-                                <span className='ml-1 hidden sm:block'> Editar</span>
-
-                              </button>
-
-                              <button onClick={() => handleOpenFileUploadModal(schedule)} className="text-md text-white,
-
-                                border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-cyan-600 hover:bg-cyan-800 shadow-sky-800 shadow-md flex items-center"
-
-                                title="Anexar Arquivo">
-
-                                <FaFileUpload />
-
-                                <span className='ml-1 hidden sm:block'> Anexar</span>
-
-                              </button>
-
-                              <button onClick={() => handleDelete(schedule.id)} className="text-md text-white ,
-
-                              border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-red-800 hover:bg-red-950 shadow-sky-800 shadow-md flex items-center"
-
-                              title="Deletar">
-
-                                <FaTrash />
-
-                                <span className='ml-1 hidden sm:block'> Deletar</span>
-
-                              </button>
-
-                            </div>
-
-                          </div>
-
-                          <div className="mt-4">
-
-                            <h4 className="font-semibold text-gray-900">Usuários nesta escala:</h4>
-
-                            <ul className="list-disc list-inside">
-
-                              {schedule.users.map(userOnSchedule => (
-
-                                <li key={userOnSchedule.userId} className="text-gray-800">{userOnSchedule.user.name} - {formatSkill(userOnSchedule.skill)}</li>
-
-                              ))}
-
-                            </ul>
-
-                          </div>
-
-                          {schedule.tasks && schedule.tasks.length > 0 && (
 
                             <div className="mt-4">
 
-                              <h4 className="font-semibold text-gray-900">Músicas nesta escala:</h4>
+                              <h4 className="font-semibold text-gray-900">Usuários nesta escala:</h4>
 
                               <ul className="list-disc list-inside">
 
-                                {schedule.tasks.map(task => (
+                                {schedule.users.map(userOnSchedule => (
 
-                                  <li key={task.id} className="text-gray-800 mb-2">
-
-                                    <div className="font-bold text-lg mb-1 inline">{task.name}</div>
-
-                                    <div className="space-y-1">
-
-                                      {task.description && linkify(task.description)}
-
-                                    </div> 
-
-                                  </li>
+                                  <li key={userOnSchedule.userId} className="text-gray-800">{userOnSchedule.user.name} - {formatSkill(userOnSchedule.skill)}</li>
 
                                 ))}
 
@@ -891,41 +775,82 @@ export default function ScheduleManagementPage() {
 
                             </div>
 
-                          )}
+                            {schedule.tasks && schedule.tasks.length > 0 && (
 
-                          <div className="mt-4 pt-4 border-t border-gray-400">
+                              <div className="mt-4">
 
-                            <p className="text-sm text-gray-700">
+                                <h4 className="font-semibold text-gray-900">Músicas nesta escala:</h4>
 
-                              <strong>Obs:</strong> Executem as músicas com excelência, atenção para os horarios de ensaio que acontecem as 19:30h nas quintas feiras, poderão haver mudanças conforme orientações do líder. Chegar com antecedência nos cultos 30 minutos antes do início dos cultos, poderão haver mudanças conforme orientações do líder. Sê tu uma benção!
+                                <ul className="list-disc list-inside">
 
-                            </p>
+                                  {schedule.tasks.map(task => (
+
+                                    <li key={task.id} className="text-gray-800 mb-2">
+
+                                      <div className="font-bold text-lg mb-1 inline">{task.name}</div>
+
+                                      <div className="space-y-1">
+
+                                        {task.description && linkify(task.description)}
+
+                                      </div> 
+
+                                    </li>
+
+                                  ))}
+
+                                </ul>
+
+                              </div>
+
+                            )}
+
+                            <div className="mt-4 pt-4 border-t border-gray-400">
+
+                              <p className="text-sm text-gray-700">
+
+                                <strong>Obs:</strong> Executem as músicas com excelência, atenção para os horarios de ensaio que acontecem as 19:30h nas quintas feiras, poderão haver mudanças conforme orientações do líder. Chegar com antecedência nos cultos 30 minutos antes do início dos cultos, poderão haver mudanças conforme orientações do líder. Sê tu uma benção!
+
+                              </p>
+
+                            </div>
 
                           </div>
 
-                        </div>
+                        ))}
 
-                      ))}
+                      </div>
 
                     </div>
 
+                  )) 
+
+                ) : (
+
+                  <div className="text-center py-10">
+
+                    <p className="text-gray-400 text-lg">Nenhuma escala encontrada para este mês/ano.</p>
+
                   </div>
 
-                )) 
+                )}
 
-              ) : (
+              </div>
 
-                <p className="text-gray-400">Nenhuma escala encontrada.</p>
+            )}
 
-              )}
+          </main>
 
-            </div>
+          <ScheduleFilter
+            searchTerm={searchTerm}
+            onSearchTermChange={setSearchTerm}
+            currentDate={currentDate}
+            onDateChange={setCurrentDate}
+          />
 
-          </div>
+        </div>
 
-        )}
-
-
+        
 
         {isFormModalOpen && (
 
