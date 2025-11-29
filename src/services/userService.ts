@@ -23,16 +23,16 @@ export interface CreateUserData extends Omit<User, 'id' | 'active'> {
 }
 
 export interface GetUsersParams {
-  limit?: number;
-  offset?: number;
+  page?: number;
+  limit?: number | string;
   search?: string;
   active?: string;
   role?: string;
 }
 
-export const getUsers = async (params?: GetUsersParams): Promise<User[]> => {
+export const getUsers = async (params?: GetUsersParams): Promise<{ users: User[]; total: number }> => {
   const { data } = await api.get('/users/all', { params });
-  return data?.users || [];
+  return data || { users: [], total: 0 };
 };
 
 export const getUserByEmail = async (email: string): Promise<User> => {

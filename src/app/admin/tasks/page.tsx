@@ -1,7 +1,7 @@
 'use client';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import { useSession } from 'next-auth/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { approveTask, createTask, deleteTask, getTasks, rejectTask, Task, TaskStatus, updateTask } from '@/services/taskService';
 import toast, { Toaster } from 'react-hot-toast';
 import { getUsers, User } from '@/services/userService';
@@ -13,11 +13,9 @@ import Modal from '@/components/Modal';
 import TaskForm from '@/components/TaskForm';
 import { useRouter } from 'next/navigation';
 
-const ITEMS_PER_PAGE = 10;
-
 const linkify = (text: string) => {
   if (!text) return null;
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const urlRegex = /(https?:\[^\s]+)/g;
   const maxLength = 32;
   return text.split('\n').map((line, index) => (
     <div key={index}>
@@ -78,7 +76,8 @@ export default function TaskManagementPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalTasks, setTotalTasks] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(10);
 
   const [usersForFilter, setUsersForFilter] = useState<User[]>([]);
   const [filters, setFilters] = useState({
@@ -93,10 +92,11 @@ export default function TaskManagementPage() {
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
 
-  const fetchTasks = useCallback(async (pageParam: number = currentPage) => {
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const offset = (pageParam - 1) * ITEMS_PER_PAGE;
+      const limit = itemsPerPage === 'all' ? 'all' : Number(itemsPerPage);
+      const offset = (itemsPerPage !== 'all' && (currentPage - 1) * itemsPerPage) || 0;
 
       const activeFilters: { [key: string]: string | number } = {};
       (Object.keys(filters) as Array<keyof typeof filters>).forEach(key => {
@@ -107,25 +107,24 @@ export default function TaskManagementPage() {
       });
 
       const response = await getTasks({
-        limit: ITEMS_PER_PAGE,
+        limit,
         offset,
         ...activeFilters,
       });
       setTasks(response.data);
-      setTotalPages(Math.ceil(response.total / ITEMS_PER_PAGE));
-      setCurrentPage(pageParam);
+      setTotalTasks(response.total);
     } catch (err) {
       toast.error('Falha ao buscar tarefas.');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters]);
+  }, [currentPage, filters, itemsPerPage]);
 
   const fetchUsersForFilter = useCallback(async () => {
     if (user?.role === 'ADMIN') {
       try {
-        const fetchedUsers = await getUsers();
+        const { users: fetchedUsers } = await getUsers({limit: 'all'});
         setUsersForFilter(fetchedUsers);
       } catch (err) {
         console.error('Failed to fetch users for filter:', err);
@@ -136,7 +135,9 @@ export default function TaskManagementPage() {
   useEffect(() => {
     if (isAuthenticated && (user?.role === 'ADMIN' || user?.role === 'LEADER')) {
       fetchTasks();
-      fetchUsersForFilter();
+      if (user.role === 'ADMIN') {
+        fetchUsersForFilter();
+      }
     }
   }, [fetchTasks, fetchUsersForFilter, isAuthenticated, user]);
 
@@ -147,19 +148,30 @@ export default function TaskManagementPage() {
 
   const handleApplyFilters = () => {
     setCurrentPage(1);
-    fetchTasks(1);
+    fetchTasks();
   };
 
   const handleClearFilters = () => {
     setFilters({ userId: '', status: '', startDate: '', endDate: '', name: '' });
     setCurrentPage(1);
-    fetchTasks(1);
+    fetchTasks();
   };
+
+  const totalPages = useMemo(() => {
+    if (itemsPerPage === 'all' || totalTasks === 0) return 1;
+    return Math.ceil(totalTasks / Number(itemsPerPage));
+  }, [totalTasks, itemsPerPage]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
-      fetchTasks(newPage);
+      setCurrentPage(newPage);
     }
+  };
+  
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setItemsPerPage(value === 'all' ? 'all' : Number(value));
+    setCurrentPage(1);
   };
 
   const handleOpenModal = (task: Task | null = null) => {
@@ -182,9 +194,8 @@ export default function TaskManagementPage() {
         await createTask(data);
         toast.success('Tarefa criada com sucesso!', { id: toastId });
       }
-      // Reset filters and fetch first page so new task appears
       handleClearFilters();
-      await fetchTasks(1);
+      await fetchTasks();
       handleCloseModal();
     } catch (error) {
       console.error('Falha ao salvar tarefa: ', error);
@@ -254,9 +265,7 @@ export default function TaskManagementPage() {
 
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'LEADER')) {
     return
-    // Container principal: fixed, tela cheia, bg preto com opacidade 75%
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-        {/* Ícone de Loading: centralizado, sem background próprio */}
         <FaCross 
           className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
         />
@@ -355,9 +364,7 @@ export default function TaskManagementPage() {
         </div>
 
         {loading && 
-          // Container principal: fixed, tela cheia, bg preto com opacidade 75%
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-            {/* Ícone de Loading: centralizado, sem background próprio */}
             <FaCross 
               className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
             />
@@ -419,57 +426,41 @@ export default function TaskManagementPage() {
                                 <MenuButton className="flex items-center p-2 text-gray-200 hover:text-gray-400,
                                 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out,
                                 hover:scale-105 font-semibold">
-                                  {/* Botão de ícone discreto para economizar espaço na tabela */}
                                   <FaEllipsisV className="h-5 w-5" aria-hidden="true" />
                                 </MenuButton>
-
-                                {/* Painel do Dropdown: Design limpo, branco com sombra */}
                                 <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100,
-                                rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20">
+                                rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-60">
                                   <div className="py-1">
-
-                                    {/* Opção EDITAR */}
                                     <MenuItem>
                                       {({ focus}) => (
                                         <button
                                           onClick={() => handleOpenModal(task)}
-                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                            focus? 'bg-blue-700 text-white' : 'text-gray-700'
-                                          }`}
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${focus? 'bg-blue-700 text-white' : 'text-gray-700'}`}
                                         >
                                           <FaEdit className="mr-3 h-4 w-4" />
                                           Editar
                                         </button>
                                       )}
                                     </MenuItem>
-
-                                    {/* Opção DELETAR (use hover vermelho) */}
                                     <MenuItem>
                                       {({ focus}) => (
                                         <button
                                           onClick={() => handleDelete(task.id)}
-                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                            focus? 'bg-red-600 text-white' : 'text-gray-700'
-                                          }`}
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${focus? 'bg-red-600 text-white' : 'text-gray-700'}`}
                                           title="Deletar"
                                         >
-                                          <FaTrashAlt className="mr-3 h-4 w-4" /> {/* Alterado para FaTrashAlt para consistência */}
+                                          <FaTrashAlt className="mr-3 h-4 w-4" />
                                           Deletar
                                         </button>
                                       )}
                                     </MenuItem>
-                                    
-                                    {/* Opções Condicionais para PENDING */}
                                     {task.status === TaskStatus.PENDING && (
                                       <>
-                                        {/* Opção APROVAR (use hover verde) */}
                                         <MenuItem>
                                           {({ focus}) => (
                                             <button
                                               onClick={() => handleApprove(task.id)}
-                                              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                                focus? 'bg-green-600 text-white' : 'text-gray-700'
-                                              }`}
+                                              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${focus? 'bg-green-600 text-white' : 'text-gray-700'}`}
                                               title="Aprovar"
                                             >
                                               <FaCheck className="mr-3 h-4 w-4" />
@@ -477,15 +468,11 @@ export default function TaskManagementPage() {
                                             </button>
                                           )}
                                         </MenuItem>
-                                        
-                                        {/* Opção REJEITAR (use hover amarelo/laranja) */}
                                         <MenuItem>
                                           {({ focus}) => (
                                             <button
                                               onClick={() => handleReject(task.id)}
-                                              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                                focus? 'bg-yellow-600 text-white' : 'text-gray-700'
-                                              }`}
+                                              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${focus? 'bg-yellow-600 text-white' : 'text-gray-700'}`}
                                               title="Rejeitar"
                                             >
                                               <FaBan className="mr-3 h-4 w-4" />
@@ -504,29 +491,47 @@ export default function TaskManagementPage() {
                       </td>
                     </tr>
                   ))}
-
                 </tbody>
               </table>
             </div>
 
-            <div className="py-4 flex justify-between items-center text-gray-300">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-600 rounded disabled:opacity-50 text-white flex items-center"
-              >
-                <FaChevronLeft className="mr-2" /> Anterior
-              </button>
-              <span>
-                Página {currentPage} de {totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-600 rounded disabled:opacity-50 text-white flex items-center"
-              >
-                Próximo <FaChevronRight className="ml-2" />
-              </button>
+            <div className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-800 gap-4 text-gray-300">
+               <div className="flex items-center">
+                <label htmlFor="itemsPerPage" className="hidden sm:inline mr-2">Itens por página:</label>
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  onChange={handleItemsPerPageChange}
+                  className="px-2 py-1 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300 bg-gray-700"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value="all">Todos</option>
+                </select>
+              </div>
+              <div className="flex items-center">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded bg-gray-600 text-white disabled:opacity-50 flex items-center"
+                >
+                  <FaChevronLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Anterior</span>
+                </button>
+                <span className="mx-2 sm:mx-4 text-sm sm:text-base">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded bg-gray-600 text-white disabled:opacity-50 flex items-center"
+                >
+                  <span className="hidden sm:inline">Próximo</span>
+                  <FaChevronRight className="h-4 w-4 sm:ml-2" />
+                </button>
+              </div>
             </div>
           </>
         )}

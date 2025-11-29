@@ -28,7 +28,7 @@ export interface TasksResponse {
 }
 
 export interface GetTasksParams {
-  limit?: number;
+  limit?: number | string;
   offset?: number;
   userId?: string;
   status?: string;

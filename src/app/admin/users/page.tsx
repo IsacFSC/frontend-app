@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+// IMPORTANT: The user needs to install this dependency
+import { useDebounce } from 'use-debounce';
 import {
   getUsers,
   createUser,
@@ -9,20 +11,20 @@ import {
   User,
   CreateUserData,
 } from '../../../services/userService';
-import Modal from '../../../components/Modal';
-import UserForm from '../../../components/UserForm';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { api } from '../../../services/api';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaPlus, FaArrowLeft, FaSearch,
+import { FaPlus, FaArrowLeft,
   FaEdit, FaToggleOn, FaToggleOff,
-  FaCross, FaTrashAlt, FaEllipsisV } 
+  FaCross, FaTrashAlt, FaEllipsisV, FaChevronLeft, FaChevronRight } 
 from 'react-icons/fa';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import Image from 'next/image';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import toast, { Toaster } from 'react-hot-toast';
+import Modal from '../../../components/Modal';
+import UserForm from '../../../components/UserForm';
 
 export default function UserManagementPage() {
   const [search, setSearch] = useState('');
@@ -35,12 +37,18 @@ export default function UserManagementPage() {
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(10);
+  const [debouncedSearch] = useDebounce(search, 500);
+
   const [loadingUserIds, setLoadingUserIds] = useState<number[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -62,26 +70,61 @@ export default function UserManagementPage() {
   const fetchUsers = useCallback(async () => {
     try {
       setPageLoading(true);
+      const limit = itemsPerPage === 'all' ? 'all' : Number(itemsPerPage);
       const params = {
-        search: search || undefined,
+        page: currentPage,
+        limit,
+        search: debouncedSearch || undefined,
         active: statusFilter || undefined,
         role: roleFilter || undefined,
       };
-      const fetchedUsers = await getUsers(params);
+      const { users: fetchedUsers, total } = await getUsers(params);
       setUsers(fetchedUsers);
+      setTotalUsers(total);
     } catch (err) {
       toast.error('Falha ao buscar usuários. Por favor, tente novamente mais tarde.');
       console.error(err);
     } finally {
       setPageLoading(false);
     }
-  }, [search, statusFilter, roleFilter]);
+  }, [debouncedSearch, statusFilter, roleFilter, currentPage, itemsPerPage]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'ADMIN') {
       fetchUsers();
     }
   }, [fetchUsers, isAuthenticated, user]);
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setItemsPerPage(value === 'all' ? 'all' : Number(value));
+    setCurrentPage(1);
+  };
+  
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+    setCurrentPage(1);
+  };
+  
+  const handleRoleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setRoleFilter(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const totalPages = useMemo(() => {
+    if (itemsPerPage === 'all' || totalUsers === 0) return 1;
+    return Math.ceil(totalUsers / Number(itemsPerPage));
+  }, [totalUsers, itemsPerPage]);
+
 
   const handleOpenModal = (user: User | null = null) => {
     setEditingUser(user);
@@ -94,6 +137,7 @@ export default function UserManagementPage() {
   };
 
   const handleFormSubmit = async (data: Partial<User> & { password?: string }) => {
+    console.log(handleFormSubmit);
     const toastId = toast.loading(editingUser ? 'Atualizando usuário...' : 'Criando usuário...');
     try {
       if (editingUser) {
@@ -162,14 +206,13 @@ export default function UserManagementPage() {
   };
 
   if (authLoading || !isAuthenticated || user?.role !== 'ADMIN') {
-    return
-    // Container principal: fixed, tela cheia, bg preto com opacidade 75%
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-      {/* Ícone de Loading: centralizado, sem background próprio */}
-      <FaCross 
-        className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
-      />
-    </div>
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+        <FaCross 
+          className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
+        />
+      </div>
+    );
   }
 
   return (
@@ -194,206 +237,223 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        <div className="p-4 mb-4 flex flex-col md:flex-row gap-4 bg-gray-800 rounded-lg">
-          <input
-            type="text"
-            placeholder="Buscar por nome ou email"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
-          />
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="flex w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
-          >
-            <option value="">Todos os Status</option>
-            <option value="true">Ativo</option>
-            <option value="false">Inativo</option>
-          </select>
-          <select
-            value={roleFilter}
-            onChange={e => setRoleFilter(e.target.value)}
-            className="flex w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
-          >
-            <option value="">Todos os Perfis</option>
-            <option value="ADMIN">Admin</option>
-            <option value="LEADER">Líder</option>
-            <option value="USER">Usuário</option>
-          </select>
-          <button
-            onClick={fetchUsers}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
-          >
-            <FaSearch className="mr-2" /> Buscar
-          </button>
+        <div className="p-4 mb-4 bg-gray-800 rounded-lg">
+          <div className="flex flex-col md:flex-row gap-4">
+            <input
+              type="text"
+              placeholder="Buscar por nome ou email"
+              value={search}
+              onChange={handleSearchChange}
+              className="w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+            />
+            <button
+              onClick={() => setShowMoreFilters(!showMoreFilters)}
+              className="md:w-auto w-full bg-gray-500 hover:bg-gray-700 text-white text-sm py-2 px-4 rounded flex items-center justify-center"
+            >
+              Mais filtros
+            </button>
+          </div>
+          {showMoreFilters && (
+            <div className="mt-4 flex flex-col md:flex-row gap-4">
+              <select
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                className="flex w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+              >
+                <option value="">Todos os Status</option>
+                <option value="true">Ativo</option>
+                <option value="false">Inativo</option>
+              </select>
+              <select
+                value={roleFilter}
+                onChange={handleRoleFilterChange}
+                className="flex w-full px-4 py-2 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300"
+              >
+                <option value="">Todos os Perfis</option>
+                <option value="ADMIN">Admin</option>
+                <option value="LEADER">Líder</option>
+                <option value="USER">Usuário</option>
+              </select>
+            </div>
+          )}
         </div>  
 
-        {pageLoading && 
-          // Container principal: fixed, tela cheia, bg preto com opacidade 75%
+        {pageLoading && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-            {/* Ícone de Loading: centralizado, sem background próprio */}
             <FaCross 
               className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
             />
           </div>
-        }
-        
-        {/* CÓDIGO PARA TESTE AQUI INICIO*/}
-        {!pageLoading && (
-          // Container que permite a rolagem horizontal
-          <div className="bg-gray-700 shadow-md rounded-lg overflow-x-auto overflow-visible">
-            {/* Removi o bg-gray-700 daqui para evitar conflitos de z-index com sticky backgrounds */}
-            <table className="min-w-full leading-normal">
-              <thead>
-                <tr>
-                  {/* --- COLUNA FIXA (STICKY) --- */}
-                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-52">
-                    Usuários
-                  </th>
-                  {/* --- FIM COLUNA FIXA --- */}
-                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Perfil
-                  </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Criado em
-                  </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Última atualização
-                  </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    {/* --- CÉLULA FIXA (STICKY) --- */}
-                    <td className="px-0 py-5 border-b border-gray-500 bg-gray-600 text-sm sticky left-0 z-0">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 w-10 h-10 ml-2 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
-                          {user.avatar ? (
-                            <Image
-                              className="w-full h-full object-cover"
-                              src={`${api.defaults.baseURL}/files/${user.avatar}`}
-                              alt="User avatar"
-                            />
-                          ) : (
-                            getInitials(user.name)
-                          )}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-gray-100 whitespace-nowrap">{user.name}</p>
-                          <p className="text-gray-200 truncate w-28 sm:w-32 md:w-auto text-sm font-extralight">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    {/* --- FIM CÉLULA FIXA --- */}
-
-                    <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                        <p className="text-gray-100 whitespace-nowrap">{user.role}</p>
-                    </td>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                        <p className="text-gray-100 whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
-                      </td>
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                        <p className="text-gray-300 whitespace-nowrap text-sm">{user.updatedAt ? new Date(user.updatedAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
-                      </td>
-                    <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                      <button
-                        onClick={() => handleToggleActiveStatus(user.id, user.active)}
-                        className={`px-2 py-1 text-md font-semibold rounded-full flex items-center ${
-                          user.active ? 'bg-red-500 text-white border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md' : 'bg-green-500 text-white border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md'
-                        } ${loadingUserIds.includes(user.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
-                        disabled={loadingUserIds.includes(user.id)}
-                      >
-                        {loadingUserIds.includes(user.id) ? (
-                          <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            ><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-                        ) : (
-                          user.active ? <FaToggleOff className="mr-1" /> : <FaToggleOn className="mr-1" />
-                        )} {user.active ? 'Desativar' : 'Ativar'}
-                      </button>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                      {/* Seu Menu dropdown complexo permanece o mesmo, mas a largura pode precisar de ajustes */}
-                      <div className="relative inline-block text-left w-full">
-                        <Menu as="div" className="relative inline-block text-left">
-                          {({ open: _open }) => ( // Use o estado 'open' para rotacionar o ícone, se quiser
-                            <>
-                              <MenuButton className="flex items-center p-2 text-gray-200 hover:text-gray-300,
-                              rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out,
-                              hover:scale-105 font-semibold">
-                                {/* Botão de ícone limpo para a coluna de ações */}
-                                <FaEllipsisV className="h-5 w-5" aria-hidden="true" />
-                              </MenuButton>
-
-                              {/* Painel do Dropdown */}
-                              <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                                <div className="py-1">
-                                  
-                                  {/* Opção EDITAR */}
-                                  <MenuItem>
-                                    {({ active }) => (
-                                      <button
-                                        onClick={() => handleOpenModal(user)}
-                                        className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                          active ? 'bg-indigo-600 text-white' : 'text-gray-700'
-                                        }`}
-                                      >
-                                        <FaEdit className="mr-3 h-4 w-4" />
-                                        Editar
-                                      </button>
-                                    )}
-                                  </MenuItem>
-
-                                  {/* Opção DELETAR */}
-                                  <MenuItem>
-                                    {({ active }) => (
-                                      <button
-                                        onClick={() => handleDelete(user.id)}
-                                        className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                                          active ? 'bg-red-600 text-white' : 'text-gray-700'
-                                        }`}
-                                      >
-                                        <FaTrashAlt className="mr-3 h-4 w-4" />
-                                        Deletar
-                                      </button>
-                                    )}
-                                  </MenuItem>
-                                </div>
-                              </MenuItems>
-                            </>
-                          )}
-                        </Menu>
-
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         )}
-        {/* CÓDIGO PARA TESTE AQUI FIM*/}
-        {isModalOpen && (
-          <Modal
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-            title={editingUser ? 'Editar Usuário' : 'Criar Usuário'}
-          >
-            <UserForm
-              userToEdit={editingUser}
-              onSubmit={handleFormSubmit}
-              onCancel={handleCloseModal}
-            />
-          </Modal>
+        
+        {!pageLoading && (
+          <div className="bg-gray-700 shadow-md rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full leading-normal">
+                <thead>
+                  <tr>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider sticky left-0 z-10 w-52">
+                      Usuários
+                    </th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                      Perfil
+                    </th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                      Criado em
+                    </th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                      Última atualização
+                    </th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-5 py-3 border-b-2 border-gray-500 bg-gray-800 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td className="px-0 py-5 border-b border-gray-500 bg-gray-600 text-sm sticky left-0 z-0">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 w-10 h-10 ml-2 rounded-full overflow-hidden flex items-center justify-center bg-blue-500 text-white font-bold text-lg">
+                            {user.avatar ? (
+                              <Image
+                                className="w-full h-full object-cover"
+                                src={`${api.defaults.baseURL}/files/${user.avatar}`}
+                                alt="User avatar"
+                              />
+                            ) : (
+                              getInitials(user.name)
+                            )}
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-gray-100 whitespace-nowrap">{user.name}</p>
+                            <p className="text-gray-200 truncate w-28 sm:w-32 md:w-auto text-sm font-extralight">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                          <p className="text-gray-100 whitespace-nowrap">{user.role}</p>
+                      </td>
+                        <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                          <p className="text-gray-100 whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
+                        </td>
+                        <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                          <p className="text-gray-300 whitespace-nowrap text-sm">{user.updatedAt ? new Date(user.updatedAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
+                        </td>
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                        <button
+                          onClick={() => handleToggleActiveStatus(user.id, user.active)}
+                          className={`px-2 py-1 text-md font-semibold rounded-full flex items-center ${
+                            user.active ? 'bg-red-500 text-white border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md' : 'bg-green-500 text-white border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1 shadow-sky-800 shadow-md'
+                          } ${loadingUserIds.includes(user.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          disabled={loadingUserIds.includes(user.id)}
+                        >
+                          {loadingUserIds.includes(user.id) ? (
+                            <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                              ><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                          ) : (
+                            user.active ? <FaToggleOff className="mr-1" /> : <FaToggleOn className="mr-1" />
+                          )} {user.active ? 'Desativar' : 'Ativar'}
+                        </button>
+                      </td>
+                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+                        <div className="relative inline-block text-left w-full">
+                          <Menu as="div" className="relative inline-block text-left">
+                            {({ open: _open }) => (
+                              <>
+                                <MenuButton className="flex items-center p-2 text-gray-200 hover:text-gray-300,
+                                rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out,
+                                hover:scale-105 font-semibold">
+                                  <FaEllipsisV className="h-5 w-5" aria-hidden="true" />
+                                </MenuButton>
+                                <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                  <div className="py-1">
+                                    <MenuItem>
+                                      {({ active }) => (
+                                        <button
+                                          onClick={() => handleOpenModal(user)}
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                            active ? 'bg-indigo-600 text-white' : 'text-gray-700'
+                                          }`}
+                                        >
+                                          <FaEdit className="mr-3 h-4 w-4" />
+                                          Editar
+                                        </button>
+                                      )}
+                                    </MenuItem>
+                                    <MenuItem>
+                                      {({ active }) => (
+                                        <button
+                                          onClick={() => handleDelete(user.id)}
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                            active ? 'bg-red-600 text-white' : 'text-gray-700'
+                                          }`}
+                                        >
+                                          <FaTrashAlt className="mr-3 h-4 w-4" />
+                                          Deletar
+                                        </button>
+                                      )}
+                                    </MenuItem>
+                                  </div>
+                                </MenuItems>
+                              </>
+                            )}
+                          </Menu>
+
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-800 gap-4 z-10">
+              <div className="flex items-center">
+                <label htmlFor="itemsPerPage" className="hidden sm:inline mr-2 text-gray-300">Itens por página:</label>
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  onChange={handleItemsPerPageChange}
+                  className="px-2 py-1 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300 bg-gray-700"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value="all">Todos</option>
+                </select>
+              </div>
+              <div className="flex items-center">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded bg-gray-600 text-white disabled:opacity-50 flex items-center"
+                >
+                  <FaChevronLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Anterior</span>
+                </button>
+                <span className="mx-2 sm:mx-4 text-sm sm:text-base text-gray-300">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded bg-gray-600 text-white disabled:opacity-50 flex items-center"
+                >
+                  <span className="hidden sm:inline">Próximo</span>
+                  <FaChevronRight className="h-4 w-4 sm:ml-2" />
+                </button>
+              </div>
+            </div>
+
+          </div>
         )}
         <ConfirmationModal
           isOpen={isConfirmModalOpen}
@@ -402,6 +462,16 @@ export default function UserManagementPage() {
           title="Confirmar Exclusão"
           message="Você tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita."
         />
+
+        {isModalOpen && (
+          <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingUser ? 'Editar Usuário' : 'Criar Usuário'}>
+            <UserForm
+              userToEdit={editingUser}
+              onSubmit={handleFormSubmit}
+              onCancel={handleCloseModal}
+            />
+          </Modal>
+        )}
       </div>
     </PrivateRoute>
   );

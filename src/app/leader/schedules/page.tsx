@@ -13,11 +13,6 @@ import toast, { Toaster } from 'react-hot-toast';
 import ScheduleFilter from '@/components/ScheduleFilter';
 
 
-interface UploadResponse {
-  schedule: Schedule;
-  conversationId: number;
-}
-
 interface ErrorResponse {
     message: string;
 }
@@ -148,7 +143,7 @@ export default function LeaderScheduleManagementPage() {
     if (!scheduleId) return;
     const toastId = toast.loading('Enviando arquivo...');
     try {
-        const result = await uploadScheduleFile(scheduleId, file);
+        await uploadScheduleFile(scheduleId, file);
         toast.success('Arquivo enviado com sucesso!', { id: toastId });
         await fetchData();
 

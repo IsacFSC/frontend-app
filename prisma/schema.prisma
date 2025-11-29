@@ -166,6 +166,7 @@ enum Skill {
   TECLADO
   CONTRA_BAIXO
   BATERIA
+  MESA_SOM
   OUTROS
 }
 

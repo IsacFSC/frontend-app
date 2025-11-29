@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-  const limit = searchParams.get('limit') || '10';
+  const limitParam = searchParams.get('limit') || '10';
   const offset = searchParams.get('offset') || '0';
   const userId = searchParams.get('userId');
   const status = searchParams.get('status');
@@ -18,7 +18,12 @@ export async function GET(req: Request) {
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
 
-  const take = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+  let take: number | undefined;
+  if (limitParam.toLowerCase() === 'all') {
+    take = undefined;
+  } else {
+    take = Math.max(1, Math.min(100, parseInt(limitParam, 10) || 10));
+  }
   const skip = Math.max(0, parseInt(offset, 10) || 0);
 
   const where: Prisma.TaskWhereInput = {};
@@ -56,7 +61,7 @@ export async function GET(req: Request) {
       take,
     });
 
-    const page = Math.floor(skip / take) + 1;
+    const page = take ? Math.floor(skip / take) + 1 : 1;
     return NextResponse.json({ data: tasks, total, page, limit: take });
   } catch (err: unknown) {
     console.error('Failed to fetch tasks', err);

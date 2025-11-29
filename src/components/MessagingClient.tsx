@@ -57,11 +57,11 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const fetchedUsers = await getUsers();
+      const fetchedUsersData = await getUsers({ limit: 'all' });
       if (user) {
-        setUsers(fetchedUsers.filter(u => u.id !== Number(user.id)));
+        setUsers(fetchedUsersData.users.filter(u => u.id !== Number(user.id)));
       } else {
-        setUsers(fetchedUsers);
+        setUsers(fetchedUsersData.users);
       }
     } catch (err) {
       console.error(err);

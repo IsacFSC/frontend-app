@@ -1,49 +1,69 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { auth } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 
-// Defina um tipo para os papéis de usuário
-type UserRole = 'ADMIN' | 'LEADER' | 'USER';
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limitParam = searchParams.get('limit');
+  const search = searchParams.get('search') || '';
+  const role = searchParams.get('role') || '';
+  const activeParam = searchParams.get('active');
 
-export async function GET(req: Request) {
-  const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  let take: number | undefined;
+  if (limitParam === 'all') {
+    take = undefined;
+  } else if (limitParam) {
+    take = parseInt(limitParam, 10);
+  } else {
+    take = 10;
   }
 
-  const { searchParams } = new URL(req.url);
-  const limit = searchParams.get('limit') || '10';
-  const offset = searchParams.get('offset') || '0';
-  const search = searchParams.get('search');
-  const active = searchParams.get('active');
-  const role = searchParams.get('role');
+  const skip = take ? (page - 1) * take : 0;
 
-  const take = Number(limit) || 10;
-  const skip = Number(offset) || 0;
+  const where: Prisma.UserWhereInput = {
+    OR: [
+      {
+        name: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+      {
+        email: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+    ],
+  };
 
-  const filters: Prisma.UserWhereInput[] = [];
-  if (search && String(search).trim() !== '') {
-    filters.push({ OR: [{ name: { contains: String(search), mode: 'insensitive' } }, { email: { contains: String(search), mode: 'insensitive' } }] });
-  }
-  if (typeof active !== 'undefined' && active !== null && active !== 'all') {
-    filters.push({ active: active === 'true' });
-  }
-  if (typeof role !== 'undefined' && role !== null && role !== 'all' && ['ADMIN', 'LEADER', 'USER'].includes(String(role))) {
-    filters.push({ role: String(role) as UserRole });
-  }
-
-  let whereClause: Prisma.UserWhereInput = {};
-  if (filters.length === 1) {
-    whereClause = filters[0];
-  } else if (filters.length > 1) {
-    whereClause = { AND: filters };
+  if (role && Object.values(Role).includes(role as Role)) {
+    where.role = role as Role;
   }
 
-  const [users, total] = await prisma.$transaction([
-    prisma.user.findMany({ where: whereClause, take, skip, orderBy: { createdAt: 'desc' } }),
-    prisma.user.count({ where: whereClause }),
-  ]);
+  if (activeParam && activeParam !== 'all') {
+    where.active = activeParam === 'true';
+  }
 
-  return NextResponse.json({ users, total });
+  try {
+    const users = await prisma.user.findMany({
+      where,
+      skip,
+      take,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const total = await prisma.user.count({ where });
+
+    return NextResponse.json({ users, total });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    );
+  }
 }

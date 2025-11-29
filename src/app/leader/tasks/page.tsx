@@ -3,7 +3,7 @@ import { TaskStatus } from '@prisma/client';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { createTask, deleteTask, getTasks, Task, updateTask } from '@/services/taskService';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaCross, FaEdit, FaPlus, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
@@ -12,8 +12,6 @@ import { Button, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react
 import DescriptionWithReadMore from '@/components/DescriptionWithReadMore';
 import Modal from '@/components/Modal';
 import TaskForm from '@/components/TaskForm';
-
-const ITEMS_PER_PAGE = 10;
 
 const linkify = (text: string) => {
   if (!text) return null;
@@ -68,7 +66,8 @@ export default function TaskManagementPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalTasks, setTotalTasks] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all');
 
   const [filters, setFilters] = useState({
     status: '',
@@ -80,10 +79,11 @@ export default function TaskManagementPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
-  const fetchTasks = useCallback(async (pageParam: number = currentPage) => {
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const offset = (pageParam - 1) * ITEMS_PER_PAGE;
+      const limit = itemsPerPage === 'all' ? 'all' : Number(itemsPerPage);
+      const offset = (itemsPerPage !== 'all' && (currentPage - 1) * itemsPerPage) || 0;
 
       const activeFilters: { [key: string]: string | number } = {};
       (Object.keys(filters) as Array<keyof typeof filters>).forEach((key) => {
@@ -94,20 +94,19 @@ export default function TaskManagementPage() {
       });
 
       const response = await getTasks({
-        limit: ITEMS_PER_PAGE,
+        limit,
         offset,
         ...activeFilters,
       });
       setTasks(response.data);
-      setTotalPages(Math.ceil(response.total / ITEMS_PER_PAGE));
-      setCurrentPage(pageParam);
+      setTotalTasks(response.total);
     } catch (err) {
       toast.error('Falha ao buscar tarefas.');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters]);
+  }, [currentPage, filters, itemsPerPage]);
 
   useEffect(() => {
     if (isAuthenticated && (user?.role === 'ADMIN' || user?.role === 'LEADER')) {
@@ -122,19 +121,30 @@ export default function TaskManagementPage() {
 
   const handleApplyFilters = () => {
     setCurrentPage(1);
-    fetchTasks(1);
+    fetchTasks();
   };
 
   const handleClearFilters = () => {
     setFilters({ status: '', startDate: '', endDate: '', name: '' });
     setCurrentPage(1);
-    fetchTasks(1);
+    fetchTasks();
   };
+
+  const totalPages = useMemo(() => {
+    if (itemsPerPage === 'all' || totalTasks === 0) return 1;
+    return Math.ceil(totalTasks / Number(itemsPerPage));
+  }, [totalTasks, itemsPerPage]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
-      fetchTasks(newPage);
+      setCurrentPage(newPage);
     }
+  };
+
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setItemsPerPage(value === 'all' ? 'all' : Number(value));
+    setCurrentPage(1);
   };
 
   const handleOpenModal = (task: Task | null = null) => {
@@ -158,7 +168,7 @@ export default function TaskManagementPage() {
         toast.success('Tarefa criada com sucesso!', { id: toastId });
       }
       handleClearFilters();
-      await fetchTasks(1);
+      await fetchTasks();
       handleCloseModal();
     } catch (error) {
       console.error('Falha ao salvar tarefa: ', error);
@@ -204,9 +214,7 @@ export default function TaskManagementPage() {
 
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'LEADER')) {
     return
-    // Container principal: fixed, tela cheia, bg preto com opacidade 75%
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-      {/* Ícone de Loading: centralizado, sem background próprio */}
       <FaCross 
         className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
       />
@@ -291,9 +299,7 @@ export default function TaskManagementPage() {
         </div>
 
         {loading && 
-          // Container principal: fixed, tela cheia, bg preto com opacidade 75%
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
-            {/* Ícone de Loading: centralizado, sem background próprio */}
             <FaCross 
               className="animate-bounce delay-75 text-9xl text-blue-200 p-2 rounded-md border-2 border-cyan-400"
             />
@@ -382,24 +388,43 @@ export default function TaskManagementPage() {
               </table>
             </div>
 
-            <div className="py-4 flex justify-between items-center text-gray-300">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-600 rounded disabled:opacity-50 text-white flex items-center"
-              >
-                <FaChevronLeft className="mr-2" /> Anterior
-              </button>
-              <span>
-                Página {currentPage} de {totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-600 rounded disabled:opacity-50 text-white flex items-center"
-              >
-                Próximo <FaChevronRight className="ml-2" />
-              </button>
+            <div className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-800 gap-4 text-gray-300">
+              <div className="flex items-center">
+                <label htmlFor="itemsPerPage" className="hidden sm:inline mr-2">Itens por página:</label>
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  onChange={handleItemsPerPageChange}
+                  className="px-2 py-1 rounded border text-gray-100 border-gray-400 focus:outline-none focus:ring focus:border-blue-300 bg-gray-700"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value="all">Todos</option>
+                </select>
+              </div>
+              <div className="flex items-center">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded bg-gray-600 text-white disabled:opacity-50 flex items-center"
+                >
+                  <FaChevronLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Anterior</span>
+                </button>
+                <span className="mx-2 sm:mx-4 text-sm sm:text-base">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded bg-gray-600 text-white disabled:opacity-50 flex items-center"
+                >
+                  <span className="hidden sm:inline">Próximo</span>
+                  <FaChevronRight className="h-4 w-4 sm:ml-2" />
+                </button>
+              </div>
             </div>
           </>
         )}

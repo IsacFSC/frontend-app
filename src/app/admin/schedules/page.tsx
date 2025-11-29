@@ -6,15 +6,11 @@ import {
   createSchedule,
   updateSchedule,
   deleteSchedule,
-  addUserToSchedule,
-  removeUserFromSchedule,
   uploadScheduleFile, // Added
 } from '../../../services/scheduleService';
-import { getUsers, User } from '../../../services/userService';
 import { getTasks, assignTaskToSchedule, unassignTaskFromSchedule, Task } from '../../../services/taskService';
 import Modal from '../../../components/Modal';
 import ScheduleForm from '../../../components/ScheduleForm';
-import ScheduleUserManagement from '../../../components/ScheduleUserManagement';
 import ScheduleTaskManagement from '../../../components/ScheduleTaskManagement';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -112,12 +108,22 @@ const linkify = (text: string) => {
 
 
 
+const skillDisplayNames: { [key: string]: string } = {
+  'VOCAL_LEAD': 'VOZ PRINCIPAL',
+  'BACKING_VOCAL': 'VOZ DE APOIO',
+  'VIOLAO': 'VIOLÃO',
+  'SAX': 'SAX',
+  'GUITARRA': 'GUITARRA',
+  'TECLADO': 'TECLADO',
+  'CONTRA_BAIXO': 'CONTRA-BAIXO',
+  'BATERIA': 'BATERIA',
+  'MESA_SOM': 'MESA DE SOM',
+  'OUTROS': 'OUTROS',
+};
+
 const formatSkill = (skill: string) => {
-
   if (!skill) return '';
-
-  return skill.replace(/_/g, ' ');
-
+  return skillDisplayNames[skill] || skill.replace(/_/g, ' ');
 };
 
 
@@ -169,9 +175,6 @@ export default function ScheduleManagementPage() {
 
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-
   const [allTasks, setAllTasks] = useState<Task[]>([]);
 
     const [loading, setLoading] = useState(true);
@@ -183,8 +186,6 @@ export default function ScheduleManagementPage() {
 
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-
-  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
@@ -206,11 +207,9 @@ export default function ScheduleManagementPage() {
 
       setLoading(true);
 
-      const [fetchedSchedules, fetchedUsers, fetchedTasksResponse] = await Promise.all([
+      const [fetchedSchedules, fetchedTasksResponse] = await Promise.all([
 
         getSchedules(),
-
-        getUsers(),
 
         getTasks({}),
 
@@ -219,8 +218,6 @@ export default function ScheduleManagementPage() {
       const sortedSchedules = fetchedSchedules.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
       setSchedules(sortedSchedules);
-
-      setAllUsers(fetchedUsers);
 
       setAllTasks(fetchedTasksResponse.data);
 
@@ -296,15 +293,9 @@ export default function ScheduleManagementPage() {
 
 
 
-  const handleOpenUserModal = (schedule: Schedule) => {
-
-    setSelectedSchedule(schedule);
-
-    setIsUserModalOpen(true);
-
+  const handleOpenUserPage = (scheduleId: number) => {
+    router.push(`/admin/schedules/users?id=${scheduleId}`);
   };
-
-  const handleCloseUserModal = () => setIsUserModalOpen(false);
 
 
 
@@ -327,7 +318,6 @@ export default function ScheduleManagementPage() {
     setSelectedFileForUpload(null);
 
     setIsFileUploadModalOpen(true);
-
   };
 
   const handleCloseFileUploadModal = () => {
@@ -417,72 +407,6 @@ export default function ScheduleManagementPage() {
     } finally {
 
       setItemToDelete(null);
-
-    }
-
-  };
-
-
-
-  const handleAddUserToSchedule = async (userId: number, skill: string) => {
-
-    if (!selectedSchedule) return;
-
-    const toastId = toast.loading('Adicionando usuário...');
-
-    try {
-
-      await addUserToSchedule(selectedSchedule.id, userId, skill);
-
-      toast.success('Usuário adicionado com sucesso!', { id: toastId });
-
-      // Optimistically update UI
-
-      const userToAdd = allUsers.find(u => u.id === userId);
-
-      if (userToAdd) {
-
-        setSelectedSchedule(prev => prev ? { ...prev, users: [...prev.users, { userId, skill, user: userToAdd, scheduleId: prev.id, assignedAt: new Date().toISOString() }] } : null);
-
-      }
-
-      await fetchAllData(); // Re-fetch to ensure UI is fully in sync
-
-    } catch (error) {
-
-      toast.error('Falha ao adicionar usuário à escala.', { id: toastId });
-
-      console.error('[ADD USER ERROR]', error);
-
-    }
-
-  };
-
-
-
-  const handleRemoveUserFromSchedule = async (userId: number) => {
-
-    if (!selectedSchedule) return;
-
-    const toastId = toast.loading('Removendo usuário...');
-
-    try {
-
-      await removeUserFromSchedule(selectedSchedule.id, userId);
-
-      toast.success('Usuário removido com sucesso!', { id: toastId });
-
-      // Optimistically update UI
-
-      setSelectedSchedule(prev => prev ? { ...prev, users: prev.users.filter(u => u.userId !== userId) } : null);
-
-      await fetchAllData(); // Re-fetch to ensure UI is in sync
-
-    } catch (error) {
-
-      toast.error('Falha ao remover usuário da escala.', { id: toastId });
-
-      console.error('[REMOVE USER ERROR]', error);
 
     }
 
@@ -705,7 +629,7 @@ export default function ScheduleManagementPage() {
 
                                 </button>
 
-                                <button onClick={() => handleOpenUserModal(schedule)} className="text-md text-white,
+                                <button onClick={() => handleOpenUserPage(schedule.id)} className="text-md text-white,
 
                                   border-0 rounded-md hover:scale-105 font-semibold duration-75 p-1.5 bg-blue-900 hover:bg-blue-950 shadow-sky-800 shadow-md flex items-center"
 
@@ -872,28 +796,6 @@ export default function ScheduleManagementPage() {
 
 
 
-        {isUserModalOpen && selectedSchedule && (
-
-          <Modal isOpen={isUserModalOpen} onClose={handleCloseUserModal} title={`Gerenciar usuários para ${selectedSchedule.name}`}>
-
-            <ScheduleUserManagement
-
-              schedule={selectedSchedule}
-
-              allUsers={allUsers}
-
-              onAddUser={handleAddUserToSchedule}
-
-              onRemoveUser={handleRemoveUserFromSchedule}
-
-            />
-
-          </Modal>
-
-        )}
-
-
-
         {isTaskModalOpen && selectedSchedule && (
 
           <Modal isOpen={isTaskModalOpen} onClose={handleCloseTaskModal} title={`Gerenciar tarefas para ${selectedSchedule.name}`}>
@@ -912,7 +814,7 @@ export default function ScheduleManagementPage() {
 
             <div className="p-4">
 
-              <p className="text-gray-400 mb-4">Selecione um arquivo (PDF ou imagem) para anexar a esta escala.</p>
+              <p className="text-gray-400 mb-4">Selecione um arquivo (PDF ou imagem) para anexa-lo a esta escala.</p>
 
               <input
 
