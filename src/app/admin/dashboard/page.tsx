@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import PrivateRoute from '../../../components/PrivateRoute';
-import { FaSignOutAlt, FaUsers, FaCalendarAlt, FaEnvelope, FaTasks, FaCross } from 'react-icons/fa';
-import MessageIcon from '../../../components/MessageIcon';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaTasks, FaCross } from 'react-icons/fa';
 
 export default function AdminDashboardPage() {
     const { data: session, status } = useSession();
@@ -28,16 +27,6 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-white">Painel do Administrador</h1>
-          <div className="flex items-center gap-4">
-            <MessageIcon />
-            <button
-              onClick={() => signOut({ redirectTo: '/login' })}
-
-              className="w-full justify-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
-            >
-              <FaSignOutAlt className="mr-2" /> Sair
-            </button>
-          </div>
         </div>
         <p className="mt-2 text-gray-200">Olá, {user?.name}!</p>
         {/* <p className="mt-2 text-gray-200">Você está logado como: {user?.role}</p> */}

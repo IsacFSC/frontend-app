@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import PrivateRoute from '@/components/PrivateRoute';
-import { FaSignOutAlt, FaCalendarAlt, FaTasks, FaEnvelope, FaCross } from 'react-icons/fa';
-import MessageIcon from '@/components/MessageIcon';
+import { FaCalendarAlt, FaTasks, FaEnvelope, FaCross } from 'react-icons/fa';
 
 export default function LeaderDashboardPage() {
   const { data: session, status } = useSession();
@@ -39,18 +38,6 @@ export default function LeaderDashboardPage() {
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-white">Painel do Líder</h1>
-          <div className="flex items-center gap-4">
-            <MessageIcon />
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                signOut();
-              }}
-              className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
-            >
-              <FaSignOutAlt className="mr-2" /> Sair
-            </button>
-          </div>
         </div>
         <div className="text-gray-200">
           <p className="mt-2">Olá, {user.name}!</p>

@@ -79,7 +79,7 @@ export const createUser = async (userData: CreateUserData): Promise<User> => {
 };
 
 export const updateUser = async (id: number, userData: Partial<User>): Promise<User> => {
-  const { data } = await api.patch(`/users/${id}`, userData);
+  const { data } = await api.put(`/users/${id}`, userData);
   return data;
 };
 

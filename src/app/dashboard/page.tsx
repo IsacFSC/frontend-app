@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
+// (removed unused Link import)
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, Schedule } from '../../services/scheduleService';
-import { getUnreadMessagesCount } from '../../services/messagingService';
 import PrivateRoute from '../../components/PrivateRoute';
-import { FaEnvelope, FaSignOutAlt, FaCross } from 'react-icons/fa';
+import { FaCross } from 'react-icons/fa';
 import DownloadScheduleButton from '@/components/DownloadScheduleButton';
 import ScheduleFilter from '@/components/ScheduleFilter';
 
@@ -80,19 +79,15 @@ export default function DashboardPage() {
   const [schedulesLoading, setSchedulesLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  
 
   const fetchData = useCallback(async () => {
     if (user) {
       try {
         setSchedulesLoading(true);
-        const [mySchedules, unreadCount] = await Promise.all([
-          getMySchedules(),
-          getUnreadMessagesCount(),
-        ]);
-        const sortedSchedules = mySchedules.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+  const mySchedules = await getMySchedules();
+  const sortedSchedules = mySchedules.sort((a: Schedule, b: Schedule) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         setSchedules(sortedSchedules);
-        setUnreadMessagesCount(unreadCount);
       } catch (error) {
         const axiosError = error as import('axios').AxiosError;
         if (axiosError?.response?.status === 403) {
@@ -120,21 +115,7 @@ export default function DashboardPage() {
     fetchData();
   }, [user, loading, router, fetchData]);
 
-  useEffect(() => {
-    if (user) {
-      const refetchCount = () => {
-        getUnreadMessagesCount().then(setUnreadMessagesCount).catch(console.error);
-      };
-
-      window.addEventListener('messaging:messageCreated', refetchCount);
-      window.addEventListener('messaging:messagesRead', refetchCount);
-
-      return () => {
-        window.removeEventListener('messaging:messageCreated', refetchCount);
-        window.removeEventListener('messaging:messagesRead', refetchCount);
-      };
-    }
-  }, [user]);
+  
 
   if (loading || !user) {
     return (
@@ -162,26 +143,6 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-white">Painel do Usuário</h1>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Link href="/dashboard/messages" className="relative bg-emerald-500 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded text-center flex items-center">
-              <FaEnvelope className="mr-2" />
-              Mensagens
-              {unreadMessagesCount > 0 && (
-                <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
-                  {unreadMessagesCount}
-                </span>
-              )}
-            </Link>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                signOut();
-              }}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
-            >
-              <FaSignOutAlt className="mr-2" /> Sair
-            </button>
-          </div>
         </div>
         <p className="mt-2 text-gray-200">Bem-vindo, {user.name}!</p>
 

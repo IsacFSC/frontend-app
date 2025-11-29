@@ -5,6 +5,7 @@ import Favicon from './assets/img/icons8-farol-30.png';
 import { Toaster } from "react-hot-toast";
 import Providers from "@/app/providers";
 import FAQButton from "@/components/FAQButton";
+import ProfileMenu from '@/components/ProfileMenu';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground transition-colors duration-300`}>
         <Providers>
+          <ProfileMenu />
           {children}
           <Toaster />
           <FAQButton />

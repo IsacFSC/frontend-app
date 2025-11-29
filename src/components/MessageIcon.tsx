@@ -41,6 +41,9 @@ export default function MessageIcon() {
       router.push('/admin/messaging');
     } else if (user?.role === 'LEADER') {
       router.push('/leader/messaging');
+    } else {
+      // default for regular users
+      router.push('/dashboard/messages');
     }
   };
 
