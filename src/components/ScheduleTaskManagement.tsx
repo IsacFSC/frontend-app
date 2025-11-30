@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Schedule } from '../services/scheduleService';
-import { Task } from '../services/taskService';
+import { Task, TaskStatus } from '../services/taskService';
 import { useSession } from 'next-auth/react';
 import ScheduleFileManagement from './ScheduleFileManagement';
 
@@ -19,8 +19,10 @@ export default function ScheduleTaskManagement({ schedule, allTasks, onAssignTas
 
   const { assignedTasks, availableTasks } = useMemo(() => {
     const assigned = allTasks.filter(t => t.scheduleId === schedule.id);
-    // A task is available if it's not completed and not assigned to ANY schedule
-    const available = allTasks.filter(t => !t.scheduleId && !t.completed);
+    // A task is available if it's not completed, not assigned to any schedule, and has been APPROVED
+    const available = allTasks.filter(
+      (t) => !t.scheduleId && !t.completed && (t.status === TaskStatus.APPROVED || String(t.status).toUpperCase() === 'APPROVED')
+    );
     return { assignedTasks: assigned, availableTasks: available };
   }, [schedule, allTasks]);
 

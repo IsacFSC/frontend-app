@@ -91,7 +91,12 @@ export default function DashboardPage() {
       } catch (error) {
         const axiosError = error as import('axios').AxiosError;
         if (axiosError?.response?.status === 403) {
-          signOut();
+          try {
+            const { default: fastSignOut } = await import('@/lib/fastSignOut');
+            fastSignOut(router);
+          } catch (_e) {
+            signOut();
+          }
         } else {
         }
         console.error("Falha ao buscar escalas", error);
@@ -99,7 +104,7 @@ export default function DashboardPage() {
         setSchedulesLoading(false);
       }
     }
-  }, [user]);
+  }, [user, router]);
 
   useEffect(() => {
     if (loading) return; 

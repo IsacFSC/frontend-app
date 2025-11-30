@@ -100,9 +100,15 @@ export default function LeaderScheduleManagementPage() {
         setSchedules(sortedSchedules);
       } catch (error) {
         const axiosError = error as import('axios').AxiosError;
-        if (axiosError?.response?.status === 403) {
+          if (axiosError?.response?.status === 403) {
           toast.error('Sua sessão expirou ou você não tem permissão. Faça login novamente.');
-          signOut();
+          try {
+            // fast sign out and redirect
+            const { default: fastSignOut } = await import('@/lib/fastSignOut');
+            fastSignOut(router);
+          } catch (_e) {
+            signOut();
+          }
         } else {
           toast.error('Falha ao buscar escalas. Tente novamente.');
         }
@@ -111,7 +117,7 @@ export default function LeaderScheduleManagementPage() {
         setSchedulesLoading(false);
       }
     }
-  }, [user]);
+  }, [user, router]);
 
   useEffect(() => {
     if (loading) return; // Aguarda autenticação

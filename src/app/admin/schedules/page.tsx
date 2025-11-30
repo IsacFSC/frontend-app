@@ -222,15 +222,10 @@ export default function ScheduleManagementPage() {
       setAllTasks(fetchedTasksResponse.data);
 
     } catch (err) {
-
       toast.error('Falha ao buscar dados. Tente novamente mais tarde.');
-
       console.error(err);
-
     } finally {
-
       setLoading(false);
-
     }
 
   }, []);
@@ -260,7 +255,6 @@ export default function ScheduleManagementPage() {
       await uploadScheduleFile(scheduleId, file);
 
       toast.success('Arquivo enviado com sucesso!', { id: toastId });
-
       await fetchAllData(); 
 
     } catch (error) {
@@ -400,7 +394,27 @@ export default function ScheduleManagementPage() {
 
     } catch (error) {
 
-      toast.error('Falha ao deletar a escala.', { id: toastId });
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status;
+      const respData = axiosError.response?.data as unknown;
+
+      if (status === 409 && respData && typeof respData === 'object') {
+        const resp = respData as Record<string, unknown>;
+        const code = typeof resp.code === 'string' ? resp.code : undefined;
+        const message = typeof resp.message === 'string' ? resp.message : undefined;
+
+        if (
+          code === 'HAS_ASSIGNED_MINISTERS' ||
+          code === 'HAS_ASSIGNED_MINISTERS_OR_TASKS' ||
+          (message && (message.toLowerCase().includes('ministros') || message.toLowerCase().includes('tarefas')))
+        ) {
+          toast.error('Não é possível deletar escala pois existem ministros e/ou tarefas atribuídos a ela. Remova os ministros e/ou tarefas e depois delete a escala!', { id: toastId });
+        } else {
+          toast.error('Falha ao deletar a escala.', { id: toastId });
+        }
+      } else {
+        toast.error('Falha ao deletar a escala.', { id: toastId });
+      }
 
       console.error('[DELETE ERROR]', error);
 

@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Menu } from '@headlessui/react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import fastSignOut from '@/lib/fastSignOut';
 import UserForm from './UserForm';
-import { getUserById, updateUser, User } from '../services/userService';
+import { getUserById, updateUser, User, Role } from '../services/userService';
 import { api } from '../services/api';
 import MessageIcon from './MessageIcon';
 
@@ -54,6 +56,7 @@ export default function ProfileMenu() {
     }
   };
 
+  const router = useRouter();
   const open = () => setOpenProfile(true);
   const close = () => setOpenProfile(false);
 
@@ -86,7 +89,7 @@ export default function ProfileMenu() {
           <div className="h-14 flex items-center justify-between">
             {/* Left: avatar (visible on all sizes) */}
             <div className="flex items-center gap-3">
-              <button onClick={open} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <button onClick={open} className="w-12 h-12 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500">
                 {currentUser?.avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={`${api.defaults.baseURL}/files/${currentUser.avatar}?v=${avatarVersion}`} alt="avatar" className="w-full h-full object-cover" />
@@ -112,7 +115,7 @@ export default function ProfileMenu() {
               <button onClick={open} className="hidden md:inline-flex items-center px-3 py-2 rounded bg-gray-800 text-gray-200 hover:bg-gray-700">Perfil</button>
 
               {/* Sair button visible on md+ */}
-              <button onClick={() => signOut()} className="hidden md:inline-flex items-center px-3 py-2 rounded bg-gray-800 text-gray-200 hover:bg-gray-700">Sair</button>
+              <button onClick={() => fastSignOut(router)} className="hidden md:inline-flex items-center px-3 py-2 rounded bg-gray-800 text-gray-200 hover:bg-gray-700">Sair</button>
 
               {/* Hamburger menu visible only on small screens; contains Perfil + Sair */}
               <Menu as="div" className="relative inline-block text-left md:hidden">
@@ -136,7 +139,7 @@ export default function ProfileMenu() {
                     <Menu.Item>
                       {({ active }) => (
                         <button
-                          onClick={() => signOut()}
+                          onClick={() => fastSignOut(router)}
                           className={`w-full text-left px-4 py-2 text-sm text-gray-200 ${active ? 'bg-gray-700' : ''}`}
                         >
                           Sair
@@ -176,6 +179,7 @@ export default function ProfileMenu() {
                       onCancel={close}
                       successMessage={message || undefined}
                       onAvatarUploaded={handleAvatarUploaded}
+                      canEdit={session?.user?.role === Role.ADMIN}
                     />
                     <div className="mt-3">
                       <p className="text-xs text-gray-400">Para alterar avatar use o campo no formulário (somente JPG/PNG até 2MB).</p>

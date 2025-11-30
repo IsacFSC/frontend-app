@@ -469,6 +469,7 @@ export default function UserManagementPage() {
               userToEdit={editingUser}
               onSubmit={handleFormSubmit}
               onCancel={handleCloseModal}
+              canEdit={true}
             />
           </Modal>
         )}

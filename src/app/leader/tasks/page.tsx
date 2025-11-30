@@ -93,11 +93,16 @@ export default function TaskManagementPage() {
         }
       });
 
-      const response = await getTasks({
+      const params: Record<string, string | number> = {
         limit,
         offset,
         ...activeFilters,
-      });
+      };
+      // If the current user is a leader, restrict tasks to those they created
+      if (user?.role === 'LEADER' && user?.id) {
+        params.userId = String(user.id);
+      }
+      const response = await getTasks(params);
       setTasks(response.data);
       setTotalTasks(response.total);
     } catch (err) {
@@ -106,7 +111,7 @@ export default function TaskManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters, itemsPerPage]);
+  }, [currentPage, filters, itemsPerPage, user?.id, user?.role]);
 
   useEffect(() => {
     if (isAuthenticated && (user?.role === 'ADMIN' || user?.role === 'LEADER')) {

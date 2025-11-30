@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import type { AxiosProgressEvent } from 'axios';
 import { User } from '../services/userService';
 import { useSession } from 'next-auth/react';
 import { api } from '../services/api';
@@ -23,9 +24,12 @@ interface UserFormProps {
   successMessage?: string;
   // Optional callback to notify parent that avatar file id changed after upload
   onAvatarUploaded?: (avatarFileId: number | null) => void;
+  // If false, form fields will be disabled and submit hidden
+  canEdit?: boolean;
 }
 
-export default function UserForm({ userToEdit, onSubmit, onCancel, successMessage, onAvatarUploaded }: UserFormProps) {
+export default function UserForm({ userToEdit, onSubmit, onCancel, successMessage, onAvatarUploaded, canEdit = true }: UserFormProps) {
+  const canEditProp = canEdit;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,10 +38,14 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { data: session } = useSession();
 
   const isEditing = !!userToEdit;
+  const isSelf = !!(session?.user && Number(session.user.id) === userToEdit?.id);
 
   useEffect(() => {
     if (isEditing) {
@@ -57,20 +65,24 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const formData: Partial<User> & { password?: string } = {
-      name,
-      email,
-      role,
-      ...(password ? { password } : {})
-    };
-    onSubmit(formData);
+    // If the editor has full edit rights (admin), send all editable fields.
+    // If the user is editing their own profile but is not admin, only send password (if provided).
+    const base: Partial<User> & { password?: string } = {};
+    if (canEditProp) {
+      base.name = name;
+      base.email = email;
+      base.role = role;
+    }
+    if (password) base.password = password;
+    onSubmit(base);
   };
 
   // Allowed mime types and max size (assumption: 2MB)
   const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
   const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
-  const canUploadAvatar = !!(isEditing && session?.user && Number(session.user.id) === userToEdit?.id);
+  // Allow avatar upload when editing and either the parent allows editing (admin) or the user is editing their own profile
+  const canUploadAvatar = !!(isEditing && (canEditProp || isSelf));
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setAvatarError(null);
@@ -88,17 +100,26 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
     }
 
     // preview
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
+  setAvatarFile(file);
+  setAvatarPreview(URL.createObjectURL(file));
 
     // If the authenticated user is editing their own profile, upload immediately
     if (canUploadAvatar) {
       try {
         setAvatarUploading(true);
+        setUploadProgress(0);
         const fd = new FormData();
         fd.append('file', file);
         const res = await api.post('/users/upload', fd, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent?: AxiosProgressEvent) => {
+              const loaded = progressEvent?.loaded ?? 0;
+              const total = progressEvent?.total ?? 0;
+              if (total) {
+                const percent = Math.round((loaded * 100) / total);
+                setUploadProgress(percent);
+              }
+            },
         });
         // Try to extract file id from possible response shapes
         const fileId = res.data?.user?.avatarFileId ?? res.data?.fileId ?? res.data?.user?.avatar ?? res.data?.file?.id ?? null;
@@ -111,23 +132,56 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
         setAvatarError('Falha ao enviar avatar. Tente novamente.');
       } finally {
         setAvatarUploading(false);
+        setTimeout(() => setUploadProgress(null), 300);
       }
     } else {
       setAvatarError('Upload só permitido para o próprio usuário autenticado.');
     }
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0] ?? null;
+    if (file) {
+      // reuse same validation path
+      const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+      handleAvatarChange(fakeEvent);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
 
   const handleRemoveAvatar = async () => {
     if (!canUploadAvatar) {
-      setAvatarError('Remoção só permitida para o próprio usuário.');
+      setAvatarError('Remoção só permitida para o próprio usuário ou administradores.');
       return;
     }
+
     try {
       setAvatarUploading(true);
-      await api.delete('/users/avatar');
+      // If the authenticated user is removing their own avatar, call the dedicated endpoint
+      if (session?.user && Number(session.user.id) === userToEdit?.id) {
+        await api.delete('/users/avatar');
+      } else if (canEditProp && isEditing && userToEdit?.id) {
+        // Admin removing another user's avatar: patch the user to clear avatarFileId
+        await api.patch(`/users/admin/${userToEdit.id}`, { avatarFileId: null });
+      }
       setAvatarPreview(null);
       setAvatarFile(null);
+      if (typeof onAvatarUploaded === 'function') onAvatarUploaded(null);
     } catch (_err) {
       setAvatarError('Falha ao remover avatar.');
     } finally {
@@ -151,26 +205,67 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
           onChange={(e) => setName(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-950 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
           required
+          disabled={!canEditProp}
         />
       </div>
       {/* Avatar upload / preview */}
       <div className="mb-4">
         <label className="block text-gray-200 text-sm font-bold mb-2">Avatar</label>
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-800 flex items-center justify-center text-white">
-            {avatarPreview ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarPreview} alt="avatar preview" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-sm">Sem</span>
-            )}
-          </div>
             <div className="flex flex-col">
-              {/* Use the legacy immediate upload for now — this posts the file to our backend
-                  which stores it and returns a file id. This avoids the UploadThing client
-                  being stuck in a loading state until the server-side UploadThing router
-                  is implemented. */}
-              <input type="file" accept="image/png,image/jpeg" onChange={handleAvatarChange} />
+              {/* Show file input if admin or the user editing their own profile */}
+              {(canEditProp || (isEditing && isSelf)) ? (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    className={`mt-2 flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors border-2 ${dragActive ? 'border-blue-400 bg-gray-800' : 'border-dashed border-gray-600 bg-gray-900'} hover:border-blue-400`}
+                  >
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+                      {avatarPreview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={avatarPreview} alt="avatar preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 15c2.578 0 4.97.67 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-sm text-gray-200 font-medium">Arraste e solte ou clique para enviar</div>
+                      <div className="text-xs text-gray-400">Apenas JPG/PNG — Máx 2MB</div>
+                      {uploadProgress !== null && (
+                        <div className="w-full h-2 bg-gray-800 rounded mt-2 overflow-hidden">
+                          <div className="h-full bg-blue-500" style={{ width: `${uploadProgress}%` }} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"
+                      >
+                        Selecionar
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-xs text-gray-400">Somente administradores ou você podem alterar o avatar.</div>
+              )}
               {avatarUploading && <div className="text-sm text-gray-500">Enviando...</div>}
               {avatarError && <div className="text-sm text-red-500">{avatarError}</div>}
               <div className="mt-2">
@@ -193,7 +288,7 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
           onChange={(e) => setEmail(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-950 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
           required
-          disabled={isEditing} // Prevent email change on edit
+          disabled={isEditing || !canEditProp} // Prevent email change on edit and when read-only
         />
       </div>
       <div className="mb-4">
@@ -207,7 +302,8 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-950 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
-          required={!isEditing}
+          required={!isEditing && canEditProp}
+          disabled={!(canEditProp || isSelf)}
         />
       </div>
       <div className="mb-6">
@@ -217,6 +313,7 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
           value={role}
           onChange={(e) => setRole(e.target.value as Role)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-950 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+          disabled={!canEditProp}
         >
           <option value={Role.USER}>Usuário</option>
           <option value={Role.LEADER}>Líder</option>
@@ -231,12 +328,14 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
         >
           Cancelar
         </button>
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          {isEditing ? 'Atualizar Perfil' : 'Criar Usuário'}
-        </button>
+        {(canEditProp || isSelf) && (
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            {isEditing ? 'Atualizar Perfil' : 'Criar Usuário'}
+          </button>
+        )}
       </div>
     </form>
   );
