@@ -323,6 +323,8 @@ export default function UserManagementPage() {
                                 className="w-full h-full object-cover"
                                 src={`${api.defaults.baseURL}/files/${user.avatar}`}
                                 alt="User avatar"
+                                width={40}
+                                height={40}
                               />
                             ) : (
                               getInitials(user.name)
@@ -337,9 +339,9 @@ export default function UserManagementPage() {
                         </div>
                       </td>
 
-                      <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
-                          <p className="text-gray-100 whitespace-nowrap">{user.role}</p>
-                      </td>
+            <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
+              <p className="text-gray-100 whitespace-nowrap">{user.role === 'ADMIN' ? 'Administrador' : user.role === 'LEADER' ? 'Líder' : 'Usuário'}</p>
+            </td>
                         <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                           <p className="text-gray-100 whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}</p>
                         </td>

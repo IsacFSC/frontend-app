@@ -14,7 +14,7 @@ export async function GET(_req: Request) {
 
   const schedules = await prisma.schedule.findMany({
     where: { users: { some: { userId: numericUserId } } },
-    include: { users: { include: { user: true } }, tasks: true },
+    include: { users: { include: { user: true } }, tasks: true, file: true },
   });
 
   return NextResponse.json(schedules);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { Schedule } from '../services/scheduleService';
 import { FaUpload, FaTimes, FaSave } from 'react-icons/fa';
+// leader assignment feature removed — no need to fetch users here
 
 interface ScheduleFormData {
   name: string;
@@ -18,15 +19,15 @@ interface ScheduleFormProps {
   successMessage?: string;
   // New prop for file upload
   onFileUpload?: (file: File) => Promise<void> | void;
-  isLeader?: boolean;
 }
 
-export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, successMessage, onFileUpload, isLeader }: ScheduleFormProps) {
+export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, successMessage, onFileUpload }: ScheduleFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null); // New state for file
+  
 
   const isEditing = !!scheduleToEdit;
 
@@ -46,8 +47,10 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
       setDescription(scheduleToEdit.description || '');
       setStartTime(formatDateTimeLocal(scheduleToEdit.startTime));
       setEndTime(formatDateTimeLocal(scheduleToEdit.endTime));
+      
     }
   }, [scheduleToEdit, isEditing]);
+  
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -58,6 +61,7 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
       description,
       startTime: isoStart,
       endTime: isoEnd,
+      
     };
     onSubmit(scheduleData);
   };
@@ -94,7 +98,6 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
           onChange={(e) => setName(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
           required
-          disabled={isLeader}
         />
       </div>
       <div className="mb-4">
@@ -104,7 +107,6 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
           value={description ?? ''}
           onChange={(e) => setDescription(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
-          disabled={isLeader}
         />
       </div>
       <div className="mb-4">
@@ -116,7 +118,6 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
           onChange={(e) => setStartTime(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
           required
-          disabled={isLeader}
         />
       </div>
       <div className="mb-6">
@@ -128,9 +129,10 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
           onChange={(e) => setEndTime(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
           required
-          disabled={isLeader}
         />
       </div>
+
+      {/* Leader assignment removed */}
 
       {isEditing && onFileUpload && (
         <div className="mb-6">
@@ -168,7 +170,6 @@ export default function ScheduleForm({ scheduleToEdit, onSubmit, onCancel, succe
         <button
           type="submit"
           className="bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
-          disabled={isLeader}
         >
           <FaSave className="mr-2" /> {isEditing ? 'Atualizar escala' : 'Criar escala'}
         </button>

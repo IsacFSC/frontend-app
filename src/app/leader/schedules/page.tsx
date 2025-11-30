@@ -92,7 +92,8 @@ export default function LeaderScheduleManagementPage() {
     if (user) {
       try {
         setSchedulesLoading(true);
-        const mySchedules = await getMySchedules();
+  // Request schedules for the current user
+  const mySchedules = await getMySchedules();
         // Ordena as escalas pela data mais recente
         const sortedSchedules = mySchedules.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         setSchedules(sortedSchedules);
