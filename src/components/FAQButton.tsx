@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import Modal from './Modal';
 import { FaQuestion } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 
 const faqData = [
   {
@@ -57,19 +59,138 @@ const faqData = [
 
 export default function FAQButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const draggingRef = useRef(false);
+  const offsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Local storage keys
+  const STORAGE_KEY_HIDDEN = 'faq-hidden'; // will be stored in sessionStorage
+  const STORAGE_KEY_POS = 'faq-pos'; // keep position in localStorage
+
+  const { data: _session, status } = useSession();
+
+  useEffect(() => {
+    try {
+      const h = sessionStorage.getItem(STORAGE_KEY_HIDDEN);
+      if (h === 'true') setHidden(true);
+      const p = localStorage.getItem(STORAGE_KEY_POS);
+      if (p) {
+        const parsed = JSON.parse(p);
+        if (typeof parsed.left === 'number' && typeof parsed.top === 'number') {
+          setPos(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    // save position changes
+    if (pos) {
+      try {
+        localStorage.setItem(STORAGE_KEY_POS, JSON.stringify(pos));
+      } catch {
+        // ignore
+      }
+    }
+  }, [pos]);
+
+  useEffect(() => {
+    try {
+      // persist hidden only for current browser session
+      sessionStorage.setItem(STORAGE_KEY_HIDDEN, hidden ? 'true' : 'false');
+    } catch {
+      // ignore
+    }
+  }, [hidden]);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Start dragging
+    const btn = buttonRef.current;
+    if (!btn) return;
+    draggingRef.current = true;
+    (e.target as Element).setPointerCapture(e.pointerId);
+    const rect = btn.getBoundingClientRect();
+    offsetRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  const handlePointerMove = (e: PointerEvent) => {
+    if (!draggingRef.current) return;
+    // calculate new left/top clamped to viewport
+    const left = Math.min(Math.max(0, e.clientX - offsetRef.current.x), window.innerWidth - 56);
+    const top = Math.min(Math.max(0, e.clientY - offsetRef.current.y), window.innerHeight - 56);
+    setPos({ left, top });
+  };
+
+  const handlePointerUp = (e: PointerEvent) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    try { (e.target as Element).releasePointerCapture?.(e.pointerId); } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    // Attach global pointermove/up while dragging
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, []);
+
+  const handleCloseButton = (e?: React.SyntheticEvent) => {
+    e?.stopPropagation();
+    setHidden(true);
+  };
+
+  // Reset handler removed (not currently used). To reset position double-click the button.
+
+  // ensure FAQ reappears when user logs in again
+  useEffect(() => {
+    if (status === 'authenticated') {
+      setHidden(false);
+      try { sessionStorage.removeItem(STORAGE_KEY_HIDDEN); } catch {
+        // ignore
+      }
+    }
+  }, [status]);
+
   return (
     <>
-      <button
-        onClick={openModal}
-        className="fixed bottom-4 right-4 bg-blue-500 opacity-75 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-        aria-label="Ajuda e FAQ"
-      >
-        <FaQuestion size={24} />
-      </button>
+      {!hidden && (
+        <button
+          ref={buttonRef}
+          onDoubleClick={openModal}
+          onPointerDown={handlePointerDown}
+          className="fixed bg-blue-500 opacity-90 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+          aria-label="Ajuda e FAQ"
+          style={pos ? { left: pos.left, top: pos.top, right: 'auto', bottom: 'auto', width: 56, height: 56 } : { right: 16, bottom: 16, width: 56, height: 56 }}
+        >
+          <FaQuestion size={20} />
+          {/* small close button - not a nested <button> to avoid invalid HTML */}
+          <div
+            onClick={handleCloseButton}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') handleCloseButton(); }}
+            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center cursor-pointer"
+            aria-label="Fechar FAQ"
+            title="Fechar"
+            style={{ transform: 'translate(50%, -50%)' }}
+          >
+            <FaTimes size={10} />
+          </div>
+          {/* reset position by double-clicking the FAQ button */}
+        </button>
+      )}
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title="Perguntas Frequentes">
         <div className="space-y-4 overflow-scroll max-h-96 pr-2">

@@ -11,13 +11,13 @@ export async function GET(
     return NextResponse.json({ error: 'Email is required' }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email }, include: { avatar: true } });
 
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  // Return only non-sensitive data
-  const { id, name, email: userEmail } = user;
-  return NextResponse.json({ id, name, email: userEmail });
+  // Return only non-sensitive data, include avatarFileId when present
+  const { id, name, email: userEmail, avatarFileId } = user;
+  return NextResponse.json({ id, name, email: userEmail, avatarFileId });
 }

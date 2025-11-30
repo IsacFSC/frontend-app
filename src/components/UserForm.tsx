@@ -5,6 +5,10 @@ import { useState, useEffect } from 'react';
 import { User } from '../services/userService';
 import { useSession } from 'next-auth/react';
 import { api } from '../services/api';
+// UploadThing React SDK
+// NOTE: UploadThing client was causing a loading/hang in this environment.
+// For now we use the legacy backend upload endpoint. Remove UploadThing
+// dynamic import to avoid unused import warnings.
 
 enum Role {
   ADMIN = 'ADMIN',
@@ -17,8 +21,8 @@ interface UserFormProps {
   onSubmit: (data: Partial<User> & { password?: string }) => void;
   onCancel: () => void;
   successMessage?: string;
-  // Optional callback to notify parent that avatar filename changed after upload
-  onAvatarUploaded?: (avatarFilename: string | null) => void;
+  // Optional callback to notify parent that avatar file id changed after upload
+  onAvatarUploaded?: (avatarFileId: number | null) => void;
 }
 
 export default function UserForm({ userToEdit, onSubmit, onCancel, successMessage, onAvatarUploaded }: UserFormProps) {
@@ -87,7 +91,7 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
 
-    // If user can upload (editing own profile), upload immediately
+    // If the authenticated user is editing their own profile, upload immediately
     if (canUploadAvatar) {
       try {
         setAvatarUploading(true);
@@ -96,23 +100,23 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
         const res = await api.post('/users/upload', fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
-        // backend returns { user }
-        if (res.data?.user && res.data.user.avatar) {
-          const uploaded = res.data.user.avatar;
-          setAvatarPreview(`${api.defaults.baseURL}/files/${uploaded}`);
-          // inform parent (ProfileMenu) so it can update currentUser and re-render avatar
-          if (typeof onAvatarUploaded === 'function') onAvatarUploaded(uploaded);
+        // Try to extract file id from possible response shapes
+        const fileId = res.data?.user?.avatarFileId ?? res.data?.fileId ?? res.data?.user?.avatar ?? res.data?.file?.id ?? null;
+        if (fileId) {
+          setAvatarPreview(`${api.defaults.baseURL}/files/${fileId}`);
+          if (typeof onAvatarUploaded === 'function') onAvatarUploaded(Number(fileId));
         }
-      } catch (_err) {
+      } catch (err) {
+        console.error('avatar upload failed', err);
         setAvatarError('Falha ao enviar avatar. Tente novamente.');
       } finally {
         setAvatarUploading(false);
       }
     } else {
-      // not allowed to upload (admin editing other user or creating new user)
       setAvatarError('Upload só permitido para o próprio usuário autenticado.');
     }
   };
+
 
   const handleRemoveAvatar = async () => {
     if (!canUploadAvatar) {
@@ -161,23 +165,22 @@ export default function UserForm({ userToEdit, onSubmit, onCancel, successMessag
               <span className="text-sm">Sem</span>
             )}
           </div>
-          <div className="flex flex-col">
-            <input
-              type="file"
-              accept="image/png,image/jpeg"
-              onChange={handleAvatarChange}
-              className="text-sm text-gray-200"
-            />
-            {avatarUploading && <span className="text-xs text-gray-400">Enviando...</span>}
-            {avatarError && <span className="text-xs text-red-400">{avatarError}</span>}
-            <div className="mt-2">
-              <button type="button" onClick={handleRemoveAvatar} className="text-xs text-red-400 hover:underline" disabled={avatarUploading}>
-                Remover avatar
-              </button>
-            </div>
-            {!canUploadAvatar && (
-              <span className="text-xs text-gray-400 mt-1">Upload só disponível para seu próprio perfil.</span>
-            )}
+            <div className="flex flex-col">
+              {/* Use the legacy immediate upload for now — this posts the file to our backend
+                  which stores it and returns a file id. This avoids the UploadThing client
+                  being stuck in a loading state until the server-side UploadThing router
+                  is implemented. */}
+              <input type="file" accept="image/png,image/jpeg" onChange={handleAvatarChange} />
+              {avatarUploading && <div className="text-sm text-gray-500">Enviando...</div>}
+              {avatarError && <div className="text-sm text-red-500">{avatarError}</div>}
+              <div className="mt-2">
+                <button type="button" onClick={handleRemoveAvatar} className="text-xs text-red-400 hover:underline" disabled={avatarUploading}>
+                  Remover avatar
+                </button>
+              </div>
+              {!canUploadAvatar && (
+                <span className="text-xs text-gray-400 mt-1">Upload só disponível para seu próprio perfil.</span>
+              )}
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Menu } from '@headlessui/react';
 import { useSession, signOut } from 'next-auth/react';
 import UserForm from './UserForm';
-import { getUserByEmail, updateUser, User } from '../services/userService';
+import { getUserById, updateUser, User } from '../services/userService';
 import { api } from '../services/api';
 import MessageIcon from './MessageIcon';
 
@@ -19,10 +19,10 @@ export default function ProfileMenu() {
 
   useEffect(() => {
     const load = async () => {
-      if (status !== 'authenticated' || !session?.user?.email) return;
+      if (status !== 'authenticated' || !session?.user?.id) return;
       setLoading(true);
       try {
-        const u = await getUserByEmail(session.user.email);
+        const u = await getUserById(Number(session.user.id));
         setCurrentUser(u);
       } catch (_err) {
         // ignore
@@ -38,7 +38,7 @@ export default function ProfileMenu() {
     try {
       setLoading(true);
       await updateUser(currentUser.id, data);
-      const u = await getUserByEmail(session?.user?.email || '');
+      const u = await getUserById(currentUser.id);
       setCurrentUser(u);
       // bump avatarVersion to bust cache if avatar changed on server
       setAvatarVersion((v) => v + 1);
@@ -57,11 +57,21 @@ export default function ProfileMenu() {
   const open = () => setOpenProfile(true);
   const close = () => setOpenProfile(false);
 
-  const handleAvatarUploaded = (avatarFilename: string | null) => {
-    if (!avatarFilename) return;
-    setCurrentUser((prev) => (prev ? { ...prev, avatar: avatarFilename } : prev));
-    // bump to force image reload
-    setAvatarVersion((v) => v + 1);
+  const handleAvatarUploaded = (avatarFileId: number | null) => {
+    if (!avatarFileId) return;
+    // Refresh user from server to ensure any related fields are updated
+    (async () => {
+      try {
+        const u = await getUserById(Number(session?.user?.id));
+        setCurrentUser(u);
+      } catch {
+        // fallback: update avatar id locally
+        setCurrentUser((prev) => (prev ? { ...prev, avatar: avatarFileId } : prev));
+      } finally {
+        // bump to force image reload
+        setAvatarVersion((v) => v + 1);
+      }
+    })();
   };
 
   // Don't render header on public pages or while loading session

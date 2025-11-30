@@ -13,7 +13,8 @@ export interface User {
   email: string;
   role: Role;
   active: boolean;
-  avatar?: string;
+  // avatar holds the file id (number) or filename in some places; allow both
+  avatar?: number | string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -32,12 +33,32 @@ export interface GetUsersParams {
 
 export const getUsers = async (params?: GetUsersParams): Promise<{ users: User[]; total: number }> => {
   const { data } = await api.get('/users/all', { params });
-  return data || { users: [], total: 0 };
+  if (!data) return { users: [], total: 0 };
+  // normalize users to ensure `avatar` contains the file id when available
+  type RawUser = { avatarFileId?: number; avatar?: { id?: number; fileName?: string } } & Record<string, unknown>;
+  const users: User[] = (data.users || []).map((u: RawUser) => ({
+    ...(u as unknown as User),
+    avatar: u.avatarFileId ?? (u.avatar && (u.avatar.id ?? u.avatar.fileName)) ?? null,
+  }));
+  return { users, total: data.total ?? 0 };
 };
 
 export const getUserByEmail = async (email: string): Promise<User> => {
   const { data } = await api.get(`/users/email/${email}`);
-  return data;
+  if (!data) throw new Error('User not found');
+  return {
+    ...data,
+    avatar: (data.avatarFileId ?? (data.avatar && (data.avatar.id ?? data.avatar.fileName))) ?? null,
+  };
+};
+
+export const getUserById = async (id: number): Promise<User> => {
+  const { data } = await api.get(`/users/${id}`);
+  if (!data) throw new Error('User not found');
+  return {
+    ...data,
+    avatar: data.avatarFileId ?? (data.avatar && (data.avatar.id ?? data.avatar.fileName)) ?? null,
+  };
 };
 
 // export const createUser = async (userData: CreateUserData): Promise<User> => {
@@ -61,7 +82,10 @@ function isAxiosError(error: unknown): error is { response: { status: number, da
 export const createUser = async (userData: CreateUserData): Promise<User> => {
   try {
     const { data } = await api.post('/users', userData);
-    return data;
+    return {
+      ...data,
+      avatar: data.avatarFileId ?? (data.avatar && (data.avatar.id ?? data.avatar.fileName)) ?? null,
+    };
   } catch (error: unknown) {
     // Usamos a função de verificação antes de acessar error.response
     if (isAxiosError(error)) {
@@ -80,7 +104,10 @@ export const createUser = async (userData: CreateUserData): Promise<User> => {
 
 export const updateUser = async (id: number, userData: Partial<User>): Promise<User> => {
   const { data } = await api.put(`/users/${id}`, userData);
-  return data;
+  return {
+    ...data,
+    avatar: data.avatarFileId ?? (data.avatar && (data.avatar.id ?? data.avatar.fileName)) ?? null,
+  };
 };
 
 export const deleteUser = async (id: number): Promise<void> => {
