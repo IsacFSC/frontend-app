@@ -1,28 +1,34 @@
-export type Skill =
-  | 'MAIN_VOICE'
-  | 'GUITAR'
-  | 'SOUND_DESK'
-  | 'KEYBOARD'
-  | 'DRUMS'
-  | 'BASS'
-  | 'OTHER';
+export type SkillKey =
+  | 'VOCAL_LEAD'
+  | 'BACKING_VOCAL'
+  | 'VIOLAO'
+  | 'SAX'
+  | 'GUITARRA'
+  | 'TECLADO'
+  | 'CONTRA_BAIXO'
+  | 'BATERIA'
+  | 'MESA_SOM'
+  | 'OUTROS'
+  | string;
 
-const skillDisplayNames: { [key in Skill]: string } = {
-  MAIN_VOICE: 'VOZ PRINCIPAL',
-  GUITAR: 'VIOLÃO',
-  SOUND_DESK: 'MESA DE SOM',
-  KEYBOARD: 'TECLADO',
-  DRUMS: 'BATERIA',
-  BASS: 'CONTRA-BASSO',
-  OTHER: 'OUTRO',
+const skillDisplayNames: { [key: string]: string } = {
+  VOCAL_LEAD: 'VOZ PRINCIPAL',
+  BACKING_VOCAL: 'VOZ DE APOIO',
+  VIOLAO: 'VIOLÃO',
+  SAX: 'SAX',
+  GUITARRA: 'GUITARRA',
+  TECLADO: 'TECLADO',
+  'CONTRA_BAIXO': 'CONTRA-BAIXO',
+  BATERIA: 'BATERIA',
+  MESA_SOM: 'MESA DE SOM',
+  OUTROS: 'OUTROS',
 };
 
 export function formatSkill(skill?: string | null) {
   if (!skill) return '';
-  // If skill matches one of our known keys, return the Portuguese label
-  if (skillDisplayNames[skill as Skill]) return skillDisplayNames[skill as Skill];
-  // Fallback: replace underscores and uppercase
-  return skill.replace(/_/g, ' ');
+  const key = skill as string;
+  if (skillDisplayNames[key]) return skillDisplayNames[key];
+  return key.replace(/_/g, ' ');
 }
 
 export default skillDisplayNames;

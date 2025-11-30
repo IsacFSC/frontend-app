@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
+import skillDisplayNames, { formatSkill } from '@/lib/skills';
 import { Schedule } from '../services/scheduleService';
 import { User } from '../services/userService';
 import { api } from '../services/api';
@@ -18,20 +19,6 @@ enum Skill {
   BATERIA = 'BATERIA',
   MESA_SOM = 'MESA_SOM',
   OUTROS = 'OUTROS',
-}
-
-// Mapeamento para exibir os nomes em português no frontend
-const skillDisplayNames: { [key in Skill]: string } = {
-  [Skill.VOCAL_LEAD]: 'VOZ PRINCIPAL',
-  [Skill.BACKING_VOCAL]: 'VOZ DE APOIO',
-  [Skill.VIOLAO]: 'VIOLÃO',
-  [Skill.SAX]: 'SAX',
-  [Skill.GUITARRA]: 'GUITARRA',
-  [Skill.TECLADO]: 'TECLADO',
-  [Skill.CONTRA_BAIXO]: 'CONTRA-BAIXO',
-  [Skill.BATERIA]: 'BATERIA',
-  [Skill.MESA_SOM]: 'MESA DE SOM',
-  [Skill.OUTROS]: 'OUTROS',
 }
 
 // Definição das propriedades que o componente recebe
@@ -119,9 +106,9 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
         />
         <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
           {filteredUnifiedUsers.length > 0 ? filteredUnifiedUsers.map((user) => {
-            const isAssigned = assignedUserIds.has(user.id);
-            const skill = assignedUserSkills.get(user.id);
-            const formattedSkill = skill ? `(${skillDisplayNames[skill] || skill})` : '';
+    const isAssigned = assignedUserIds.has(user.id);
+    const skill = assignedUserSkills.get(user.id);
+    const formattedSkill = skill ? `(${formatSkill(skill) || skill})` : '';
 
             return (
               <div key={user.id} className="flex flex-nowrap items-center justify-between gap-2 bg-gray-700 p-2 rounded-md">
@@ -160,7 +147,7 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
                     >
                       <option value="" disabled>Selecione</option>
                       {Object.values(Skill).map(skillValue => (
-                        <option key={skillValue} value={skillValue}>{skillDisplayNames[skillValue]}</option>
+                        <option key={skillValue} value={skillValue}>{formatSkill(skillValue)}</option>
                       ))}
                     </select>
                     <button
@@ -194,7 +181,7 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
           <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
             {filteredAssignedUsers.length > 0 ? filteredAssignedUsers.map((user) => {
               const skill = assignedUserSkills.get(user.id);
-              const formattedSkill = skill ? `(${skillDisplayNames[skill] || skill})` : '';
+              const formattedSkill = skill ? `(${formatSkill(skill) || skill})` : '';
 
               return (
                 <div key={user.id} className="flex flex-nowrap items-center justify-between gap-2 bg-gray-700 p-2 rounded-md">
@@ -268,7 +255,7 @@ export default function ScheduleUserManagement({ schedule, allUsers, onAddUser, 
                   >
                     <option value="" disabled>Selecione</option>
                     {Object.values(Skill).map(skillValue => (
-                      <option key={skillValue} value={skillValue}>{skillDisplayNames[skillValue]}</option>
+                      <option key={skillValue} value={skillValue}>{formatSkill(skillValue)}</option>
                     ))}
                   </select>
                   <button

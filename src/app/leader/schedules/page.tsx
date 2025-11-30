@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getMySchedules, Schedule, uploadScheduleFile } from '../../../services/scheduleService';
+import { formatSkill } from '@/lib/skills';
 import PrivateRoute from '@/components/PrivateRoute';
 import { FaFileUpload, FaArrowLeft, FaCross } from 'react-icons/fa';
 import { AxiosError } from 'axios';
@@ -46,10 +47,7 @@ const linkify = (text: string) => {
   ));
 };
 
-const formatSkill = (skill: string) => {
-  if (!skill) return '';
-  return skill.replace(/_/g, ' ');
-};
+// use centralized formatSkill from src/lib/skills.ts
 
 enum Role {
   ADMIN = 'ADMIN',
