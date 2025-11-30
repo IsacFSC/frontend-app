@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit'; // Importa a biblioteca pdfkit
 import { Schedule } from '@/services/scheduleService';
+import { formatSkill } from './skills';
 
 // A função agora é mais simples e usa as fontes padrão do PDFKit.
 export async function generatePdf(schedule: Schedule): Promise<Buffer> {
@@ -19,12 +20,10 @@ export async function generatePdf(schedule: Schedule): Promise<Buffer> {
       .text(`Escala: ${schedule.name}`, { align: 'center' });
     doc.moveDown();
 
-    // Data e Hora
-    const date = new Date(schedule.startTime).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-    const startTime = new Date(schedule.startTime).toLocaleTimeString('pt-BR', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' });
-    const endTime = new Date(schedule.endTime).toLocaleTimeString('pt-BR', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' });
-    doc.fontSize(12).font('LiberationSans-Regular').text(`Data: ${date}`, { align: 'center' });
-    doc.text(`Horário: ${startTime} - ${endTime}`, { align: 'center' });
+  // Data (exibir somente datas, sem horas)
+  const startDate = new Date(schedule.startTime).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  const endDate = new Date(schedule.endTime).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  doc.fontSize(12).font('LiberationSans-Regular').text(`Início: ${startDate} — Fim: ${endDate}`, { align: 'center' });
     doc.moveDown(2);
 
     // Descrição
@@ -50,7 +49,7 @@ export async function generatePdf(schedule: Schedule): Promise<Buffer> {
     // Ministros/Usuários
     doc.fontSize(16).font('LiberationSans-Bold').text('Ministros:', { underline: true });
     schedule.users.forEach(userOnSchedule => {
-      doc.fontSize(12).font('LiberationSans-Regular').text(`- ${userOnSchedule.user.name} (${userOnSchedule.skill.replace(/_/g, ' ')})`);
+      doc.fontSize(12).font('LiberationSans-Regular').text(`- ${userOnSchedule.user.name} (${formatSkill(userOnSchedule.skill)})`);
     });
 
     doc.end();

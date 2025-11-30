@@ -2,6 +2,7 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Link } from '@react-pdf/renderer';
 import { Schedule as ServiceSchedule } from '@/services/scheduleService';
+import { formatSkill } from '@/lib/skills';
 
 // Estilos para o documento PDF, inspirados no design do site
 const styles = StyleSheet.create({
@@ -80,11 +81,7 @@ const styles = StyleSheet.create({
       },
     });
     
-    // Função para formatar a skill (igual à do dashboard)
-    const formatSkill = (skill: string) => {
-      if (!skill) return '';
-      return skill.replace(/_/g, ' ');
-    };
+    // Using centralized skill formatter for consistent Portuguese labels
     
     // Função para transformar links em componentes <Link> no PDF
     const linkify = (text: string) => {
@@ -124,7 +121,7 @@ const styles = StyleSheet.create({
     
             {/* Data e Hora */}
             <Text style={styles.dateTime}>
-              <Text style={{ fontFamily: 'Helvetica-Bold' }}>Início:</Text> {new Date(schedule.startTime).toLocaleString('pt-BR', { timeZone: 'UTC' })} - <Text style={{ fontFamily: 'Helvetica-Bold' }}>Fim:</Text> {new Date(schedule.endTime).toLocaleString('pt-BR', { timeZone: 'UTC' })}
+              <Text style={{ fontFamily: 'Helvetica-Bold' }}>Início:</Text> {new Date(schedule.startTime).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} - <Text style={{ fontFamily: 'Helvetica-Bold' }}>Fim:</Text> {new Date(schedule.endTime).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
             </Text>
     
             {/* Usuários */}
