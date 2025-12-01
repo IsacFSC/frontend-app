@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-import skillDisplayNames, { formatSkill } from '@/lib/skills';
+import { formatSkill } from '@/lib/skills';
 import { Schedule } from '../services/scheduleService';
 import { User } from '../services/userService';
 import { api } from '../services/api';

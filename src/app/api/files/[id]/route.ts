@@ -25,14 +25,18 @@ export async function GET(
 
     // Ensure we return the raw binary body. Prisma `Bytes` is typically returned
     // as a Uint8Array or Buffer. Normalize to Uint8Array and return an ArrayBuffer.
-    const rawData = file.data as unknown;
     let uint8: Uint8Array | null = null;
-    if (rawData instanceof Uint8Array) {
-      uint8 = rawData;
-    } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(rawData as Buffer)) {
-      uint8 = new Uint8Array(rawData as Buffer);
-    } else if (rawData instanceof ArrayBuffer) {
-      uint8 = new Uint8Array(rawData as ArrayBuffer);
+    if (file.data instanceof Uint8Array) {
+      uint8 = file.data;
+    } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(file.data)) {
+      uint8 = new Uint8Array(file.data as Buffer);
+    } else {
+      // Fallback: try to convert to Uint8Array
+      try {
+        uint8 = new Uint8Array(file.data as ArrayBufferLike);
+      } catch (e) {
+        console.error('Failed to convert file.data to Uint8Array', e);
+      }
     }
 
     if (!uint8) {
@@ -41,8 +45,9 @@ export async function GET(
     }
 
   headers.set('Content-Length', String(uint8.byteLength));
-  // Uint8Array is accepted as BodyInit (BufferSource) by the Response constructor
-  return new Response(uint8 as unknown as BodyInit, { headers });
+  // Convert Uint8Array to ArrayBuffer for Response body
+  const arrayBuffer = uint8.buffer.slice(uint8.byteOffset, uint8.byteOffset + uint8.byteLength) as ArrayBuffer;
+  return new Response(arrayBuffer, { headers });
   } catch (error) {
     console.error("Error retrieving file:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

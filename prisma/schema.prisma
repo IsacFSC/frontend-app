@@ -107,17 +107,23 @@ model User {
 }
 
 model File {
-  id        Int      @id @default(autoincrement())
-  fileName  String
-  mimeType  String
-  data      Bytes
-  size      Int
-  createdAt DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  fileName        String
+  mimeType        String
+  data            Bytes
+  size            Int
+  createdAt       DateTime @default(now())
+  // UploadThing fields
+  uploadthingUrl  String?  // URL do arquivo hospedado no UploadThing
+  uploadthingKey  String?  // Chave única do arquivo no UploadThing
+  uploadedBy      Int?     // ID do usuário que fez upload
 
   // back-relations
   messages  Message[]
   schedules Schedule[]
   users     User[]
+
+  @@index([uploadthingKey])
 }
 
 // NextAuth Models
