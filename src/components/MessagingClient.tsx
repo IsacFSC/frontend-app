@@ -143,12 +143,28 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     const toastId = toast.loading('Enviando mensagem...');
     try {
       if (selectedFile && selectedConversation) {
+        // Validação adicional antes de enviar
+        if (selectedFile.type !== 'application/pdf' && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
+          toast.error('Apenas arquivos PDF são permitidos.', { id: toastId });
+          return;
+        }
+        if (selectedFile.size > 8 * 1024 * 1024) {
+          toast.error('Arquivo muito grande. Tamanho máximo: 8MB.', { id: toastId });
+          return;
+        }
+
         const formData = new FormData();
         formData.append('file', selectedFile);
-        await fetch(`/api/messaging/conversations/${selectedConversation.id}/upload`, {
+        const response = await fetch(`/api/messaging/conversations/${selectedConversation.id}/upload`, {
           method: 'POST',
           body: formData,
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Falha ao enviar arquivo.');
+        }
+
         setSelectedFile(null);
       } else {
         await createMessage(selectedConversation.id, newMessage);
@@ -159,7 +175,8 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       toast.success('Mensagem enviada com sucesso!', { id: toastId });
     } catch (error) {
       console.error('Falha ao enviar mensagem.', error);
-      toast.error('Falha ao enviar mensagem.', { id: toastId });
+      const errorMessage = error instanceof Error ? error.message : 'Falha ao enviar mensagem.';
+      toast.error(errorMessage, { id: toastId });
     }
   };
 
@@ -350,7 +367,25 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                 />
                  <input
                   type="file"
-                  onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                  accept=".pdf,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files ? e.target.files[0] : null;
+                    if (file) {
+                      // Validação rigorosa: apenas PDF
+                      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                        toast.error('Apenas arquivos PDF são permitidos.');
+                        e.target.value = ''; // Limpa o input
+                        return;
+                      }
+                      // Validação de tamanho máximo: 8MB
+                      if (file.size > 8 * 1024 * 1024) {
+                        toast.error('Arquivo muito grande. Tamanho máximo: 8MB.');
+                        e.target.value = '';
+                        return;
+                      }
+                      setSelectedFile(file);
+                    }
+                  }}
                   className="sr-only"
                   id="file-upload"
                 />
