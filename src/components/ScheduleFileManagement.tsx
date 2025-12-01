@@ -92,11 +92,11 @@ const ScheduleFileManagement: React.FC<ScheduleFileManagementProps> = ({ schedul
       {canUpload && (
         <div className="bg-gray-800 p-4 rounded-lg">
           <p className="text-sm text-gray-400 mb-3">
-            Faça upload de arquivos seguros (PDF, imagens) para anexar à escala
+            Anexar arquivo PDF à escala (máximo 8MB)
           </p>
           <SecureFileUploader
             endpoint="scheduleFileUploader"
-            acceptedTypes=".pdf,.jpg,.jpeg,.png,.webp"
+            acceptedTypes=".pdf"
             onUploadComplete={handleUploadComplete}
             onUploadError={(error) => {
               toast.error(error.message || 'Erro ao fazer upload');

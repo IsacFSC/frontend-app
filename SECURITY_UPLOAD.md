@@ -14,7 +14,7 @@
 - ✅ **Whitelist de MIME types**: Lista restrita de tipos permitidos por endpoint
 - ✅ **Validação tripla**: Cliente (input accept) + Cliente (onChange) + Servidor (API)
 - ✅ **Extensões permitidas**:
-  - Escalas: PDF, JPG, PNG, WebP
+  - **Escalas: APENAS PDF** (validação rigorosa em múltiplas camadas)
   - **Mensagens: APENAS PDF** (validação rigorosa em 3 camadas)
   - Avatares: JPG, PNG, WebP apenas
 - ✅ **Verificação de extensão**: Validação adicional do nome do arquivo
@@ -22,8 +22,8 @@
 
 ### 3. **Controle de Tamanho**
 - ✅ **Limites por tipo**:
-  - Escalas: máximo 16MB (UploadThing)
-  - **Mensagens: máximo 8MB** (validação cliente + servidor)
+  - **Escalas: máximo 8MB** (apenas PDF - validação cliente + servidor)
+  - **Mensagens: máximo 8MB** (apenas PDF - validação cliente + servidor)
   - Avatares: máximo 2MB (UploadThing)
 - ✅ **Validação em múltiplos níveis**: Cliente + Servidor
 - ✅ **Tamanho mínimo**: 100 bytes (evita arquivos vazios/corrompidos)
@@ -209,19 +209,19 @@ DATABASE_URL=postgresql://...
 
 | Tipo | Sistema | Tamanho Máx | Tipos Permitidos | Validações |
 |------|---------|-------------|------------------|------------|
-| Escalas | UploadThing | 16MB | PDF, JPG, PNG, WebP | Cliente + Servidor + Malware Scan |
+| **Escalas** | **UploadThing** | **8MB** | **APENAS PDF** | **Cliente + Servidor (7x) + Malware Scan** |
 | **Mensagens** | **Direct Upload** | **8MB** | **APENAS PDF** | **Cliente (3x) + Servidor (7x)** |
 | Avatares | UploadThing | 2MB | JPG, PNG, WebP | Cliente + Servidor + Malware Scan |
 
 ## 🚀 Como Usar
 
-### Em Escalas (UploadThing)
+### Em Escalas (UploadThing - PDF-only)
 ```tsx
 import SecureFileUploader from '@/components/SecureFileUploader';
 
 <SecureFileUploader
   endpoint="scheduleFileUploader"
-  acceptedTypes=".pdf,.jpg,.jpeg,.png,.webp"
+  acceptedTypes=".pdf"
   onUploadComplete={(res) => {
     // res.fileUrl - URL do arquivo
     // res.fileKey - Chave única
@@ -271,6 +271,18 @@ npx prisma migrate dev --name add_uploadthing_fields
 3. Mantenha sistema de mensagens como está (validação rigorosa já implementada)
 
 ## ✅ Checklist de Segurança
+
+### Escalas (PDF-only via UploadThing)
+- [x] Input HTML com `accept=".pdf"`
+- [x] SecureFileUploader com endpoint="scheduleFileUploader"
+- [x] API: MIME type === 'application/pdf'
+- [x] API: Extensão === '.pdf'
+- [x] API: Tamanho <= 8MB e >= 100 bytes
+- [x] API: Nome <= 255 caracteres
+- [x] API: Sanitização do nome
+- [x] UploadThing: Malware scan automático
+- [x] UploadThing: CDN seguro com URLs assinadas
+- [x] Autorização: Apenas ADMIN e LEADER
 
 ### Mensagens (PDF-only)
 - [x] Input HTML com `accept=".pdf,application/pdf"`

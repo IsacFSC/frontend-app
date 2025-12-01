@@ -7,13 +7,13 @@ const f = createUploadthing();
 
 // Tipos permitidos e tamanhos máximos
 const ALLOWED_FILE_TYPES = {
-  schedules: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+  schedules: ["application/pdf"], // Apenas PDF para escalas (mesma regra de mensagens)
   messages: ["application/pdf"], // Apenas PDF para mensagens
   avatars: ["image/jpeg", "image/png", "image/webp"],
 } as const;
 
 const MAX_FILE_SIZES = {
-  schedules: "16MB",
+  schedules: "8MB", // PDF até 8MB (mesma regra de mensagens)
   messages: "8MB", // PDF até 8MB
   avatars: "2MB",
 } as const;
@@ -65,16 +65,31 @@ export const ourFileRouter = {
         throw new UploadThingError("Apenas administradores e líderes podem fazer upload em escalas");
       }
 
-      // Validação de tipo MIME
+      // Validação de tipo MIME - apenas PDF
       const file = files[0];
-      if (!validateMimeType(file, ALLOWED_FILE_TYPES.schedules)) {
-        throw new UploadThingError(`Tipo de arquivo não permitido. Use: PDF, JPG, PNG ou WebP`);
+      if (file.type !== 'application/pdf') {
+        throw new UploadThingError(`Tipo de arquivo não permitido. Apenas arquivos PDF são aceitos.`);
       }
 
-      // Validação de tamanho (adicional à configuração)
-      const maxSizeBytes = 16 * 1024 * 1024; // 16MB
+      // Validação de extensão do arquivo
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        throw new UploadThingError(`Extensão de arquivo inválida. Apenas arquivos .pdf são permitidos.`);
+      }
+
+      // Validação de tamanho máximo (8MB)
+      const maxSizeBytes = 8 * 1024 * 1024; // 8MB
       if (file.size > maxSizeBytes) {
-        throw new UploadThingError(`Arquivo muito grande. Tamanho máximo: 16MB`);
+        throw new UploadThingError(`Arquivo muito grande. Tamanho máximo: 8MB`);
+      }
+
+      // Validação de tamanho mínimo (evita arquivos vazios)
+      if (file.size < 100) {
+        throw new UploadThingError(`Arquivo muito pequeno ou corrompido.`);
+      }
+
+      // Validação de nome do arquivo
+      if (file.name.length > 255) {
+        throw new UploadThingError(`Nome do arquivo muito longo. Máximo 255 caracteres.`);
       }
 
       return { userId, uploadedBy: userId, fileType: 'schedule' };

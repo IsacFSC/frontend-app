@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { createTask, deleteTask, getTasks, Task, updateTask } from '@/services/taskService';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaCross, FaEdit, FaPlus, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaCross, FaEdit, FaEllipsisV, FaPlus, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
 import PrivateRoute from '@/components/PrivateRoute';
-import { Button, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import DescriptionWithReadMore from '@/components/DescriptionWithReadMore';
 import Modal from '@/components/Modal';
 import TaskForm from '@/components/TaskForm';
@@ -327,14 +327,14 @@ export default function TaskManagementPage() {
                   {tasks.map((task) => (
                     <tr key={task.id}>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-600 text-sm sticky left-0 z-10 w-40 lg:w-64 xl:w-80 h-24 align-top overflow-hidden">
-                        <Button onClick={() => handleOpenModal(task)} className="text-left w-fit">
+                        <div onClick={() => handleOpenModal(task)} className="text-left w-fit cursor-pointer">
                           <p className="text-gray-100 truncate w-full block font-bold lg:text-lg p-1.5 border-t-2 border-blue-900 border-r-2 rounded-md hover:underline">{task.name}</p>
                           <div className="text-gray-300 mt-1">
                             <DescriptionWithReadMore>
                               <div className="text-sm text-gray-300 truncate w-40">{linkify(task.description)}</div>
                             </DescriptionWithReadMore>
                           </div>
-                        </Button>
+                        </div>
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm">
                         <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${getStatusClass(task.status)}`}>
@@ -347,24 +347,22 @@ export default function TaskManagementPage() {
                       </td>
                       <td className="px-5 py-5 border-b border-gray-500 bg-gray-700 text-sm gap-2">
                         <div className="relative inline-block text-left w-full">
-                          <Menu>
+                          <Menu as="div" className="relative inline-block text-left">
                             {() => (
                               <>
-                                <MenuButton className="w-full flex justify-center items-center bg-gray-800 text-white rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                  <span className="mr-2"><FaEdit /></span>
-                                  <span className="md:inline">Ações</span>
-                                  <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                <MenuButton className="flex items-center p-2 text-gray-200 hover:text-gray-400 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out hover:scale-105 font-semibold">
+                                  <FaEllipsisV className="h-5 w-5" aria-hidden="true" />
                                 </MenuButton>
-                                <MenuItems className="absolute z-50 left-0 mt-2 w-32 origin-top-right bg-gray-300 border border-gray-400 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
-                                  <div className="py-1 w-full">
+                                <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-60">
+                                  <div className="py-1">
                                     <MenuItem>
                                       {({ focus }) => (
                                         <button
                                           onClick={() => handleOpenModal(task)}
-                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${focus ? 'bg-indigo-600 text-white' : 'text-indigo-700'} transition-colors`}
-                                          title="Editar"
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${focus ? 'bg-blue-700 text-white' : 'text-gray-700'}`}
                                         >
-                                          <FaEdit className="mr-2" /> Editar
+                                          <FaEdit className="mr-3 h-4 w-4" />
+                                          Editar
                                         </button>
                                       )}
                                     </MenuItem>
@@ -373,10 +371,11 @@ export default function TaskManagementPage() {
                                         <button
                                           onClick={() => handleDelete(task.id)}
                                           disabled={task.status !== TaskStatus.PENDING}
-                                          className={`w-full flex items-center px-4 py-2 text-sm rounded ${focus ? 'bg-red-600 text-white' : 'text-red-700'} transition-colors ${task.status !== TaskStatus.PENDING ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                          title="Deletar"
+                                          className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${focus ? 'bg-red-600 text-white' : 'text-gray-700'} ${task.status !== TaskStatus.PENDING ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                          title={task.status !== TaskStatus.PENDING ? 'Apenas tarefas pendentes podem ser deletadas' : 'Deletar'}
                                         >
-                                          <FaTrash className="mr-2" /> Deletar
+                                          <FaTrash className="mr-3 h-4 w-4" />
+                                          Deletar
                                         </button>
                                       )}
                                     </MenuItem>
