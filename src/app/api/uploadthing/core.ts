@@ -8,13 +8,13 @@ const f = createUploadthing();
 // Tipos permitidos e tamanhos máximos
 const ALLOWED_FILE_TYPES = {
   schedules: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
-  messages: ["image/jpeg", "image/png", "image/webp", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  messages: ["application/pdf"], // Apenas PDF para mensagens
   avatars: ["image/jpeg", "image/png", "image/webp"],
 } as const;
 
 const MAX_FILE_SIZES = {
   schedules: "16MB",
-  messages: "8MB",
+  messages: "8MB", // PDF até 8MB
   avatars: "2MB",
 } as const;
 
@@ -112,26 +112,33 @@ export const ourFileRouter = {
       }
     }),
 
-  // Upload de arquivos para mensagens (todos os usuários autenticados)
+  // Upload de arquivos para mensagens (todos os usuários autenticados - apenas PDF)
   messageFileUploader: f({
     pdf: { maxFileSize: MAX_FILE_SIZES.messages, maxFileCount: 1 },
-    image: { maxFileSize: MAX_FILE_SIZES.messages, maxFileCount: 1 },
-    "application/msword": { maxFileSize: MAX_FILE_SIZES.messages, maxFileCount: 1 },
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { maxFileSize: MAX_FILE_SIZES.messages, maxFileCount: 1 },
   })
     .middleware(async ({ files }) => {
       const { userId } = await authMiddleware();
 
-      // Validação de tipo MIME
+      // Validação de tipo MIME - apenas PDF
       const file = files[0];
       if (!validateMimeType(file, ALLOWED_FILE_TYPES.messages)) {
-        throw new UploadThingError(`Tipo de arquivo não permitido. Use: PDF, JPG, PNG, WebP ou DOC/DOCX`);
+        throw new UploadThingError(`Tipo de arquivo não permitido. Use apenas PDF`);
+      }
+
+      // Validação adicional: verificar extensão do arquivo
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        throw new UploadThingError('Apenas arquivos PDF são permitidos');
       }
 
       // Validação de tamanho
       const maxSizeBytes = 8 * 1024 * 1024; // 8MB
       if (file.size > maxSizeBytes) {
         throw new UploadThingError(`Arquivo muito grande. Tamanho máximo: 8MB`);
+      }
+
+      // Validação adicional de segurança: nome do arquivo
+      if (file.name.length > 255) {
+        throw new UploadThingError('Nome do arquivo muito longo');
       }
 
       return { userId, uploadedBy: userId, fileType: 'message' };

@@ -15,13 +15,14 @@
 - ✅ **Validação dupla**: Cliente + servidor
 - ✅ **Extensões permitidas**:
   - Escalas: PDF, JPG, PNG, WebP
-  - Mensagens: PDF, JPG, PNG, WebP, DOC, DOCX
+  - Mensagens: apenas PDF (maior segurança)
   - Avatares: JPG, PNG, WebP apenas
+- ✅ **Verificação de extensão**: Validação adicional do nome do arquivo
 
 ### 3. **Controle de Tamanho**
 - ✅ **Limites por tipo**:
   - Escalas: máximo 16MB
-  - Mensagens: máximo 8MB
+  - Mensagens: máximo 8MB (apenas PDF)
   - Avatares: máximo 2MB
 - ✅ **Validação em dois níveis**: UploadThing SDK + middleware customizado
 
@@ -104,7 +105,7 @@ UPLOADTHING_TOKEN=seu_token
 | Tipo | Tamanho Máx | Quantidade | Tipos Permitidos |
 |------|-------------|------------|------------------|
 | Escalas | 16MB | 1 | PDF, JPG, PNG, WebP |
-| Mensagens | 8MB | 1 | PDF, JPG, PNG, WebP, DOC, DOCX |
+| Mensagens | 8MB | 1 | **Apenas PDF** |
 | Avatares | 2MB | 1 | JPG, PNG, WebP |
 
 ## 🚀 Como Usar
@@ -128,7 +129,7 @@ import SecureFileUploader from '@/components/SecureFileUploader';
 ```tsx
 <SecureFileUploader
   endpoint="messageFileUploader"
-  acceptedTypes=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+  acceptedTypes=".pdf"
   onUploadComplete={(res) => {
     // Anexar à mensagem
   }}
