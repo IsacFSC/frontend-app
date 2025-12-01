@@ -28,11 +28,71 @@ export async function POST(
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
+    // ===== VALIDAÇÕES DE SEGURANÇA RIGOROSAS =====
+    
+    // 1. Validação de tipo MIME - apenas PDF
+    const allowedMimeType = 'application/pdf';
+    if (file.type !== allowedMimeType) {
+      return NextResponse.json({ 
+        error: 'Tipo de arquivo não permitido. Apenas arquivos PDF são aceitos.' 
+      }, { status: 400 });
+    }
+
+    // 2. Validação de extensão do arquivo
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      return NextResponse.json({ 
+        error: 'Extensão de arquivo inválida. Apenas arquivos .pdf são permitidos.' 
+      }, { status: 400 });
+    }
+
+    // 3. Validação de tamanho máximo (8MB)
+    const maxSizeBytes = 8 * 1024 * 1024; // 8MB
+    if (file.size > maxSizeBytes) {
+      return NextResponse.json({ 
+        error: 'Arquivo muito grande. Tamanho máximo permitido: 8MB.' 
+      }, { status: 400 });
+    }
+
+    // 4. Validação de tamanho mínimo (evita arquivos vazios)
+    if (file.size < 100) {
+      return NextResponse.json({ 
+        error: 'Arquivo muito pequeno ou corrompido.' 
+      }, { status: 400 });
+    }
+
+    // 5. Validação de nome do arquivo
+    if (file.name.length > 255) {
+      return NextResponse.json({ 
+        error: 'Nome do arquivo muito longo. Máximo 255 caracteres.' 
+      }, { status: 400 });
+    }
+
+    // 6. Validação de caracteres perigosos no nome
+    const dangerousChars = /[<>:"|?*\x00-\x1f]/g;
+    if (dangerousChars.test(file.name)) {
+      return NextResponse.json({ 
+        error: 'Nome do arquivo contém caracteres inválidos.' 
+      }, { status: 400 });
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    // 7. Sanitização do nome do arquivo
+    const sanitizeFileName = (filename: string): string => {
+      // Remove caracteres perigosos e normaliza
+      return filename
+        .replace(/[<>:"|?*\x00-\x1f]/g, '_')
+        .replace(/\.\./g, '_')
+        .replace(/\\/g, '_')
+        .replace(/\//g, '_')
+        .substring(0, 255);
+    };
+
+    const sanitizedFileName = sanitizeFileName(file.name);
 
     const createdFile = await prisma.file.create({
       data: {
-        fileName: file.name,
+        fileName: sanitizedFileName,
         mimeType: file.type,
         data: buffer,
         size: file.size,
