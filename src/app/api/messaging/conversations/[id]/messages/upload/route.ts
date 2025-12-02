@@ -6,20 +6,20 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  const authorId = session?.user?.id;
-
-  if (!authorId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { id } = await params;
-  const convId = Number(id);
-  if (isNaN(convId)) {
-    return NextResponse.json({ error: 'Invalid conversation ID' }, { status: 400 });
-  }
-
   try {
+    const session = await auth();
+    const authorId = session?.user?.id;
+
+    if (!authorId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const convId = Number(id);
+    if (isNaN(convId)) {
+      return NextResponse.json({ error: 'Invalid conversation ID' }, { status: 400 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const content = formData.get('content') as string || '';
@@ -108,9 +108,25 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(message, { status: 201 });
+    console.log('Upload de mensagem completo:', {
+      messageId: message.id,
+      fileId: createdFile.id,
+      fileName: sanitizedFileName,
+    });
+
+    return NextResponse.json({ 
+      success: true,
+      message,
+      file: {
+        id: createdFile.id,
+        fileName: sanitizedFileName,
+      }
+    }, { status: 201 });
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Upload error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Erro ao processar upload',
+      details: error instanceof Error ? error.message : 'Erro desconhecido'
+    }, { status: 500 });
   }
 }

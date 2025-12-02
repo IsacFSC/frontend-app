@@ -161,8 +161,23 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Falha ao enviar arquivo.');
+          let errorMessage = 'Falha ao enviar arquivo.';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (parseError) {
+            // Se não conseguir fazer parse do JSON, usa mensagem padrão
+            console.error('Erro ao fazer parse da resposta de erro:', parseError);
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Tenta fazer parse da resposta de sucesso
+        let responseData = null;
+        try {
+          responseData = await response.json();
+        } catch (parseError) {
+          console.error('Erro ao fazer parse da resposta de sucesso:', parseError);
         }
 
         setSelectedFile(null);
