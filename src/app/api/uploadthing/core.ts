@@ -100,17 +100,27 @@ export const ourFileRouter = {
         fileUrl: file.url,
         fileName: file.name,
         fileSize: file.size,
+        fileKey: file.key,
       });
 
-      // Salva referência no banco de dados
+      // Salva referência no banco de dados com URL e Key do UploadThing
       try {
         const dbFile = await prisma.file.create({
           data: {
             fileName: sanitizeFileName(file.name),
-            mimeType: file.type || 'application/octet-stream',
+            mimeType: file.type || 'application/pdf',
             data: Buffer.from(''), // UploadThing hospeda o arquivo, não precisamos dos bytes
             size: file.size,
+            uploadthingUrl: file.url,      // URL para download
+            uploadthingKey: file.key,      // Chave única do UploadThing
+            uploadedBy: metadata.userId,   // ID do usuário que fez upload
           },
+        });
+
+        console.log("Arquivo salvo no banco com UploadThing URL:", {
+          fileId: dbFile.id,
+          uploadthingUrl: dbFile.uploadthingUrl,
+          uploadthingKey: dbFile.uploadthingKey,
         });
 
         // Retorna informações para o cliente

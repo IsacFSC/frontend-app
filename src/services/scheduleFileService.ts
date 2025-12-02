@@ -22,10 +22,12 @@ export const getScheduleFiles = async (scheduleId: number) => {
     const response = await api.get(`/schedules/${scheduleId}`);
     const schedule = response.data;
     if (schedule && schedule.file) {
-      // The component expects an array of files with id and filename.
+      // The component expects an array of files with id, filename, uploadthingUrl and uploadthingKey
       return [{
         id: schedule.file.id,
         filename: schedule.file.fileName,
+        uploadthingUrl: schedule.file.uploadthingUrl,
+        uploadthingKey: schedule.file.uploadthingKey,
       }];
     }
     return [];
