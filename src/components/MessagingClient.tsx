@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
 import { FaArrowLeft, FaComments, FaCross, FaDownload } from 'react-icons/fa';
 import { getConversations, getMessages, createMessage, createConversation, Conversation, Message, downloadFile, deleteConversation, markConversationAsRead } from '../services/messagingService';
 import { getUsers, User } from '../services/userService';
@@ -155,7 +154,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
 
         const formData = new FormData();
         formData.append('file', selectedFile);
-        const response = await fetch(`/api/messaging/conversations/${selectedConversation.id}/upload`, {
+        const response = await fetch(`/api/messaging/conversations/${selectedConversation.id}/messages/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -352,17 +351,13 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
                     <div className={`max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg shadow-md ${msg.authorId === Number(user?.id) ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200'}`}>
                       <p className="font-bold">{msg.author?.name || 'Participante'}</p>
                       {msg.file ? (
-                        msg.file.mimeType.startsWith('image/') ? (
-                          <Image src={`/api/messaging/download/${msg.file.id}`} alt={msg.file.fileName} className="max-w-xs rounded-lg" width={300} height={300} />
-                        ) : (
-                          <button 
-                            onClick={() => msg.file && handleDownload(msg.file.id, msg.file.fileName)} 
-                            className="text-blue-200 hover:underline flex items-center"
-                          >
-                            <FaDownload className="mr-2" />
-                            {msg.file.fileName}
-                          </button>
-                        )
+                        <button 
+                          onClick={() => msg.file && handleDownload(msg.file.id, msg.file.fileName)} 
+                          className="text-blue-200 hover:underline flex items-center mt-1"
+                        >
+                          <FaDownload className="mr-2" />
+                          {msg.file.fileName}
+                        </button>
                       ) : (
                         <p>{msg.content}</p>
                       )}
