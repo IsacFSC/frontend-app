@@ -55,7 +55,6 @@ export const ourFileRouter = {
   // Upload de arquivos para escalas (apenas ADMIN e LEADER)
   scheduleFileUploader: f({
     pdf: { maxFileSize: MAX_FILE_SIZES.schedules, maxFileCount: 1 },
-    image: { maxFileSize: MAX_FILE_SIZES.schedules, maxFileCount: 1 },
   })
     .middleware(async ({ files }) => {
       const { userId, userRole } = await authMiddleware();

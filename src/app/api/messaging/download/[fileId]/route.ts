@@ -24,6 +24,14 @@ export async function GET(
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
+    // Verifica se o arquivo tem dados
+    if (!file.data || file.data.length === 0) {
+      console.error(`Arquivo ${fileId} não tem dados no banco (buffer vazio)`);
+      return NextResponse.json({ 
+        error: 'Arquivo sem dados. Este arquivo pode ter sido enviado por um sistema antigo.' 
+      }, { status: 500 });
+    }
+
     const headers = new Headers();
     headers.set('Content-Type', file.mimeType || 'application/octet-stream');
     headers.set('Content-Disposition', `attachment; filename="${file.fileName}"`);

@@ -171,14 +171,6 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
           throw new Error(errorMessage);
         }
 
-        // Tenta fazer parse da resposta de sucesso
-        let responseData = null;
-        try {
-          responseData = await response.json();
-        } catch (parseError) {
-          console.error('Erro ao fazer parse da resposta de sucesso:', parseError);
-        }
-
         setSelectedFile(null);
       } else {
         await createMessage(selectedConversation.id, newMessage);
@@ -236,6 +228,12 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     const toastId = toast.loading('Baixando arquivo...');
     try {
       const blob = await downloadFile(fileId);
+      
+      // Verifica se o blob tem conteúdo
+      if (!blob || blob.size === 0) {
+        throw new Error('Arquivo vazio ou corrompido');
+      }
+      
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -243,10 +241,12 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      toast.success('Download iniciado!', { id: toastId });
+      window.URL.revokeObjectURL(url); // Libera memória
+      toast.success('Download concluído!', { id: toastId });
     } catch (error) {
-      toast.error('Falha ao baixar o arquivo.', { id: toastId });
-      console.error("Falha ao baixar o arquivo.", error);
+      console.error("Falha ao baixar o arquivo:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Falha ao baixar o arquivo.';
+      toast.error(errorMessage, { id: toastId });
     }
   };
 

@@ -91,10 +91,33 @@ export const uploadFile = async (conversationId: number, file: globalThis.File):
 };
 
 export const downloadFile = async (fileId: number) => {
-  const { data } = await api.get(`/messaging/download/${fileId}`, {
-    responseType: 'blob',
-  });
-  return data;
+  try {
+    const { data } = await api.get(`/messaging/download/${fileId}`, {
+      responseType: 'blob',
+    });
+    return data;
+  } catch (error: unknown) {
+    // Se for erro HTTP, tenta extrair mensagem de erro
+    const err = error as { response?: { data?: Blob } };
+    if (err.response?.data) {
+      const reader = new FileReader();
+      const blob = err.response.data;
+      
+      return new Promise((resolve, reject) => {
+        reader.onload = () => {
+          try {
+            const errorData = JSON.parse(reader.result as string);
+            reject(new Error(errorData.error || 'Erro ao baixar arquivo'));
+          } catch {
+            reject(new Error('Erro ao baixar arquivo'));
+          }
+        };
+        reader.onerror = () => reject(new Error('Erro ao baixar arquivo'));
+        reader.readAsText(blob);
+      });
+    }
+    throw error;
+  }
 };
 
 export const deleteConversation = async (conversationId: number): Promise<void> => {
