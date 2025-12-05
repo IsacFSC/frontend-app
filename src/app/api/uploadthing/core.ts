@@ -59,8 +59,18 @@ export const ourFileRouter = {
     .middleware(async ({ files }) => {
       const { userId, userRole } = await authMiddleware();
       
+      console.log('UploadThing - Upload de escala iniciado:', {
+        userId,
+        userRole,
+        fileCount: files.length,
+        fileName: files[0]?.name,
+        fileType: files[0]?.type,
+        fileSize: files[0]?.size,
+      });
+      
       // Apenas ADMIN e LEADER podem fazer upload em escalas
       if (userRole !== 'ADMIN' && userRole !== 'LEADER') {
+        console.error('Upload rejeitado - role inválida:', { userRole });
         throw new UploadThingError("Apenas administradores e líderes podem fazer upload em escalas");
       }
 

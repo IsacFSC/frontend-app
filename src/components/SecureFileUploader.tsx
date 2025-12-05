@@ -100,14 +100,21 @@ export default function SecureFileUploader({
   const handleUpload = async () => {
     if (files.length === 0) return;
 
+    console.log('SecureFileUploader - Iniciando upload:', {
+      endpoint,
+      fileCount: files.length,
+      files: files.map(f => ({ name: f.name, size: f.size, type: f.type })),
+    });
+
     setUploadStatus('uploading');
     setUploadProgress(0);
     setErrorMessage('');
 
     try {
-      await startUpload(files);
+      const result = await startUpload(files);
+      console.log('SecureFileUploader - Upload concluído:', result);
     } catch (error) {
-      console.error("Erro ao iniciar upload:", error);
+      console.error("SecureFileUploader - Erro ao iniciar upload:", error);
       setUploadStatus('error');
       setErrorMessage(error instanceof Error ? error.message : 'Erro ao fazer upload');
     }

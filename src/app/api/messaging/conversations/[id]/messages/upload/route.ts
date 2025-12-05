@@ -24,6 +24,14 @@ export async function POST(
     const file = formData.get('file') as File | null;
     const content = formData.get('content') as string || '';
 
+    console.log('Upload de mensagem iniciado:', {
+      conversationId: convId,
+      hasFile: !!file,
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+    });
+
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
@@ -33,8 +41,9 @@ export async function POST(
     // 1. Validação de tipo MIME - apenas PDF
     const allowedMimeType = 'application/pdf';
     if (file.type !== allowedMimeType) {
+      console.error('MIME type inválido:', { received: file.type, expected: allowedMimeType });
       return NextResponse.json({ 
-        error: 'Tipo de arquivo não permitido. Apenas arquivos PDF são aceitos.' 
+        error: `Tipo de arquivo não permitido. Recebido: ${file.type}. Apenas PDF (application/pdf) é aceito.` 
       }, { status: 400 });
     }
 
@@ -75,7 +84,10 @@ export async function POST(
       }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    console.log('Criando buffer do arquivo...');
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    console.log('Buffer criado:', { bufferSize: buffer.length });
 
     // 7. Sanitização do nome do arquivo
     const sanitizeFileName = (filename: string): string => {

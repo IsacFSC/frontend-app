@@ -142,16 +142,26 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
     const toastId = toast.loading('Enviando mensagem...');
     try {
       if (selectedFile && selectedConversation) {
+        console.log('MessagingClient - Preparando upload:', {
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          fileType: selectedFile.type,
+          conversationId: selectedConversation.id,
+        });
+
         // Validação adicional antes de enviar
         if (selectedFile.type !== 'application/pdf' && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
+          console.error('Arquivo rejeitado - não é PDF:', { type: selectedFile.type, name: selectedFile.name });
           toast.error('Apenas arquivos PDF são permitidos.', { id: toastId });
           return;
         }
         if (selectedFile.size > 8 * 1024 * 1024) {
+          console.error('Arquivo rejeitado - muito grande:', { size: selectedFile.size });
           toast.error('Arquivo muito grande. Tamanho máximo: 8MB.', { id: toastId });
           return;
         }
 
+        console.log('MessagingClient - Enviando arquivo...');
         const formData = new FormData();
         formData.append('file', selectedFile);
         const response = await fetch(`/api/messaging/conversations/${selectedConversation.id}/messages/upload`, {
@@ -159,10 +169,16 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
           body: formData,
         });
 
+        console.log('MessagingClient - Resposta recebida:', { 
+          status: response.status, 
+          ok: response.ok 
+        });
+
         if (!response.ok) {
           let errorMessage = 'Falha ao enviar arquivo.';
           try {
             const errorData = await response.json();
+            console.error('MessagingClient - Erro do servidor:', errorData);
             errorMessage = errorData.error || errorMessage;
           } catch (parseError) {
             // Se não conseguir fazer parse do JSON, usa mensagem padrão
@@ -171,6 +187,7 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
           throw new Error(errorMessage);
         }
 
+        console.log('MessagingClient - Upload concluído com sucesso');
         setSelectedFile(null);
       } else {
         await createMessage(selectedConversation.id, newMessage);
@@ -226,8 +243,11 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
 
   const handleDownload = async (fileId: number, fileName: string) => {
     const toastId = toast.loading('Baixando arquivo...');
+    console.log('MessagingClient - Iniciando download:', { fileId, fileName });
+    
     try {
       const blob = await downloadFile(fileId);
+      console.log('MessagingClient - Blob recebido:', { size: blob?.size, type: blob?.type });
       
       // Verifica se o blob tem conteúdo
       if (!blob || blob.size === 0) {
@@ -242,9 +262,10 @@ export default function MessagingClient({ userRole }: MessagingClientProps) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url); // Libera memória
+      console.log('MessagingClient - Download concluído');
       toast.success('Download concluído!', { id: toastId });
     } catch (error) {
-      console.error("Falha ao baixar o arquivo:", error);
+      console.error("MessagingClient - Falha ao baixar o arquivo:", error);
       const errorMessage = error instanceof Error ? error.message : 'Falha ao baixar o arquivo.';
       toast.error(errorMessage, { id: toastId });
     }
