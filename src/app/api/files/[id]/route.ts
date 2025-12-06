@@ -18,10 +18,14 @@ export async function GET(
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
+    // Codifica o nome do arquivo para evitar problemas com caracteres especiais UTF-8
+    const encodedFileName = encodeURIComponent(file.fileName);
+
     const headers = new Headers();
     const contentType = file.mimeType || 'application/octet-stream';
     headers.set('Content-Type', contentType);
-    headers.set('Content-Disposition', `inline; filename="${file.fileName}"`);
+    // Usa RFC 5987 para suportar caracteres UTF-8 no filename
+    headers.set('Content-Disposition', `inline; filename*=UTF-8''${encodedFileName}`);
 
     // Ensure we return the raw binary body. Prisma `Bytes` is typically returned
     // as a Uint8Array or Buffer. Normalize to Uint8Array and return an ArrayBuffer.

@@ -27,9 +27,14 @@ export async function GET(
   }
 
   const { file } = schedule;
+  
+  // Codifica o nome do arquivo para evitar problemas com caracteres especiais UTF-8
+  const encodedFileName = encodeURIComponent(file.fileName);
+  
   const headers = new Headers();
   headers.set('Content-Type', file.mimeType || 'application/octet-stream');
-  headers.set('Content-Disposition', `inline; filename="${file.fileName}"`);
+  // Usa RFC 5987 para suportar caracteres UTF-8 no filename
+  headers.set('Content-Disposition', `inline; filename*=UTF-8''${encodedFileName}`);
 
   // Convert the Uint8Array to a Buffer which is accepted by Response
   const buffer = Buffer.from(file.data);
