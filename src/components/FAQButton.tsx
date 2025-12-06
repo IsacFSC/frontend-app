@@ -497,6 +497,10 @@ export default function FAQButton() {
     }
   }, [status]);
 
+  // Don't render FAQ on public pages or while loading session
+  if (status === 'loading') return null;
+  if (status !== 'authenticated') return null;
+
   return (
     <>
       {!hidden && (

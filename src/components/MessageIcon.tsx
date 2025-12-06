@@ -27,9 +27,20 @@ export default function MessageIcon() {
     if (user) {
       fetchUnreadCount();
 
+      // Polling a cada 10 segundos para atualizar contagem (mensagens recebidas de outros usuários)
+      const pollInterval = setInterval(fetchUnreadCount, 10000);
+
+      // Atualiza quando a aba ganha foco (usuário volta para a página)
+      const handleFocus = () => fetchUnreadCount();
+      window.addEventListener('focus', handleFocus);
+
+      // Eventos locais (quando o próprio usuário envia/recebe)
       window.addEventListener('messaging:messageCreated', fetchUnreadCount);
       window.addEventListener('messaging:messagesRead', fetchUnreadCount);
+      
       return () => {
+        clearInterval(pollInterval);
+        window.removeEventListener('focus', handleFocus);
         window.removeEventListener('messaging:messageCreated', fetchUnreadCount);
         window.removeEventListener('messaging:messagesRead', fetchUnreadCount);
       };
