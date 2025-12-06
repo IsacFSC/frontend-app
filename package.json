@@ -49,5 +49,10 @@
     "prisma": "^6.17.0",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "next-auth": {
+      "next": "$next"
+    }
   }
 }
