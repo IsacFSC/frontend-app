@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Turbopack config (Next.js 16+) - deixa vazio para permitir build
+  turbopack: {},
+  // Webpack config mantido para compatibilidade (usado apenas se --webpack for especificado)
   webpack: (config) => {
     // pdfkit tem uma dependência opcional do 'canvas' que não é necessária no servidor.
     // Esta configuração garante que o webpack o ignore, resolvendo erros de
@@ -17,6 +20,8 @@ const nextConfig = {
       },
     ];
   },
+  // Configura externals para evitar problemas com canvas no servidor
+  serverExternalPackages: ['canvas'],
 };
 
 module.exports = nextConfig;
